@@ -29,61 +29,64 @@
 #include <stdio.h>
 #include <conio.h>
 #include <string.h>
-#include <defines.h>
+#include "defines.h"
 
 static unsigned char screen_bgc;
 static unsigned char screen_borderc;
 static unsigned char screen_textc;
 
-void clearArea( int xpos, int ypos, int xsize, int ysize)
+void
+clearArea(BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize)
 {
   int y = ypos;
-  for (y=ypos;y<(ypos+ysize);++y)
-  {
-	  cclearxy(xpos,y,xsize);
-  }
+  for (; y < (ypos+ysize); ++y)
+    {
+      cclearxy(xpos,y,xsize);
+    }
 }
 
-
-void newscreen(char * title)
+void
+newscreen(char * title)
 {
 	int i;
 	clrscr();
 	revers(1);
 	for (i=0;i<SCREENW;i++)
-	{
-	  cputc(' ');
-	}
+    {
+      cputc(' ');
+    }
 	gotoxy(0,0);
 	cputs(title);
 	revers(0);
 	gotoxy(0,1);
 }
 
-
-void drawFrame( char * title, int xpos, int ypos, int xsize, int ysize)
+void
+drawFrame(char * title, BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize)
 {
-  int h1 = 0;
+  BYTE h1 = 0;
+  BYTE title_len = 0;
 
   // top
   gotoxy(xpos,ypos);
   cputc(CH_ULCORNER);
 
-  if (title!=NULL)
-  {
-    h1 = (xsize-2-strlen(title))/2;
-    chline(h1);
+  if (title)
+    {
+      title_len = strlen(title);
+      h1 = (xsize-2-title_len)/2;
+      chline(h1);
 
-    revers(1);
-    cputs(title);
-    revers(0);
+      revers(1);
+      cputs(title);
+      revers(0);
 
-    chline(xsize-h1-strlen(title)-2);
-  }
+      chline(xsize-h1-title_len-2);
+    }
   else
-  {
-	chline(xsize-2);
-  }
+    {
+      chline(xsize-2);
+    }
   cputc(CH_URCORNER);
 
   // left
@@ -99,7 +102,9 @@ void drawFrame( char * title, int xpos, int ypos, int xsize, int ysize)
 }
 
 /* initialize screen mode */
-void initScreen( unsigned char border, unsigned char bg, unsigned char text) {
+void
+initScreen(unsigned char border, unsigned char bg, unsigned char text)
+{
   screen_borderc = bordercolor(border);
   screen_bgc = bgcolor(bg);
   screen_textc = textcolor(text);
@@ -107,7 +112,9 @@ void initScreen( unsigned char border, unsigned char bg, unsigned char text) {
 }
 
 /* restore basic screen mode */
-void exitScreen(void) {
+void
+exitScreen(void)
+{
   bordercolor(screen_borderc);
   bgcolor(screen_bgc);
   textcolor(screen_textc);
