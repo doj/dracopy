@@ -28,7 +28,7 @@
 #ifndef DIR_H_
 #define DIR_H_
 
-#include <defines.h>
+#include "defines.h"
 
 typedef struct direlement {
 	struct cbm_dirent dirent;
@@ -39,7 +39,11 @@ typedef struct direlement {
 
 
 typedef struct {
-  unsigned char *name;
+  /// 16 characters name
+  /// 1 comma
+  /// 2 characters ID
+  /// NUL
+  unsigned char name[16+1+2+1];
   struct direlement * firstelement;
   struct direlement * selected;
   unsigned char flags;
@@ -47,12 +51,9 @@ typedef struct {
   unsigned int free;
 } Directory;
 
-# define CBM_T_FREE 100
-
 void freeDir(Directory * * dir);
 void removeFromDir(DirElement * current);
-Directory * readDir(Directory * dir, BYTE lfn, BYTE context);
-unsigned char myCbmReadDir (unsigned char lfn, register struct cbm_dirent* l_dirent);
-
+Directory * readDir(Directory * dir, BYTE device, BYTE context);
+unsigned char myCbmReadDir (unsigned char device, struct cbm_dirent* l_dirent);
 
 #endif /* DIR_H_ */

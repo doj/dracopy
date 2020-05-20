@@ -54,6 +54,7 @@ void doToggleAll(void);
 void doCopy(void);
 void doCopySelected(void);
 void doDeleteMulti(void);
+void doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo);
 void execute(char * prg, BYTE device);
 int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE type);
 int cmd(unsigned char lfn, unsigned char * cmd);
@@ -73,18 +74,16 @@ char linebuffer[SCREENW+1];
 char answer[40];
 
 Directory * dirs[] = {NULL,NULL};
-char * types [8] = {"DEL","SEQ","PRG","USR","REL","CBM","DIR","---"};
-
+const char * types [8] = {"DEL","SEQ","PRG","USR","REL","CBM","DIR","---"};
 
 // some filetypes are not yet supported, using u instead
 // char shorttypes [8] = {'d','s','p','u','l','c','v','-' };
-char shorttypes [8] = {'u','s','p','u','u','u','u','u' };
-
+const char shorttypes [8] = {'u','s','p','u','u','u','u','u' };
 
 #ifdef NOCOLOR
-  BYTE textc = COLOR_WHITE;
+const BYTE textc = COLOR_WHITE;
 #else
-  BYTE textc = COLOR_LIGHTGREEN;
+const BYTE textc = COLOR_LIGHTGREEN;
 #endif
 
 int main(void)
@@ -94,7 +93,6 @@ int main(void)
   exitScreen();
   return 0;
 }
-
 
 void updateScreen(void)
 {
@@ -114,72 +112,69 @@ void updateMenu(void)
 	revers(0);
 	menuy+=1;
 	gotoxy(MENUX+1,menuy++);
-	cprintf(" F1 DIR");
+	cputs("F1 READ DIR");
 	gotoxy(MENUX+1,menuy++);
-	cprintf(" F2 DEV");
+	cputs("F2 DEVICE");
 	gotoxy(MENUX+1,menuy++);
-	cprintf(" F3 HEX");
+	cputs("F3 VIEW HEX");
 	gotoxy(MENUX+1,menuy++);
-	cprintf(" F4 ASC");
+	cputs("F4 VIEW ASC");
 	gotoxy(MENUX+1,menuy++);
-	cprintf(" F5 CPY MUL");
+	cputs("F5 COPY MUL");
 	gotoxy(MENUX+1,menuy++);
-	cprintf(" F6 DEL MUL");
+	cputs("F6 DEL MUL");
 	gotoxy(MENUX+1,menuy++);
-	cprintf(" F7 RUN");
+	cputs("F7 RUN");
 	gotoxy(MENUX+1,menuy++);
-	cprintf(" SP TAG");
+	cputs("F8 DISKCOPY");
+	gotoxy(MENUX+1,menuy++);
+	cputs("SP TAG");
 	gotoxy(MENUX+1,menuy++);
 #ifdef __PLUS4__
-	cprintf("ESC SWITCH");
+	cputs("ESC SWITCH");
 #else
 	cputc(' ');
 	cputc(95); // arrow left
-	cprintf("  SWITCH");
+	cputs(" SWITCH");
 #endif
 	gotoxy(MENUX+1,menuy++);
-	cprintf(" CR CHG DIR");
+	cputs("CR CHG DIR");
 	gotoxy(MENUX+1,menuy++);
-	cprintf(" BS DIR UP");
+	cputs("BS DIR UP");
 	gotoxy(MENUX+1,menuy++);
-	cprintf("  T TOP");
+	cputs(" T TOP");
 	gotoxy(MENUX+1,menuy++);
-	cprintf("  B END");
+	cputs(" B BOTTOM");
 	gotoxy(MENUX+1,menuy++);
-	cprintf("  * SEL");
+	cputs(" * SEL");
 	gotoxy(MENUX+1,menuy++);
-	cprintf("  C CPY F");
+	cputs(" C COPY F");
 	gotoxy(MENUX+1,menuy++);
-	cprintf("  D DEL F/D");
+	cputs(" D DEL F/D");
 	gotoxy(MENUX+1,menuy++);
-	cprintf("  R REN F");
+	cputs(" R REN F");
 	gotoxy(MENUX+1,menuy++);
-	cprintf("  M MAKE D");
+	cputs(" M MAKE D");
 	gotoxy(MENUX+1,menuy++);
-	cprintf("  F FORMAT");
+	cputs(" F FORMAT");
 	gotoxy(MENUX+1,menuy++);
-	cprintf("  . ABOUT");
+	cputs(" . ABOUT");
 	gotoxy(MENUX+1,menuy++);
-	cprintf("  Q QUIT");
-	gotoxy(MENUX+1,menuy++);
-	cprintf("D1:%02d D2:%02d",devices[0],devices[1]);
+	cputs(" Q QUIT");
 	drawFrame(NULL,MENUX,MENUY,MENUW,MENUH+1);
 	revers(1);
 	textcolor(COLOR_GREEN);
 	gotoxy(0,24);
 
-  #ifdef CHAR80
-	  cprintf("               DraCopy " DRA_VER "       80 Characters                   ");
-  #else
-	  cprintf("       DraCopy " DRA_VER "       ");
-  #endif
+#ifdef CHAR80
+  cputs("               DraCopy " DRA_VER "       80 Characters                   ");
+#else
+  cputs("       DraCopy " DRA_VER "       ");
+#endif
 
 	textcolor(textc);
 	revers(0);
 }
-
-
-
 
 void mainLoop(void)
 {
@@ -205,40 +200,40 @@ void mainLoop(void)
 
 	updateScreen();
 	do
-	{
-		c = cgetc();
+    {
+      c = cgetc();
     	switch (c)
       	{
     		case 10:
 
-			case CH_F1:
+        case CH_F1:
 					dirs[context]=readDir(dirs[context],devices[context],context);
 					clrDir(context);
 					showDir(dirs[context],context);
 					break;
 
-			case CH_F2:
+        case CH_F2:
 					do
-					{
-					  if (devices[context]++>12) devices[context]=8;
-					}
+            {
+              if (devices[context]++>12) devices[context]=8;
+            }
 					while(devices[context]==devices[1-context]);
 					freeDir(&dirs[context]);
 					dirs[context]=NULL;
 					updateScreen();
 					break;
 
-			case CH_F3:
+        case CH_F3:
 					cathex(devices[context],dirs[context]->selected->dirent.name);
 					updateScreen();
 					break;
 
-			case CH_F4:
+        case CH_F4:
 					catasc(devices[context],dirs[context]->selected->dirent.name);
 					updateScreen();
 					break;
 
-			case CH_F5:
+        case CH_F5:
 					doCopy();
 					clrscr();
 					// refresh destination dir
@@ -246,21 +241,26 @@ void mainLoop(void)
 					updateScreen();
 					break;
 
-			case CH_F6:
+        case CH_F6:
 					doDeleteMulti();
 					updateScreen();
 					break;
 
-			case CH_F7:
+        case CH_F7:
 					if (dirs[context]->selected!=NULL)
-					{
-						execute(dirs[context]->selected->dirent.name,devices[context]);
-					}
+            {
+              execute(dirs[context]->selected->dirent.name,devices[context]);
+            }
 					exit(0);
 					break;
 
-			// ----- switch context -----
-			case 27:  // escape
+        case CH_F8:
+          doDiskCopy(devices[context], devices[1-context]);
+					updateScreen();
+					break;
+
+          // ----- switch context -----
+        case 27:  // escape
 		    case 95:  // arrow left
 					oldcwd=GETCWD;
 					oldcontext=context;
@@ -275,23 +275,23 @@ void mainLoop(void)
 					cwd->selected=cwd->firstelement;
 					cwd->pos=0;
 					printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
-    				break;
+          break;
 		    case 'b':
 					cwd=GETCWD;
 					current = cwd->firstelement;
 					pos=0;
 					while (1)
-					{
-						if (current->next!=NULL)
-						{
-						  current=current->next;
-						  pos++;
-						}
-						else
-						{
-							break;
-						}
-					}
+            {
+              if (current->next!=NULL)
+                {
+                  current=current->next;
+                  pos++;
+                }
+              else
+                {
+                  break;
+                }
+            }
 					cwd->selected=current;
 					cwd->pos=pos;
 					printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
@@ -299,106 +299,106 @@ void mainLoop(void)
 
 		    case 'q':
 					exitflag = 1;
-    				break;
-			case ' ':
+          break;
+        case ' ':
 					cwd=GETCWD;
 					cwd->selected->flags=!cwd->selected->flags;
 
 					// go to next entry
 					if (cwd->selected->next!=NULL)
-					{
-						cwd->selected=cwd->selected->next;
-						cwd->pos++;
-					}
+            {
+              cwd->selected=cwd->selected->next;
+              cwd->pos++;
+            }
 					showDir(cwd,context);
-    				break;
+          break;
 
-			case 'd':
+        case 'd':
 					deleteSelected();
-    				break;
+          break;
 
-			case 'c':
+        case 'c':
 					doCopySelected();
-    				break;
+          break;
 
-			case 'f':
+        case 'f':
 					doFormat();
-    				break;
+          break;
 
-			case 'r':
+        case 'r':
 					doRename();
-    				break;
+          break;
 
-			case 'm':
+        case 'm':
 					doMakedir();
-    				break;
+          break;
 
-			case '*':
+        case '*':
 					doToggleAll();
-    				break;
+          break;
 
-			case '.':
+        case '.':
 					about();
-    				break;
+          break;
 
     		case CH_CURS_DOWN:
 					cwd=GETCWD;
 					if (cwd->selected!=NULL && cwd->selected->next!=NULL)
-					{
-						cwd->selected=cwd->selected->next;
-						pos=cwd->pos;
-						lastpage=pos/DIRH;
-						nextpage=(pos+1)/DIRH;
-						if (lastpage!=nextpage)
-						{
-							cwd->pos++;
-							printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
-						}
-						else
-						{
-							printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
-							cwd->pos++;
-							printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
-						}
+            {
+              cwd->selected=cwd->selected->next;
+              pos=cwd->pos;
+              lastpage=pos/DIRH;
+              nextpage=(pos+1)/DIRH;
+              if (lastpage!=nextpage)
+                {
+                  cwd->pos++;
+                  printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                }
+              else
+                {
+                  printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                  cwd->pos++;
+                  printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                }
 
-					}
-    				break;
+            }
+          break;
 
     		case CH_CURS_UP:
 					cwd=GETCWD;
 					if (cwd->selected!=NULL && cwd->selected->previous!=NULL)
-					{
-						cwd->selected=cwd->selected->previous;
-						pos=cwd->pos;
-						lastpage=pos/DIRH;
-						nextpage=(pos-1)/DIRH;
-						if (lastpage!=nextpage)
-						{
-							cwd->pos--;
-							printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
-						}
-						else
-						{
-							printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
-							cwd->pos--;
-							printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
-						}
-					}
-				    break;
+            {
+              cwd->selected=cwd->selected->previous;
+              pos=cwd->pos;
+              lastpage=pos/DIRH;
+              nextpage=(pos-1)/DIRH;
+              if (lastpage!=nextpage)
+                {
+                  cwd->pos--;
+                  printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                }
+              else
+                {
+                  printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                  cwd->pos--;
+                  printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                }
+            }
+          break;
 
-			// --- enter directory
+          // --- enter directory
     		case 13:  // cr
     		case CH_CURS_RIGHT:
 					cwd=GETCWD;
 					if (cwd->selected!=NULL)
-					{
-						sprintf(linebuffer,"cd:%s\n",cwd->selected->dirent.name);
-						cmd(devices[context],linebuffer);
-						refreshDir();
-					}
+            {
+              sprintf(linebuffer,"cd:%s\n",cwd->selected->dirent.name);
+              cmd(devices[context],linebuffer);
+              refreshDir();
+            }
 					break;
 
-			// --- leave directory
+          // --- leave directory
     		case 20:  // backspace
     		case CH_CURS_LEFT:
 					sprintf(linebuffer,"cd: \n");
@@ -406,12 +406,12 @@ void mainLoop(void)
 					cmd(devices[context],linebuffer);
 					refreshDir();
 					break;
-	    }
-	}
+        }
+    }
 	while(exitflag==0);
 
-    if (dirs[0]!=NULL) freeDir(&dirs[0]);
-    if (dirs[1]!=NULL) freeDir(&dirs[1]);
+  if (dirs[0]!=NULL) freeDir(&dirs[0]);
+  if (dirs[1]!=NULL) freeDir(&dirs[1]);
 }
 
 
@@ -424,12 +424,12 @@ void refreshDir(void)
 	cwd->selected=cwd->firstelement;
 	showDir(cwd,context);
 	if (devices[0]==devices[1])
-	{
-		// refresh also other dir if it's the same drive
-		clrDir(1-context);
-		dirs[1-context] = readDir(dirs[1-context],devices[1-context],(BYTE)(1-context));
-		showDir(cwd,1-context);
-	}
+    {
+      // refresh also other dir if it's the same drive
+      clrDir(1-context);
+      dirs[1-context] = readDir(dirs[1-context],devices[1-context],(BYTE)(1-context));
+      showDir(cwd,1-context);
+    }
 }
 
 void doCopySelected(void)
@@ -437,32 +437,32 @@ void doCopySelected(void)
   Directory * cwd = GETCWD;
 
   if (cwd->selected!=NULL)
-  {
-	sprintf(linebuffer,"Filecopy from device %d to device %d\n",devices[context],devices[1-context]);
-	newscreen(linebuffer);
-	if (copy(cwd->selected->dirent.name,
-			devices[context],
-			cwd->selected->dirent.name,
-			devices[1-context],
-			cwd->selected->dirent.type)==ERROR)
-	{
-		cputc(13);
-		cputc(10);
-		waitKey(0);
-	}
+    {
+      sprintf(linebuffer,"Filecopy from device %d to device %d\n",devices[context],devices[1-context]);
+      newscreen(linebuffer);
+      if (copy(cwd->selected->dirent.name,
+               devices[context],
+               cwd->selected->dirent.name,
+               devices[1-context],
+               cwd->selected->dirent.type)==ERROR)
+        {
+          cputc(13);
+          cputc(10);
+          waitKey(0);
+        }
 
-    // refresh destination dir
-	clrscr();
-	dirs[1-context] = readDir(dirs[1-context],devices[1-context],(BYTE)(1-context));
+      // refresh destination dir
+      clrscr();
+      dirs[1-context] = readDir(dirs[1-context],devices[1-context],(BYTE)(1-context));
 
-	if (devices[0]==devices[1])
-	{
-	    // refresh also source dir if it's the same drive
-		dirs[context] = readDir(dirs[context],devices[context],context);
-	}
+      if (devices[0]==devices[1])
+        {
+          // refresh also source dir if it's the same drive
+          dirs[context] = readDir(dirs[context],devices[context],context);
+        }
 
-	updateScreen();
-  }
+      updateScreen();
+    }
 }
 
 void deleteSelected(void)
@@ -471,89 +471,90 @@ void deleteSelected(void)
   Directory * cwd = GETCWD;
 
 	if (cwd->selected!=NULL)
-	{
-		sprintf(linebuffer,"Delete file/directory on device %d\n",devices[context]);
-		newscreen(linebuffer);
-		if (really())
-		{
-			lastSel = cwd->selected;
-			cprintf("%s.%s",cwd->selected->dirent.name,types[cwd->selected->dirent.type]);
-			if (cwd->selected->dirent.type==DIRTYPE)
-			{
-			  sprintf(linebuffer,"rd:%s",cwd->selected->dirent.name);
-			}
-			else
-			{
-			  sprintf(linebuffer,"s:%s",cwd->selected->dirent.name);
-			}
-			if (cmd(devices[context],linebuffer)==OK)
-			{
-				removeFromDir(cwd->selected);
-				cputc(' ');
-				revers(1);
-				cputs("DELETED\n\r");
-				revers(0);
+    {
+      sprintf(linebuffer,"Delete file/directory on device %d\n",devices[context]);
+      newscreen(linebuffer);
+      if (really())
+        {
+          lastSel = cwd->selected;
+          cprintf("%s.%s",cwd->selected->dirent.name,types[cwd->selected->dirent.type]);
+          if (cwd->selected->dirent.type==DIRTYPE)
+            {
+              sprintf(linebuffer,"rd:%s",cwd->selected->dirent.name);
+            }
+          else
+            {
+              sprintf(linebuffer,"s:%s",cwd->selected->dirent.name);
+            }
+          if (cmd(devices[context],linebuffer)==OK)
+            {
+              removeFromDir(cwd->selected);
+              cputc(' ');
+              revers(1);
+              cputs("DELETED\n\r");
+              revers(0);
 
-				// select next / prior entry
-				if (cwd->selected->next!=NULL)
-				{
-					cwd->selected=cwd->selected->next;
-					//cwd->pos++;
-				}
-				else if (cwd->selected->previous!=NULL)
-				{
-					cwd->selected=cwd->selected->previous;
-					cwd->pos--;
-				}
-				else
-				{
-					cwd->selected=NULL;
-					cwd->pos=0;
-				}
+              // select next / prior entry
+              if (cwd->selected->next!=NULL)
+                {
+                  cwd->selected=cwd->selected->next;
+                  //cwd->pos++;
+                }
+              else if (cwd->selected->previous!=NULL)
+                {
+                  cwd->selected=cwd->selected->previous;
+                  cwd->pos--;
+                }
+              else
+                {
+                  cwd->selected=NULL;
+                  cwd->pos=0;
+                }
 
-				// update first element if needed
-				if (cwd->firstelement==lastSel)
-				{
-					cwd->firstelement=cwd->firstelement->next;
-				}
-			}
-			else
-			{
-				cputc(' ');
-				revers(1);
-				textcolor(COLOR_SIGNAL);
-				cputs("ERROR\n\r");
-				textcolor(textc);
-				revers(0);
-				waitKey(0);
-			}
-		}
-		updateScreen();
-	}
+              // update first element if needed
+              if (cwd->firstelement==lastSel)
+                {
+                  cwd->firstelement=cwd->firstelement->next;
+                }
+            }
+          else
+            {
+              cputc(' ');
+              revers(1);
+              textcolor(COLOR_SIGNAL);
+              cputs("ERROR\n\r");
+              textcolor(textc);
+              revers(0);
+              waitKey(0);
+            }
+        }
+      updateScreen();
+    }
 }
-
 
 void showDir(Directory * dir, BYTE mycontext)
 {
 	char * title;
 	if (dir!=NULL)
-	{
-		title=dir->name;
-	}
+    {
+      title=dir->name;
+    }
 	else
-	{
-		title="no directory";
-	}
+    {
+      title="    no directory";
+    }
+  if (mycontext > 1)
+    return;
 	if(mycontext==context)
-	{
-		sprintf(linebuffer,"> %16s <",title);
-		textcolor(COLOR_WHITE);
-	}
+    {
+      sprintf(linebuffer, ">S%02i: %s", (int)devices[mycontext], title);
+      textcolor(COLOR_WHITE);
+    }
 	else
-	{
-		sprintf(linebuffer,"%16s",title);
-		textcolor(textc);
-	}
+    {
+      sprintf(linebuffer, " D%02i: %s", (int)devices[mycontext], title);
+      textcolor(textc);
+    }
 
 	drawFrame(linebuffer,(mycontext==0)?DIR1X:DIR2X,(mycontext==0)?DIR1Y:DIR2Y,DIRW+2,DIRH+2);
 	gotoxy((mycontext==0)?DIR1X+1:DIR2X+1,(mycontext==0)?(DIR1Y+DIRH+1):(DIR2Y+DIRH+1));
@@ -567,7 +568,6 @@ void clrDir(BYTE context)
 	clearArea((context==0)?DIR1X+1:DIR2X+1,((context==0)?DIR1Y:DIR2Y ) ,DIRW,DIRH+1);
 }
 
-
 void about(void)
 {
 	BYTE idx=0;
@@ -575,39 +575,38 @@ void about(void)
 	textcolor(COLOR_YELLOW);
 	idx=4;
 	gotoxy(0,idx++);
-	cprintf("DraCopy " DRA_VER);
+	cputs("DraCopy " DRA_VER);
 #ifdef CHAR80
-	cprintf(" 80 Chars");
+	cputs(" 80 Chars");
 #endif
 	textcolor(COLOR_GREEN);
 	idx++;
 	idx++;
 	gotoxy(0,idx++);
-	cprintf("      Copyright 2009 by Draco");
+	cputs("      Copyright 2009 by Draco");
 	idx++;
 	gotoxy(0,idx++);
-	cprintf("     https://github.com/doj/dracopy");
+	cputs("     https://github.com/doj/dracopy");
 	idx++;
 	idx++;
 	gotoxy(0,idx++);
-	cprintf("THIS PROGRAM IS DISTRIBUTED IN THE HOPE");
+	cputs("THIS PROGRAM IS DISTRIBUTED IN THE HOPE");
 	gotoxy(0,idx++);
-	cprintf("THAT IT WILL BE USEFUL.");
+	cputs("THAT IT WILL BE USEFUL.");
 	idx++;
 	gotoxy(0,idx++);
-	cprintf("IT IS PROVIDED WITH NO WARRANTY OF ANY ");
+	cputs("IT IS PROVIDED WITH NO WARRANTY OF ANY ");
 	gotoxy(0,idx++);
-	cprintf("KIND.\n");
+	cputs("KIND.\n");
 	idx++;
 	gotoxy(0,idx++);
 	textcolor(COLOR_LIGHTRED);
-	cprintf("USE IT AT YOUR OWN RISK!");
+	cputs("USE IT AT YOUR OWN RISK!");
 	gotoxy(0,24);
 	textcolor(COLOR_VIOLET);
 	waitKey(0);
 	updateScreen();
 }
-
 
 void doCopy(void)
 {
@@ -619,43 +618,39 @@ void doCopy(void)
 	BYTE srcdev = devices[context];
 	BYTE destdev = devices[1-context];
 
-
 	int idx = 0;
 	int selidx = 0;
 	int x=0;
 	int sx=0;
 
-
 	srcdir=dirs[context];
 	destdir=dirs[1-context];
-
 
 	sprintf(linebuffer,"Filecopy from device %d to device %d\n",srcdev,destdev);
 	newscreen(linebuffer);
 	if (srcdir==NULL || destdir==NULL)
-	{
-		cputs("no directory");
-		return;
-	}
+    {
+      cputs("no directory");
+      return;
+    }
 	else
-	{
-		current = srcdir->firstelement;
-		while (current!=NULL)
-		{
-			if (current->flags==1)
-			{
-				if (copy(current->dirent.name,srcdev,current->dirent.name,destdev,current->dirent.type)==OK)
-				{
-				  // deselect
-				  current->flags=0;
-				}
-			}
-			current=current->next;
-		}
-		cputs("\n\r");
-		waitKey(0);
-	}
-
+    {
+      current = srcdir->firstelement;
+      while (current!=NULL)
+        {
+          if (current->flags==1)
+            {
+              if (copy(current->dirent.name,srcdev,current->dirent.name,destdev,current->dirent.type)==OK)
+                {
+                  // deselect
+                  current->flags=0;
+                }
+            }
+          current=current->next;
+        }
+      cputs("\n\r");
+      waitKey(0);
+    }
 }
 
 
@@ -663,35 +658,31 @@ void doToggleAll(void)
 {
 	DirElement * current;
 	if (dirs[context]==NULL)
-	{
-		//cputs("no directory");
-		return;
-	}
+    {
+      //cputs("no directory");
+      return;
+    }
 	else
-	{
-		current = dirs[context]->firstelement;
-		while (current!=NULL)
-		{
-			current->flags=1-(current->flags);
-			current=current->next;
-		}
-		showDir(dirs[context],context);
-	}
+    {
+      current = dirs[context]->firstelement;
+      while (current!=NULL)
+        {
+          current->flags=1-(current->flags);
+          current=current->next;
+        }
+      showDir(dirs[context],context);
+    }
 }
-
-
 
 BYTE really(void)
 {
 	char c;
-	cprintf("Really (Y/N)? ");
+	cputs("Really (Y/N)? ");
 	c = cgetc();
 	cputc(c);
 	cputs("\n\r");
 	return (c=='y' || c=='Y');
 }
-
-
 
 void doDeleteMulti(void)
 {
@@ -703,68 +694,68 @@ void doDeleteMulti(void)
 	Directory * cwd = GETCWD;
 
 	if (dirs[context]==NULL)
-	{
-		return;
-	}
+    {
+      return;
+    }
 	else
-	{
-		sprintf(linebuffer,"Delete files from device %d\n",devices[context]);
-		newscreen(linebuffer);
-		current = dirs[context]->firstelement;
-		while (current!=NULL)
-		{
-			if (current->flags==1)
-			{
-				cprintf("%s.%s\n\r",current->dirent.name,types[current->dirent.type]);
-			}
-			current=current->next;
-		}
-		cputs("\n\r");
-		if (really())
-		{
-				current = dirs[context]->firstelement;
-				while (current!=NULL)
-				{
-					if (current->flags==1)
-					{
-						cprintf("%s.%s",current->dirent.name,types[current->dirent.type]);
-						sprintf(linebuffer,"s:%s\n",current->dirent.name);
-						if (cmd(devices[context],linebuffer)==OK)
-						{
-							cputc(' ');
-							revers(1);
-							cputs("DELETED\n\r");
-							revers(0);
-						}
-						else
-						{
-							cputc(' ');
-							revers(1);
-							textcolor(COLOR_VIOLET);
-							puts("ERROR\n\r");
-							textcolor(textc);
-							revers(0);
-							break;
-						}
-					}
-					current=current->next;
-				}
+    {
+      sprintf(linebuffer,"Delete files from device %d\n",devices[context]);
+      newscreen(linebuffer);
+      current = dirs[context]->firstelement;
+      while (current!=NULL)
+        {
+          if (current->flags==1)
+            {
+              cprintf("%s.%s\n\r",current->dirent.name,types[current->dirent.type]);
+            }
+          current=current->next;
+        }
+      cputs("\n\r");
+      if (really())
+        {
+          current = dirs[context]->firstelement;
+          while (current!=NULL)
+            {
+              if (current->flags==1)
+                {
+                  cprintf("%s.%s",current->dirent.name,types[current->dirent.type]);
+                  sprintf(linebuffer,"s:%s\n",current->dirent.name);
+                  if (cmd(devices[context],linebuffer)==OK)
+                    {
+                      cputc(' ');
+                      revers(1);
+                      cputs("DELETED\n\r");
+                      revers(0);
+                    }
+                  else
+                    {
+                      cputc(' ');
+                      revers(1);
+                      textcolor(COLOR_VIOLET);
+                      puts("ERROR\n\r");
+                      textcolor(textc);
+                      revers(0);
+                      break;
+                    }
+                }
+              current=current->next;
+            }
 
-				waitKey(0);
+          waitKey(0);
 
-				// refresh directories
-				clrscr();
-				cwd = readDir(cwd, devices[context], context );
-				dirs[context]=cwd;
-				cwd->selected=cwd->firstelement;
-				if (devices[0]==devices[1])
-				{
-				    // refresh also other dir if it's the same drive
-					clrDir(1-context);
-					dirs[1-context] = readDir(dirs[1-context],devices[1-context],(BYTE)(1-context));
-				}
-		}
-	}
+          // refresh directories
+          clrscr();
+          cwd = readDir(cwd, devices[context], context );
+          dirs[context]=cwd;
+          cwd->selected=cwd->firstelement;
+          if (devices[0]==devices[1])
+            {
+              // refresh also other dir if it's the same drive
+              clrDir(1-context);
+              dirs[1-context] = readDir(dirs[1-context],devices[1-context],(BYTE)(1-context));
+            }
+        }
+    }
 }
 
 void execute(char * prg, BYTE device)
@@ -779,7 +770,6 @@ void execute(char * prg, BYTE device)
 	*((unsigned char *)KBNUM)=2;
 }
 
-
 void printDir(Directory * dir,int xpos, int ypos)
 {
 	DirElement * current;
@@ -788,96 +778,98 @@ void printDir(Directory * dir,int xpos, int ypos)
 	int skip = 0;
 	int pos = 0;
 	int idx = 0;
+  const char *typestr = NULL;
 	Directory * cwd = GETCWD;
 
 	//clr(xpos,ypos+1,DIRW,DIRH);
 
-
 	if (dir==NULL)
-	{
-		//cputs("no directory");
-		return;
-	}
+    {
+      //cputs("no directory");
+      return;
+    }
 	else
-	{
-		revers(0);
-		current = dir->firstelement;
-		idx=0;
-		while (current!=NULL)
-		{
-			if (current==dir->selected)
-			{
-				break;
-			}
-			idx++;
-			current=current->next;
-		}
+    {
+      revers(0);
+      current = dir->firstelement;
+      idx=0;
+      while (current!=NULL)
+        {
+          if (current==dir->selected)
+            {
+              break;
+            }
+          idx++;
+          current=current->next;
+        }
 
+      page=idx/DIRH;
+      skip=page*DIRH;
 
-		page=idx/DIRH;
-		skip=page*DIRH;
+      current = dir->firstelement;
 
-		current = dir->firstelement;
+      // skip pages
+      if (page>0)
+        {
+          for (idx=0;(idx<skip) && current!=NULL;idx++)
+            {
+              current=current->next;
+              pos++;
+            }
+        }
 
-		// skip pages
-		if (page>0)
-		{
-			for (idx=0;(idx<skip) && current!=NULL;idx++)
-			{
-			  current=current->next;
-			  pos++;
-			}
-		}
-
-		idx=0;
+      idx=0;
 
 			while (current!=NULL && idx<DIRH)
-			{
-				gotoxy(xpos,ypos+idx+1);
-				if ((current== dir->selected) && (cwd==dir))
-				{
-					revers(1);
-				}
-				if (current->flags!=0)
-				{
-		  			textcolor(COLOR_WHITE);
-					cputc('>');
-				}
-				else
-				{
-					cputc(' ');
-				}
+        {
+          gotoxy(xpos,ypos+idx+1);
+          if ((current == dir->selected) && (cwd == dir))
+            {
+              revers(1);
+            }
+          if (current->flags!=0)
+            {
+              textcolor(COLOR_WHITE);
+              cputc('>');
+            }
+          else
+            {
+              cputc(' ');
+            }
 
-				cprintf("%-4d%-16s %2s",current->dirent.size,current->dirent.name,types[current->dirent.type]);
-  			revers(0);
-  			textcolor(textc);
+          if (current->dirent.type < 8)
+            {
+              typestr = types[current->dirent.type];
+            }
+          else
+            {
+              if (current->dirent.type == CBM_T_OTHER)
+                typestr = "oth";
+              else
+                typestr = "doj";
+            }
+          cprintf("%-4d%-16s %2s", current->dirent.size, current->dirent.name, typestr);
+          revers(0);
+          textcolor(textc);
 
-			  current=current->next;
-			  ++idx;
-
-			}
+          current=current->next;
+          ++idx;
+        }
 
 			// clear empty lines
 			for (;idx<DIRH;idx++)
-			{
-				gotoxy(xpos,ypos+idx+1);
-				cputs("                         ");
-			}
-
-	}
-
-
-
-
+        {
+          gotoxy(xpos,ypos+idx+1);
+          cputs("                         ");
+        }
+    }
 }
-
 
 void printElement(Directory * dir,int xpos, int ypos)
 {
 	DirElement * current;
 
-
-//	char line[MENUX];
+  //	char line[MENUX];
 
 	int page = 0;
 	int idx = 0;
@@ -886,74 +878,67 @@ void printElement(Directory * dir,int xpos, int ypos)
 	Directory * cwd = GETCWD;
 
 	if (dir==NULL || dir->firstelement == NULL)
-	{
-		return;
-	}
+    {
+      return;
+    }
 	else
-	{
-		revers(0);
-		current = dir->firstelement;
+    {
+      revers(0);
+      current = dir->firstelement;
 
-		pos = dir->pos;
+      pos = dir->pos;
 
-		idx=pos;
-		while (current!=NULL && (idx--) >0)
-		{
-			current=current->next;
-		}
+      idx=pos;
+      while (current!=NULL && (idx--) >0)
+        {
+          current=current->next;
+        }
 
-		page=pos/DIRH;
-		yoff=pos-(page*DIRH);
+      page=pos/DIRH;
+      yoff=pos-(page*DIRH);
 
-		gotoxy(xpos,ypos+yoff+1);
-		if ((current== dir->selected) && (cwd==dir))
-		{
-			revers(1);
-		}
-		if (current->flags!=0)
-		{
-  			textcolor(COLOR_WHITE);
-			cputc('>');
-		}
-		else
-		{
-			cputc(' ');
-		}
+      gotoxy(xpos,ypos+yoff+1);
+      if ((current== dir->selected) && (cwd==dir))
+        {
+          revers(1);
+        }
+      if (current->flags!=0)
+        {
+          textcolor(COLOR_WHITE);
+          cputc('>');
+        }
+      else
+        {
+          cputc(' ');
+        }
 
-		cprintf("%-4d%-16s %2s",current->dirent.size,current->dirent.name,types[current->dirent.type]);
-		revers(0);
-		textcolor(textc);
-
-	}
-
-
-
-
+      cprintf("%-4d%-16s %2s",current->dirent.size,current->dirent.name,types[current->dirent.type]);
+      revers(0);
+      textcolor(textc);
+    }
 }
-
-
 
 void doFormat(void)
 {
 	sprintf(linebuffer,"Format device %d\n",devices[context]);
 	newscreen(linebuffer);
 	if (really())
-	{
-		cprintf("\n\rEnter new name: ");
-		scanf ("%s",answer);
-		cprintf("\n\rWorking...");
-		sprintf(linebuffer,"n:%s\n",answer);
-		if(cmd(devices[context],linebuffer)==OK)
-		{
-			clrscr();
-			dirs[context] = readDir(dirs[context],devices[context],context);
-		}
-		else
-		{
-			cputs("ERROR\n\r\n\r");
-			waitKey(0);
-		}
-	}
+    {
+      cputs("\n\rEnter new name: ");
+      scanf ("%s",answer);
+      cputs("\n\rWorking...");
+      sprintf(linebuffer,"n:%s\n",answer);
+      if(cmd(devices[context],linebuffer)==OK)
+        {
+          clrscr();
+          dirs[context] = readDir(dirs[context],devices[context],context);
+        }
+      else
+        {
+          cputs("ERROR\n\r\n\r");
+          waitKey(0);
+        }
+    }
 	updateScreen();
 }
 
@@ -963,31 +948,29 @@ void doRename(void)
 	Directory * cwd = GETCWD;
 
 	if (cwd->selected!=NULL)
-	{
-		sprintf(linebuffer,"Rename file %s on device %d\n",cwd->selected->dirent.name,devices[context]);
-		newscreen(linebuffer);
-		cprintf("\n\rNew name (enter to skip): ");
-		n=scanf ("%s",answer);
-		if (n==1)
-		{
-			cprintf("\n\rWorking...");
-			sprintf(linebuffer,"r:%s=%s\n",answer,cwd->selected->dirent.name);
-			if(cmd(devices[context],linebuffer)==OK)
-			{
-				clrscr();
-				dirs[context] = readDir(dirs[context],devices[context],context);
-			}
-			else
-			{
-				cputs("ERROR\n\r\n\r");
-				waitKey(0);
-			}
-		}
-		updateScreen();
-	}
-
+    {
+      sprintf(linebuffer,"Rename file %s on device %d\n",cwd->selected->dirent.name,devices[context]);
+      newscreen(linebuffer);
+      cputs("\n\rNew name (enter to skip): ");
+      n=scanf ("%s",answer);
+      if (n==1)
+        {
+          cputs("\n\rWorking...");
+          sprintf(linebuffer,"r:%s=%s\n",answer,cwd->selected->dirent.name);
+          if(cmd(devices[context],linebuffer)==OK)
+            {
+              clrscr();
+              dirs[context] = readDir(dirs[context],devices[context],context);
+            }
+          else
+            {
+              cputs("ERROR\n\r\n\r");
+              waitKey(0);
+            }
+        }
+      updateScreen();
+    }
 }
-
 
 void doMakedir(void)
 {
@@ -996,26 +979,25 @@ void doMakedir(void)
 
 	sprintf(linebuffer,"Make directory on device %d\n",cwd->selected->dirent.name,devices[context]);
 	newscreen(linebuffer);
-	cprintf("\n\rName (enter to skip): ");
+	cputs("\n\rName (enter to skip): ");
 	n=scanf ("%s",answer);
 	if (n==1)
-	{
-		cprintf("\n\rWorking...");
-		sprintf(linebuffer,"md:%s\n",answer);
-		if(cmd(devices[context],linebuffer)==OK)
-		{
-			clrscr();
-			dirs[context] = readDir(dirs[context],devices[context],context);
-		}
-		else
-		{
-			cputs("ERROR\n\r\n\r");
-			waitKey(0);
-		}
-	}
+    {
+      cputs("\n\rWorking...");
+      sprintf(linebuffer,"md:%s\n",answer);
+      if(cmd(devices[context],linebuffer)==OK)
+        {
+          clrscr();
+          dirs[context] = readDir(dirs[context],devices[context],context);
+        }
+      else
+        {
+          cputs("ERROR\n\r\n\r");
+          waitKey(0);
+        }
+    }
 	updateScreen();
 }
-
 
 int cmd(unsigned char device, unsigned char * cmd)
 {
@@ -1023,17 +1005,14 @@ int cmd(unsigned char device, unsigned char * cmd)
 	unsigned char f;
 
 	if ((f = cbm_open(15, device, 15, cmd)) != 0)
-	{
-	  cputs("ERROR");
-	  return(ERROR);
+    {
+      cputs("ERROR");
+      return(ERROR);
     }
-  	cbm_close(15);
+  cbm_close(15);
 	return OK;
 
 }
-
-
-
 
 int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE type)
 {
@@ -1042,52 +1021,52 @@ int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE 
 	char deststring[30];
 
 	if( cbm_open (6,srcdevice,CBM_READ,srcfile) != 0)
-	{
-		cputs("Can't open input file!\n");
-		return ERROR;
-	}
+    {
+      cputs("Can't open input file!\n");
+      return ERROR;
+    }
 
 	// create destination string with filetype like "FILE,P"
 	sprintf(deststring,"%s,%c",destfile,shorttypes[type]);
 	if( cbm_open (7,destdevice,CBM_WRITE,deststring) != 0)
-	{
-		cputs("Can't open output file\n");
-		cbm_close (6);
-		return ERROR;
-	}
+    {
+      cputs("Can't open output file\n");
+      cbm_close (6);
+      return ERROR;
+    }
 
 	linebuffer = (unsigned char *) malloc(BUFFERSIZE);
 
 	cprintf("%-16s:",srcfile);
 	do
-	{
+    {
 	  	cputs("R");
-		length = cbm_read (6, linebuffer, BUFFERSIZE);
+      length = cbm_read (6, linebuffer, BUFFERSIZE);
 
-		if (length>=0)
-		{
+      if (length>=0)
+        {
           //cprintf("%d",length);
-	      cputs("W");
-  		  if (cbm_write(7, linebuffer, length) != length)
-  		  {
-  			cputc(' ');
-  			revers(1);
-  			textcolor(COLOR_VIOLET);
-  			cputs("ERROR");
-  			textcolor(textc);
-  			revers(0);
-  			cputc(13);
-  			cputc(10);
-			free(linebuffer);
-			cbm_close (6);
-			cbm_close (7);
-			return ERROR;
-	      }
+          cputs("W");
+          if (cbm_write(7, linebuffer, length) != length)
+            {
+              cputc(' ');
+              revers(1);
+              textcolor(COLOR_VIOLET);
+              cputs("ERROR");
+              textcolor(textc);
+              revers(0);
+              cputc(13);
+              cputc(10);
+              free(linebuffer);
+              cbm_close (6);
+              cbm_close (7);
+              return ERROR;
+            }
           //cprintf("%d",length);
 
-	    }
+        }
     }
-    while(length==BUFFERSIZE);
+  while(length==BUFFERSIZE);
 	free(linebuffer);
 	cbm_close (6);
 	cbm_close (7);
@@ -1102,26 +1081,36 @@ int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE 
 }
 
 /*
-int printErrorChannel(BYTE device)
-{
+  int printErrorChannel(BYTE device)
+  {
   unsigned char buf[128];
   unsigned char msg[100]; // should be large enough for all messages
   unsigned char e, t, s;
 
   if (cbm_open(15, device, 15, "") == 0)
   {
-    if (cbm_read(1, buf, sizeof(buf)) < 0) {
-      puts("can't read error channel");
-      return(1);
-    }
-    cbm_close(15);
+  if (cbm_read(1, buf, sizeof(buf)) < 0) {
+  puts("can't read error channel");
+  return(1);
+  }
+  cbm_close(15);
   }
   if (	sscanf(buf, "%hhu, %[^,], %hhu, %hhu", &e, msg, &t, &s) != 4) {
-    puts("parse error");
-    puts(buf);
-    return(2);
+  puts("parse error");
+  puts(buf);
+  return(2);
   }
   printf("%hhu,%s,%hhu,%hhu\n", (int) e, msg, (int) t, (int) s);
   return(0);
-}
+  }
 */
+
+void
+doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
+{
+	clrscr();
+	gotoxy(0,0);
+	cprintf("copy %i %i", deviceFrom,deviceTo);
+	waitKey(0);
+  
+}

@@ -1,16 +1,16 @@
-src/%.o: src/%.c include/%.h
-	cc65 -O -I include -t c64 $<
-	ca65 -I include -t c64 src/$$(basename $< .c).s
+#src/%.o: src/%.c include/%.h
+#	cc65 -O -I include -t c64 $<
+#	ca65 -I include -t c64 src/$$(basename $< .c).s
 
-D64=dc10c.d64
-all: dc64 dc128 dc1280 dcp4 dcpet8 db64 db128 db1280 dbp4 dbpet8 db610 dc610
+D64=dracopy10doj.d64
+all: dc64 # dc128 dc1280 dcp4 dcpet8 db64 db128 db1280 dbp4 dbpet8 db610 dc610
 	$(RM) $(D64)
-	c1541 -format dracopy,dc d64 $(D64)
+	c1541 -format 'dracopy 1.0doj,dc' d64 $(D64)
 	for i in $^ ; do c1541 -attach $(D64) -write $$i ; done
 
 X64?=x64sc
 x64:	all
-	c1541 -format dracopy,dc d64 9.d64
+	c1541 -format 'number nine,dc' d64 9.d64
 	$(X64) -8 $(D64) -autostart $(D64) -9 9.d64
 
 dc64: src/screen.c src/dc.c src/cat.c src/dir.c src/base.c
