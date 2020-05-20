@@ -108,7 +108,8 @@ int main (void){
 		}
 	}
 	device = 0;
-	reu = !em_install(&EMD);
+	//reu = !em_install(&EMD);
+  reu = em_load_driver ("c64-reu.emd");
 	initScreen(COLOR_BORDER, COLOR_BACKGROUND, COLOR_TEXT);
 	updateScreen();
 	refreshDir();
@@ -273,8 +274,15 @@ void mainLoop(void){
 				break;
 
 			case 'e':
-				if(!reu) reu = !em_install(&EMD);
-				else reu = em_uninstall();
+				if (! reu)
+          {
+            //reu = !em_install(&EMD);
+            reu = em_load_driver ("c64-reu.emd");
+          }
+				else
+          {
+            reu = em_uninstall();
+          }
 				updateMenu();
 				break;
 

@@ -4,7 +4,7 @@ SYS?=c64
 NAME=dracopy10e
 CSRC=base.c cat.c dbc.c dir.c screen.c
 ASRC=
-DRIVE?=8
+X64?=x64sc
 
 ############## you should hardly need to configure beyond this point
 
@@ -40,7 +40,7 @@ $(D64):	$(EXE)
 	c1541 $(D64) -write $(EXE)
 
 x64:	$(D64)
-	x64 -autostartprgmode 1 -autostart $(EXE)
+	$(X64) -autostartprgmode 1 -autostart $(EXE)
 
 %.o:	%.c
 	$(CC) $(CFLAGS) $<
