@@ -74,7 +74,32 @@ char linebuffer[SCREENW+1];
 char answer[40];
 
 Directory * dirs[] = {NULL,NULL};
-const char * types [8] = {"DEL","SEQ","PRG","USR","REL","CBM","DIR","---"};
+
+const char *value2hex = "0123456789abcdef";
+
+const char *reg_types[] = { "SEQ","PRG","URS","REL","VRP" };
+const char *oth_types[] = { "DEL","CBM","DIR","LNK","OTH","HDR"};
+char bad_type[4];
+const char*
+fileTypeToStr(BYTE ft)
+{
+  if (ft & _CBM_T_REG)
+    {
+      ft &= ~_CBM_T_REG;
+      if (ft <= 4)
+        return reg_types[ft];
+    }
+  else
+    {
+      if (ft <= 5)
+        return oth_types[ft];
+    }
+  bad_type[0] = '?';
+  bad_type[1] = value2hex[ft >> 4];
+  bad_type[2] = value2hex[ft & 15];
+  bad_type[3] = 0;
+  return bad_type;
+}
 
 // some filetypes are not yet supported, using u instead
 // char shorttypes [8] = {'d','s','p','u','l','c','v','-' };
@@ -477,7 +502,7 @@ void deleteSelected(void)
       if (really())
         {
           lastSel = cwd->selected;
-          cprintf("%s.%s",cwd->selected->dirent.name,types[cwd->selected->dirent.type]);
+          cprintf("%s.%s",cwd->selected->dirent.name,fileTypeToStr(cwd->selected->dirent.type));
           if (cwd->selected->dirent.type==DIRTYPE)
             {
               sprintf(linebuffer,"rd:%s",cwd->selected->dirent.name);
@@ -534,25 +559,17 @@ void deleteSelected(void)
 
 void showDir(Directory * dir, BYTE mycontext)
 {
-	char * title;
-	if (dir!=NULL)
-    {
-      title=dir->name;
-    }
-	else
-    {
-      title="    no directory";
-    }
+	char *title = dir ? dir->name : "    no directory";
   if (mycontext > 1)
     return;
 	if(mycontext==context)
     {
-      sprintf(linebuffer, ">S%02i: %s", (int)devices[mycontext], title);
+      sprintf(linebuffer, ">%02i:%s", (int)devices[mycontext], title);
       textcolor(COLOR_WHITE);
     }
 	else
     {
-      sprintf(linebuffer, " D%02i: %s", (int)devices[mycontext], title);
+      sprintf(linebuffer, " %02i:%s", (int)devices[mycontext], title);
       textcolor(textc);
     }
 
@@ -706,7 +723,7 @@ void doDeleteMulti(void)
         {
           if (current->flags==1)
             {
-              cprintf("%s.%s\n\r",current->dirent.name,types[current->dirent.type]);
+              cprintf("%s.%s\n\r", current->dirent.name, fileTypeToStr(current->dirent.type));
             }
           current=current->next;
         }
@@ -718,7 +735,7 @@ void doDeleteMulti(void)
             {
               if (current->flags==1)
                 {
-                  cprintf("%s.%s",current->dirent.name,types[current->dirent.type]);
+                  cprintf("%s.%s", current->dirent.name, fileTypeToStr(current->dirent.type));
                   sprintf(linebuffer,"s:%s\n",current->dirent.name);
                   if (cmd(devices[context],linebuffer)==OK)
                     {
@@ -770,6 +787,30 @@ void execute(char * prg, BYTE device)
 	*((unsigned char *)KBNUM)=2;
 }
 
+void
+printElementPriv(Directory * dir, DirElement *current, int xpos, int ypos)
+{
+	Directory * cwd = GETCWD;
+  gotoxy(xpos,ypos);
+  if ((current == dir->selected) && (cwd == dir))
+    {
+      revers(1);
+    }
+  if (current->flags!=0)
+    {
+      textcolor(COLOR_WHITE);
+      cputc('>');
+    }
+  else
+    {
+      cputc(' ');
+    }
+
+  cprintf("%-4d%-16s %s", current->dirent.size, current->dirent.name, fileTypeToStr(current->dirent.type));
+  revers(0);
+  textcolor(textc);
+}
+
 void printDir(Directory * dir,int xpos, int ypos)
 {
 	DirElement * current;
@@ -779,7 +820,6 @@ void printDir(Directory * dir,int xpos, int ypos)
 	int pos = 0;
 	int idx = 0;
   const char *typestr = NULL;
-	Directory * cwd = GETCWD;
 
 	//clr(xpos,ypos+1,DIRW,DIRH);
 
@@ -811,53 +851,21 @@ void printDir(Directory * dir,int xpos, int ypos)
       // skip pages
       if (page>0)
         {
-          for (idx=0;(idx<skip) && current!=NULL;idx++)
+          for (idx=0; (idx < skip) && (current != NULL); ++idx)
             {
               current=current->next;
               pos++;
             }
         }
 
-      idx=0;
-
-			while (current!=NULL && idx<DIRH)
+			for(idx=0; (current != NULL) && (idx < DIRH); ++idx)
         {
-          gotoxy(xpos,ypos+idx+1);
-          if ((current == dir->selected) && (cwd == dir))
-            {
-              revers(1);
-            }
-          if (current->flags!=0)
-            {
-              textcolor(COLOR_WHITE);
-              cputc('>');
-            }
-          else
-            {
-              cputc(' ');
-            }
-
-          if (current->dirent.type < 8)
-            {
-              typestr = types[current->dirent.type];
-            }
-          else
-            {
-              if (current->dirent.type == CBM_T_OTHER)
-                typestr = "oth";
-              else
-                typestr = "doj";
-            }
-          cprintf("%-4d%-16s %2s", current->dirent.size, current->dirent.name, typestr);
-          revers(0);
-          textcolor(textc);
-
-          current=current->next;
-          ++idx;
+          printElementPriv(dir, current, xpos, ypos+idx+1);
+          current = current->next;
         }
 
 			// clear empty lines
-			for (;idx<DIRH;idx++)
+			for (;idx < DIRH; ++idx)
         {
           gotoxy(xpos,ypos+idx+1);
           cputs("                         ");
@@ -875,7 +883,6 @@ void printElement(Directory * dir,int xpos, int ypos)
 	int idx = 0;
 	int pos = 0;
 	int yoff=0;
-	Directory * cwd = GETCWD;
 
 	if (dir==NULL || dir->firstelement == NULL)
     {
@@ -897,24 +904,7 @@ void printElement(Directory * dir,int xpos, int ypos)
       page=pos/DIRH;
       yoff=pos-(page*DIRH);
 
-      gotoxy(xpos,ypos+yoff+1);
-      if ((current== dir->selected) && (cwd==dir))
-        {
-          revers(1);
-        }
-      if (current->flags!=0)
-        {
-          textcolor(COLOR_WHITE);
-          cputc('>');
-        }
-      else
-        {
-          cputc(' ');
-        }
-
-      cprintf("%-4d%-16s %2s",current->dirent.size,current->dirent.name,types[current->dirent.type]);
-      revers(0);
-      textcolor(textc);
+      printElementPriv(dir, current, xpos, ypos+yoff+1);
     }
 }
 
@@ -1063,7 +1053,6 @@ int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE 
               return ERROR;
             }
           //cprintf("%d",length);
-
         }
     }
   while(length==BUFFERSIZE);

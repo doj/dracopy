@@ -71,7 +71,8 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
 	do
     {
       DirElement * current = (DirElement *) malloc(sizeof(DirElement));
-      memset (current,0,sizeof(DirElement));
+      memset(current,0,sizeof(DirElement));
+      memset(&(current->dirent), 0x44, sizeof(current->dirent));
 
       stat=myCbmReadDir(8, &(current->dirent));
       if (stat==0)
@@ -96,11 +97,18 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
             {
               // initialize directory
               dir = (Directory *) malloc(sizeof(Directory));
-              memcpy(dir->name, current->dirent.name, 16);
-              dir->name[16] = ',';
-              dir->name[17] = current->dirent.type;
-              dir->name[18] = current->dirent.access;
-              dir->name[19] = 0;
+              if (current->dirent.type == _CBM_T_HEADER)
+                {
+                  memcpy(dir->name, current->dirent.name, 16);
+                  dir->name[16] = ',';
+                  dir->name[17] = current->dirent.size & 255;
+                  dir->name[18] = current->dirent.size >> 8;
+                  dir->name[19] = 0;
+                }
+              else
+                {
+                  strcpy(dir->name, "unknown type");
+                }
               dir->firstelement=NULL;
               dir->selected=NULL;
               dir->flags = 0;
@@ -232,7 +240,6 @@ myCbmReadDir (unsigned char device, struct cbm_dirent* l_dirent)
 
 #define X(a,b,c) byte==a && byte2==b && byte3==c
 
-#if 1
     if (X('p','r','g'))
       {
         l_dirent->type = CBM_T_PRG;
@@ -244,6 +251,10 @@ myCbmReadDir (unsigned char device, struct cbm_dirent* l_dirent)
     else if (X('u','s','r'))
       {
         l_dirent->type = CBM_T_USR;
+      }
+    else if (X('d','e','l'))
+      {
+        l_dirent->type = CBM_T_DEL;
       }
     else if (X('r','e','l'))
       {
@@ -261,11 +272,16 @@ myCbmReadDir (unsigned char device, struct cbm_dirent* l_dirent)
       {
         l_dirent->type = CBM_T_VRP;
       }
+    else if (X('l','n','k'))
+      {
+        l_dirent->type = CBM_T_LNK;
+      }
     else if (byte3 = ' ')
       {
         // reading the disk name line
-        l_dirent->type = byte;
-        l_dirent->access = byte2;
+        l_dirent->type = _CBM_T_HEADER;
+        l_dirent->size = byte | (byte2 << 8);
+        l_dirent->access = 0; // TODO: read the 0x1A thing
 
         while (cbm_k_basin() != 0) {
           if (cbm_k_readst () != 0) { /* ### Included to prevent */
@@ -281,33 +297,6 @@ myCbmReadDir (unsigned char device, struct cbm_dirent* l_dirent)
       {
         l_dirent->type = CBM_T_OTHER;
       }
-#else
-    switch (byte) {
-    case 's':
-      l_dirent->type = CBM_T_SEQ;
-      break;
-    case 'p':
-      l_dirent->type = CBM_T_PRG;
-      break;
-    case 'u':
-      l_dirent->type = CBM_T_USR;
-      break;
-    case 'r':
-      l_dirent->type = CBM_T_REL;
-      break;
-    case 'c':
-      l_dirent->type = CBM_T_CBM;
-      break;
-    case 'd':
-      l_dirent->type = CBM_T_DIR;
-      break;
-    case 'v':
-      l_dirent->type = CBM_T_VRP;
-      break;
-    default:
-      l_dirent->type = CBM_T_OTHER;
-    }
-#endif
 
     // read access
     byte = cbm_k_basin ();
