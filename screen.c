@@ -1,3 +1,7 @@
+/* -*- c-basic-offset: 2; tab-width: 2; indent-tabs-mode: nil -*-
+ * vi: set shiftwidth=2 tabstop=2 expandtab:
+ * :indentSize=2:tabSize=2:noTabs=true:
+ */
 /*
  * screen.c
  * Created on: 22.04.2018
@@ -21,45 +25,45 @@ static unsigned char screen_borderc;
 static unsigned char screen_textc;
 
 void drawFrame(char *title, unsigned char xpos, unsigned char ypos, unsigned char xsize, unsigned char ysize){
-	
+
 	unsigned char h1 = 0;
-	
+
 	gotoxy(xpos, ypos);
 	cputc(CH_ULCORNER);
-	
+
 	if(title) {
 		h1 = (xsize - 2 - strlen(title)) / 2;
 		chline(h1);
-		
+
 		revers(1);
 		cputs(title);
 		revers(0);
-		
+
 		chline(xsize - h1 - strlen(title) - 2);
 	}
 	else chline(xsize - 2);
-	
+
 	cputc(CH_URCORNER);
 	cvlinexy(xpos, ypos + 1, ysize - 2);
-	
+
 	cputc(CH_LLCORNER);
 	chline(xsize - 2);
-	
+
 	cputc(CH_LRCORNER);
 	cvlinexy(xpos + xsize - 1, ypos + 1, ysize - 2);
 }
 
 void initScreen(unsigned char border, unsigned char bg, unsigned char text){
-	
+
 	screen_borderc = bordercolor(border);
 	screen_bgc = bgcolor(bg);
 	screen_textc = textcolor(text);
-	
+
 	clrscr();
 }
 
 void exitScreen(void){
-	
+
 	#ifdef __C128__
 		if(*(char *)0x00d7 == 128){
 			screen_bgc = COLOR_BACKGROUND;

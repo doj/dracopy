@@ -1,3 +1,7 @@
+/* -*- c-basic-offset: 2; tab-width: 2; indent-tabs-mode: nil -*-
+ * vi: set shiftwidth=2 tabstop=2 expandtab:
+ * :indentSize=2:tabSize=2:noTabs=true:
+ */
 /*
  * cat.c
  * Created on: 22.04.2018
@@ -15,13 +19,13 @@
 #include <base.h>
 
 void cathex(unsigned char drive, char *currentfile, unsigned char ftype){
-	
+
 	unsigned char c;
 	unsigned char pchar;
 	unsigned char length;
 	unsigned int offset = 0;
 	char cbuffer[8];
-	
+
 	cbm_open(6, drive, ftype ? CBM_SEQ : CBM_READ, currentfile);
 	clrscr();
 	do{
@@ -61,13 +65,13 @@ void cathex(unsigned char drive, char *currentfile, unsigned char ftype){
 }
 
 void catasc(unsigned char drive, char *currentfile, unsigned char ftype){
-	
+
 	unsigned char pchar;
 	unsigned char length;
 	unsigned char c;
 	char last;
 	char cbuffer[40];
-	
+
 	cbm_open(6, drive, ftype ? CBM_SEQ : CBM_READ, currentfile);
 	clrscr();
 	do{

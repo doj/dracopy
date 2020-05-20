@@ -1,3 +1,7 @@
+/* -*- c-basic-offset: 2; tab-width: 2; indent-tabs-mode: nil -*-
+ * vi: set shiftwidth=2 tabstop=2 expandtab:
+ * :indentSize=2:tabSize=2:noTabs=true:
+ */
 /*
  * dir.h
  * Created on: 22.04.2018

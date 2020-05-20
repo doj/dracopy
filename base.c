@@ -1,3 +1,7 @@
+/* -*- c-basic-offset: 2; tab-width: 2; indent-tabs-mode: nil -*-
+ * vi: set shiftwidth=2 tabstop=2 expandtab:
+ * :indentSize=2:tabSize=2:noTabs=true:
+ */
 /*
  * base.c
  * Created on: 22.04.2018
@@ -16,8 +20,8 @@
 #include <ctype.h>
 #include <base.h>
 
-unsigned char waitKey(unsigned char flag){
-	
+unsigned char waitKey(unsigned char flag)
+{
 	revers(1);
 	textcolor(COLOR_SIGNAL);
 	cputs("    Press any key    ");
@@ -28,37 +32,37 @@ unsigned char waitKey(unsigned char flag){
 }
 
 unsigned char really(void){
-	
+
 	char c;
-	
+
 	cputs(" (y/n)? ");
 	c = cgetc();
 	return (c == 'y');
 }
 
 unsigned char textInput(unsigned char xpos, unsigned char ypos, char *name){
-	
+
 	unsigned char idx;
 	char c;
-	
+
 	idx = strlen(name);
 	cursor(1);
 	cputsxy(xpos, ypos, name);
 	gotoxy(xpos + idx, ypos);
-	
+
 	while(1){
 		c = cgetc();
 		switch (c){
-		
+
 		case CH_ESC:
 			cursor(0);
 			return(0);
-			
+
 		case CH_ENTER:
 			name[strlen(name)] = '\0';
 			cursor(0);
 			return(idx);
-			
+
 		case CH_DEL:
 			if(idx){
 				--idx;
@@ -68,21 +72,21 @@ unsigned char textInput(unsigned char xpos, unsigned char ypos, char *name){
 				gotoxy(xpos + idx, ypos);
 			}
 			break;
-			
+
 		case CH_CURS_LEFT:
 			if(idx){
 				--idx;
 				gotoxy(xpos + idx, ypos);
 			}
 			break;
-			
+
 		case CH_CURS_RIGHT:
 			if(idx < strlen(name)){
 				++idx;
 				gotoxy(xpos + idx, ypos);
 			}
 			break;
-			
+
 		default:
 			if(idx == 16) continue;
 			if(isprint(c) || isdigit(c)){
@@ -97,6 +101,6 @@ unsigned char textInput(unsigned char xpos, unsigned char ypos, char *name){
 }
 
 void delay(unsigned int ti){
-	
+
 	while(--ti);
 }

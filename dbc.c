@@ -1,3 +1,7 @@
+/* -*- c-basic-offset: 2; tab-width: 2; indent-tabs-mode: nil -*-
+ * vi: set shiftwidth=2 tabstop=2 expandtab:
+ * :indentSize=2:tabSize=2:noTabs=true:
+ */
 /*
  * dbc.c
  * Created on: 22.04.2018
@@ -91,7 +95,7 @@ const char sectors[] = {21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 
 						19, 19, 19, 19, 19, 19, 19,
 						18, 18, 18, 18, 18, 18,
 						17, 17, 17, 17, 17};
-						
+
 int main (void){
 	#ifdef __C128__
 		if(*(char *)0x00d7 == 0x80) *(char *)0xd030 = 1;
@@ -111,12 +115,12 @@ int main (void){
 	mainLoop();
 	exitScreen();
 	em_uninstall();
-	
+
 	return 0;
 }
 
 void updateScreen(void){
-	
+
 	clrscr();
 	showDir(cwd);
 	updateMenu();
@@ -124,7 +128,7 @@ void updateScreen(void){
 }
 
 void updateMenu(void){
-	
+
 	revers(0);
 	textcolor(COLOR_MENU);
 	drawFrame(strupper(strcpy(name, drivetype[drvtype[device]])), MENUX, MENUY, MENUW, MENUH + 1);
@@ -153,7 +157,7 @@ void updateMenu(void){
 }
 
 void clearBar(void){
-	
+
 	revers(1);
 	textcolor(COLOR_MENU);
 	cclearxy(0, BOTTOM, 40);
@@ -163,7 +167,7 @@ void clearBar(void){
 }
 
 void refreshDir(void){
-	
+
 	if(!dirlevel[device]){
 		changeDir(device, NULL);
 		dirlevel[device] = 0;
@@ -173,41 +177,41 @@ void refreshDir(void){
 }
 
 void mainLoop(void){
-	
+
 	unsigned char exitflag = 0;
-	
+
 	do{
 		c = cgetc();
 		switch(c){
-			
+
 			case CH_F1:
 				refreshDir();
 				break;
-				
+
 			case CH_F3:
 			case '+':
 				doDeviceUp();
 				break;
-				
+
 			case CH_F5:
 			case '-':
 				doDeviceDown();
 				break;
-				
+
 			case CH_F7:
 				if(cwd->selected && cwd->selected->dirent.type != CBM_T_DIR){
 					catasc(drive[device], cwd->selected->dirent.name, cwd->selected->dirent.type);
 					updateScreen();
 				}
 				break;
-				
+
 			case CH_F8:
 				if(cwd->selected && cwd->selected->dirent.type != CBM_T_DIR){
 					cathex(drive[device], cwd->selected->dirent.name, cwd->selected->dirent.type);
 					updateScreen();
 				}
 				break;
-				
+
 			case ' ':
 				cwd->selected->flags = !cwd->selected->flags;
 				/*if(cwd->selected->next){
@@ -216,70 +220,70 @@ void mainLoop(void){
 				}*/
 				showDir(cwd);
 				break;
-				
+
 			case '*':
 				doToggleAll();
 				break;
-				
+
 			case 'd':
 				if(cwd) doDelete();
 				break;
-				
+
 			case 'r':
 				if(cwd) doRename();
 				break;
-				
+
 			case 'n':
 				if(cwd) doRelabel();
 				break;
-				
+
 			case 'm':
 				if(cwd) doMakeDir();
 				break;
-				
+
 			case 'i':
 				if(cwd) doMakeImage();
 				break;
-				
+
 			case 'k':
 				if(cwd) doDiskCopy();
 				break;
-				
+
 			case 'c':
 			case 'v':
 				if(cwd) doFileCopy();
 				break;
-				
+
 			case 's':
 				sortDir(cwd);
 				showDir(cwd);
 				break;
-				
+
 			case 'f':
 				doFormat();
 				break;
-				
+
 			case 'o':
 				menu = !menu;
 				updateMenu();
 				break;
-				
+
 			case 'q':
 				exitflag = 1;
 				break;
-				
+
 			case 'e':
 				if(!reu) reu = !em_install(&EMD);
 				else reu = em_uninstall();
 				updateMenu();
 				break;
-				
+
 			case 't':
 				cwd->selected = cwd->firstelement;
 				cwd->pos = 0;
 				printDir(cwd);
 				break;
-				
+
 			case 'b':
 				current = cwd->firstelement;
 				pos = 0;
@@ -294,12 +298,12 @@ void mainLoop(void){
 				cwd->pos = pos;
 				printDir(cwd);
 				break;
-				
+
 			case '.':
 				about();
 				break;
-				
-			case CH_ENTER: 
+
+			case CH_ENTER:
 			case 'l':
 				if(cwd->selected && cwd->selected->dirent.type == CBM_T_PRG){
 					execute(cwd->selected->dirent.name, drive[device]);
@@ -308,24 +312,24 @@ void mainLoop(void){
 			case CH_CURS_DOWN:
 				doDown();
 				break;
-				
+
 			case CH_CURS_UP:
 				doUp();
 				break;
-				
+
 			case CH_CURS_RIGHT:
 				doRight();
 				break;
-				
+
 			case CH_CURS_LEFT:
 				doLeft();
 				break;
 		}
 	}
 	while(!exitflag);
-	
+
 	if(cwd) freeDir(&cwd);
-	
+
 	for(device = 0; device < sizeof drive; ++device){
 		for(dirlevel[device] = 0; dirlevel[device] < MAXLEVEL; ++dirlevel[device]){
 			if(dirname[device][dirlevel[device]]) free(dirname[device][dirlevel[device]]);
@@ -334,7 +338,7 @@ void mainLoop(void){
 }
 
 void doDeviceUp(void){
-	
+
 	do if(++device == sizeof drive) device = 0;
 	while(!drvtype[device]);
 	updateMenu();
@@ -342,7 +346,7 @@ void doDeviceUp(void){
 }
 
 void doDeviceDown(void){
-	
+
 	do if(--device < 0) device = sizeof drive - 1;
 	while(!drvtype[device]);
 	updateMenu();
@@ -350,13 +354,13 @@ void doDeviceDown(void){
 }
 
 void doDown(void){
-	
+
 	if(cwd->selected && cwd->selected->next){
 		cwd->selected = cwd->selected->next;
 		pos = cwd->pos;
 		lastpage = pos / DIRH;
 		nextpage = (pos + 1) / DIRH;
-		
+
 		if(lastpage != nextpage){
 			++cwd->pos;
 			printDir(cwd);
@@ -370,13 +374,13 @@ void doDown(void){
 }
 
 void doUp(void){
-	
+
 	if(cwd->selected && cwd->selected->previous){
 		cwd->selected = cwd->selected->previous;
 		pos = cwd->pos;
 		lastpage = pos / DIRH;
 		nextpage = (pos - 1) / DIRH;
-		
+
 		if(lastpage != nextpage){
 			--cwd->pos;
 			printDir(cwd);
@@ -390,12 +394,12 @@ void doUp(void){
 }
 
 void doRight(void){
-	
+
 	if(dirlevel[device] == MAXLEVEL || !strcmp(cwd->selected->dirent.name, ".") || !strcmp(cwd->selected->dirent.name, "..")) return;
-	
+
 	else if(cwd->selected->dirent.type == CBM_T_DIR || diskImage(cwd->selected->dirent.name)){
 		sprintf(lbuffer, "cd:%s", cwd->selected->dirent.name);
-		
+
 		if(!dosCommand(15, drive[device], 15, lbuffer)){
 			if(dirname[device][dirlevel[device]]) free(dirname[device][dirlevel[device]]);
 			strcpy(dirname[device][dirlevel[device]] = (char *)malloc(strlen(cwd->selected->dirent.name) + 1), cwd->selected->dirent.name);
@@ -406,13 +410,13 @@ void doRight(void){
 }
 
 void doLeft(void){
-	
+
 	if(dirlevel[device]){
 		sprintf(lbuffer, "cd:%s", leftarrow);
-		
+
 		if(!dosCommand(15, drive[device], 15, lbuffer)){
 			--dirlevel[device];
-			
+
 			if(diskImage(dirname[device][dirlevel[device]])){
 				imgtype[device] = 0;
 				imgparent[device] = 0;
@@ -423,9 +427,9 @@ void doLeft(void){
 }
 
 unsigned char diskImage(char *currentfile){
-	
+
 	for(idx = 1; idx < sizeof imagetype / sizeof imagetype[0]; ++idx){
-		
+
 		if(strstr(strlower(strcpy(name, currentfile)), imagetype[idx])){
 			imgtype[device] = idx;
 			imgparent[device] = dirlevel[device] + 1;
@@ -436,63 +440,63 @@ unsigned char diskImage(char *currentfile){
 }
 
 void* makePath(unsigned char device){
-	
+
 	struct pwd *fullpath = (struct pwd *)malloc(sizeof(struct pwd));
-	
+
 	fullpath->bottom = (char *)malloc(256);
 	fullpath->top = (char *)malloc(256);
-	
+
 	strcpy(fullpath->bottom, drvtype[device] != VICE ? "/" : "\0");
-	
+
 	for(idx = 0; idx < imgparent[device]; ++idx){
 		strcat(fullpath->bottom, "/");
 		strcat(fullpath->bottom, dirname[device][idx]);
 	}
 	strcpy(fullpath->top, drvtype[device] != VICE ? "/" : "\0");
-	
+
 	for(idx = imgparent[device]; idx < dirlevel[device]; ++idx){
 		strcat(fullpath->top, "/");
 		strcat(fullpath->top, dirname[device][idx]);
 	}
 	strcat(fullpath->top, drvtype[device] != VICE ? "/:" : "/");
-	
+
 	return fullpath;
 }
 
 void changeDir(unsigned char device, struct pwd *path){
-	
+
 	sprintf(lbuffer, "cd%s", drvtype[device] != VICE ? "//" : ":/");
 	sprintf(sbuffer, "cd:%s", leftarrow );
-	
+
 	dosCommand(15, drive[device], 15, lbuffer);
 	dosCommand(15, drive[device], 15, sbuffer);
 	dosCommand(15, drive[device], 15, lbuffer);
-	
+
 	sprintf(lbuffer, drvtype[device] != VICE ? "cd%s" : "cd:%s", path->bottom);
 	dosCommand(15, drive[device], 15, lbuffer);
-	
+
 	sprintf(lbuffer, drvtype[device] != VICE ? "cd%s" : "cd:%s", path->top);
 	dosCommand(15, drive[device], 15, lbuffer);
 }
 
 void doFileCopy(void){
-	
+
 	Directory *srcdir = cwd;
-	
+
 	struct pwd *fullpath = (struct pwd *)malloc(sizeof(struct pwd));
 	struct pwd *srcpath = (struct pwd *)malloc(sizeof(struct pwd));
 	struct pwd *destpath = (struct pwd *)malloc(sizeof(struct pwd));
-	
+
 	unsigned char k;
 	unsigned char srcdevice = device;
 	unsigned char srcimgtype = imgtype[device];
 	unsigned char selectflag = 0;
-	
+
 	srcpath = makePath(device);
 	strcpy(name, dirname[device][imgparent[device] - 1]);
-	
+
 	cwd = readDir(NULL, drive[device]);
-	
+
 	current = cwd->firstelement;
 	pos = 0;
 	while(pos < srcdir->pos){
@@ -502,55 +506,55 @@ void doFileCopy(void){
 	cwd->selected = current;
 	cwd->pos = pos;
 	printDir(cwd);
-	
+
 	while(1){
 	printMessage(COLOR_SIGNAL, "Select dest. drive/dir.   <return> <esc>");
-	
+
 		do{
 			k = cgetc();
 			switch(k){
-				
+
 				case CH_ESC:
 					clearBar();
 					return;
-					
+
 				case CH_F1:
 					refreshDir();
 					break;
-					
+
 				case CH_F3:
 				case '+':
 					doDeviceUp();
 					break;
-					
+
 				case CH_F5:
 				case '-':
 					doDeviceDown();
 					break;
-					
+
 				case CH_CURS_DOWN:
 					doDown();
 					break;
-					
+
 				case CH_CURS_UP:
 					doUp();
 					break;
-					
+
 				case CH_CURS_RIGHT:
 					doRight();
 					break;
-					
+
 				case CH_CURS_LEFT:
 					doLeft();
 					break;
 				case 's':
 					sortDir(cwd);
 					showDir(cwd);
-					break;	
+					break;
 			}
 		}
 		while(k != CH_ENTER);
-		
+
 		if(srcdevice != device && c == 'v'){
 			printMessage(COLOR_SIGNAL, "Can't move to other drives");
 			continue;
@@ -564,19 +568,19 @@ void doFileCopy(void){
 	}
 	destpath = makePath(device);
 	current = srcdir->firstelement;
-	
+
 	while(current){
 		if(current->flags) selectflag = 1;
 		current = current->next;
 	}
 	if(!selectflag) srcdir->selected->flags = 1;
 	current = srcdir->firstelement;
-	
+
 	while(current){
 		if(current->flags == 1){
 			sprintf(lbuffer, (c == 'c') ? "Copying %-16s" : "Moving %-16s", current->dirent.name);
 			printMessage(COLOR_TEXT, lbuffer);
-			
+
 			if(!fileCopy(srcdevice, srcpath, device, destpath, current->dirent.name, current->dirent.type)){
 				if(c == 'v'){
 					changeDir(srcdevice, srcpath);
@@ -592,16 +596,16 @@ void doFileCopy(void){
 	changeDir(device, makePath(device));
 	refreshDir();
 	clearBar();
-	
-	free(fullpath);	
+
+	free(fullpath);
 	free(srcpath);
 	free(destpath);
 }
 
 void doDelete(void){
-	
+
 	unsigned char selectflag = 0;
-	
+
 	current = cwd->firstelement;
 	while(current){
 		if(current->flags) selectflag = 1;
@@ -609,7 +613,7 @@ void doDelete(void){
 	}
 	sprintf(lbuffer, "Delete files/dirs on drive %d", drive[device]);
 	printMessage(COLOR_TEXT, lbuffer);
-	
+
 	if(really()){
 		if(!selectflag) cwd->selected->flags = 1;
 		current = cwd->firstelement;
@@ -618,7 +622,7 @@ void doDelete(void){
 				sprintf(lbuffer, "Deleting %-16s", current->dirent.name);
 				printMessage(COLOR_TEXT, lbuffer);
 				sprintf(lbuffer, current->dirent.type != CBM_T_DIR ? "s:%s" : "rd:%s", current->dirent.name);
-				
+
 				if(dosCommand(15, drive[device], 15, lbuffer) > 1) printMessage(COLOR_SIGNAL, message);
 			}
 			if(kbhit() && cgetc() == CH_ESC) break;
@@ -631,10 +635,10 @@ void doDelete(void){
 }
 
 void doRename(void){
-	
+
 	printMessage(COLOR_TEXT, "Rename:                   <return> <esc>");
 	strcpy(name, cwd->selected->dirent.name);
-	
+
 	if(textInput(8, BOTTOM, name)){
 		if(dosCommand(2, drive[device], CBM_READ, name) != 62){
 			printMessage(COLOR_SIGNAL, "File exists");
@@ -651,13 +655,13 @@ void doRename(void){
 }
 
 void doMakeDir(void){
-	
+
 	printMessage(COLOR_TEXT, "Makedir:                  <return> <esc>");
 	memset(name, 0, sizeof name);
-	
+
 	if(textInput(9, BOTTOM, name)){
 		sprintf(lbuffer, "md:%s", name);
-		
+
 		if(dosCommand(15, drive[device], 15, lbuffer)) printMessage(COLOR_SIGNAL, message);
 		refreshDir();
 		clearBar();
@@ -666,18 +670,18 @@ void doMakeDir(void){
 }
 
 void doFormat(void){
-	
+
 	sprintf(lbuffer, "Format drive %d", drive[device]);
 	printMessage(COLOR_TEXT, lbuffer);
-	
+
 	if(really()){
 		printMessage(COLOR_TEXT, "Name:                     <return> <esc>");
 		memset(name, 0, sizeof name);
-		
+
 		if(textInput(6, BOTTOM, name)){
 			printMessage(COLOR_TEXT, "Formating");
 			sprintf(lbuffer, "n:%s", name);
-			
+
 			if(dosCommand(15, drive[device], 15, lbuffer)) printMessage(COLOR_SIGNAL, message);
 		}
 		refreshDir();
@@ -687,55 +691,55 @@ void doFormat(void){
 }
 
 void doDiskCopy(void){
-	
+
 	Directory *srcdir = cwd;
 	unsigned char srcdevice = device;
-	
+
 	cwd = NULL;
 	while(1){
 		printMessage(COLOR_SIGNAL, "Select dest. drive        <return> <esc>");
-		
+
 		do{
 			c = cgetc();
 			switch(c){
-				
+
 				case CH_ESC:
 					clearBar();
 					return;
-					
+
 				case CH_F1:
 					refreshDir();
 					break;
-					
+
 				case CH_F3:
 				case '+':
 					doDeviceUp();
 					break;
-					
+
 				case CH_F5:
 				case '-':
 					doDeviceDown();
 					break;
-					
+
 				case CH_CURS_DOWN:
 					doDown();
 					break;
-					
+
 				case CH_CURS_UP:
 					doUp();
 					break;
-					
+
 				case CH_CURS_RIGHT:
 					doRight();
 					break;
-					
+
 				case CH_CURS_LEFT:
 					doLeft();
 					break;
 			}
 		}
 		while(c != CH_ENTER);
-		
+
 		if(srcdevice == device){
 			printMessage(COLOR_SIGNAL, "Can't copy to the same drive");
 			continue;
@@ -745,7 +749,7 @@ void doDiskCopy(void){
 	}
 	sprintf(lbuffer, "Copy disk from drive %d to %d", drive[srcdevice], drive[device]);
 	printMessage(COLOR_TEXT, lbuffer);
-	
+
 	if(really()){
 		if(diskCopy(srcdevice, device)) printMessage(COLOR_SIGNAL, message);
 		updateScreen();
@@ -755,7 +759,7 @@ void doDiskCopy(void){
 }
 
 void doToggleAll(void){
-	
+
 	current = cwd->firstelement;
 	while(current){
 		current->flags = !(current->flags);
@@ -765,9 +769,9 @@ void doToggleAll(void){
 }
 
 void showDir(Directory *dir){
-	
+
 	char *title;
-	
+
 	revers(0);
 	if(!dir){
 		title = "No disk";
@@ -779,7 +783,7 @@ void showDir(Directory *dir){
 	sprintf(lbuffer, ">%-16s%5s<", title, sbuffer);
 	textcolor(COLOR_FRAME);
 	drawFrame(lbuffer, 0, 0, DIRW + 2, DIRH + 2);
-	
+
 	if(dir){
 		gotoxy(2, DIRH + 1);
 		cprintf(">%u blocks free<", dir->free);
@@ -789,7 +793,7 @@ void showDir(Directory *dir){
 }
 
 void about(void){
-	
+
 	clrscr();
 	revers(0);
 	cputsxy( 1, 6,  "Draco Browser / Copy V1.0e (Apr.2018)");
@@ -805,7 +809,7 @@ void about(void){
 }
 
 void execute(char *prg, unsigned char drive){
-	
+
 	exitScreen();
 	em_uninstall();
 	gotoxy(0, 2);
@@ -818,10 +822,10 @@ void execute(char *prg, unsigned char drive){
 }
 
 void printDir(Directory *dir){
-	
+
 	unsigned char page;
 	unsigned char skip;
-	
+
 	if(!dir) return;
 	else{
 		current = dir->firstelement;
@@ -833,7 +837,7 @@ void printDir(Directory *dir){
 		}
 		page = idx / DIRH;
 		skip = page * DIRH;
-		
+
 		current = dir->firstelement;
 		if(page > 0){
 			for(idx = 0; (idx < skip) && current; ++idx){
@@ -845,19 +849,19 @@ void printDir(Directory *dir){
 		while(current && idx < DIRH){
 			gotoxy(1, idx + 1);
 			if(current == dir->selected) revers(1);
-			
+
 			if(current->flags){
 				textcolor(COLOR_FRAME);
 				cputc('>');
 			}
 			else cputc(' ');
-			
+
 			sprintf(sbuffer, current->dirent.type == CBM_T_DIR ? leftarrow : "%5u", current->dirent.size);
-			cprintf("%5s %-16.16s %3s", sbuffer, current->dirent.name, current->dirent.type & CBM_T_REG ? filetype[current->dirent.type - 11] : filetype[current->dirent.type]);
-			
+			cprintf("%5s %-16.16s %3s", sbuffer, current->dirent.name, current->dirent.type & _CBM_T_REG ? filetype[current->dirent.type - 11] : filetype[current->dirent.type]);
+
 			revers(0);
 			textcolor(COLOR_TEXT);
-			
+
 			current = current->next;
 			++idx;
 		}
@@ -866,10 +870,10 @@ void printDir(Directory *dir){
 }
 
 void printElement(Directory *dir){
-	
+
 	unsigned char page;
 	unsigned char yoff;
-	
+
 	if(!dir) return;
 	else{
 		revers(0);
@@ -877,58 +881,58 @@ void printElement(Directory *dir){
 		current = dir->firstelement;
 		pos = dir->pos;
 		idx = pos;
-		
+
 		while(current && idx--) current = current->next;
-		
+
 		page = pos / DIRH;
 		yoff = pos - page * DIRH;
 		gotoxy(1, yoff + 1);
-		
+
 		if(current == dir->selected) revers(1);
-		
+
 		if(current->flags){
 			textcolor(COLOR_FRAME);
 			cputc('>');
 		}
 		else cputc(' ');
-		
+
 		sprintf(sbuffer, current->dirent.type == CBM_T_DIR ? leftarrow : "%5u", current->dirent.size);
-		cprintf("%5s %-16.16s %3s", sbuffer, current->dirent.name, current->dirent.type & CBM_T_REG ? filetype[current->dirent.type - 11] : filetype[current->dirent.type]);
-		
+		cprintf("%5s %-16.16s %3s", sbuffer, current->dirent.name, current->dirent.type & _CBM_T_REG ? filetype[current->dirent.type - 11] : filetype[current->dirent.type]);
+
 		revers(0);
 	}
 }
 
 unsigned char dosCommand(unsigned char lfn, unsigned char drive, unsigned char sec_addr, char *string){
-	
+
 	memset(message, 0, sizeof message);
 	cbm_open(lfn, drive, sec_addr, string);
-	
+
 	if(lfn != 15) cbm_open(15, drive, 15, "");
 	cbm_read(15, message, sizeof message);
-	
+
 	if(lfn != 15) cbm_close(15);
 	cbm_close(lfn);
-	
+
 	message[strcspn(message, "\n")] = 0;
-	
+
 	return (message[0] - 48) * 10 + message[1] - 48;
 }
 
 unsigned char driveConnected(unsigned char drive){
-	
+
 	cbm_k_setlfs(15, drive, 15);
 	cbm_k_setnam(0);
 	cbm_k_open();
 	cbm_k_close(15);
-	
+
 	return !cbm_k_readst();
 }
 
 unsigned char diskType(unsigned char device){
-	
+
 	dosCommand(15, drive[device], CBM_SEQ, "$");
-	
+
 	if(message[0] == 0x41){
 		if(drvtype[device] == SD2IEC && imgtype[device] == NONE) return 0;
 		return message[1] & 0x80 ? 70 : 35;
@@ -938,7 +942,7 @@ unsigned char diskType(unsigned char device){
 }
 
 void printMessage(unsigned char color, char *message){
-	
+
 	textcolor(color);
 	revers(1);
 	cclearxy(0, BOTTOM, 40);
@@ -947,7 +951,7 @@ void printMessage(unsigned char color, char *message){
 }
 
 unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned char destdevice, struct pwd *destpath, char *currentfile, unsigned char ftype){
-	
+
 	struct em_copy em;
 	struct relative{char cmd; unsigned char channel; unsigned int recnumber; unsigned char position;};
 	struct relative command = {'p', 96 + 2, 1, 0};
@@ -960,12 +964,12 @@ unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned ch
 	char *deststring = (char *)malloc(256);
 	char *srcstring = (char *)malloc(256);
 	char *buffer = (char *)malloc(BUFFERSIZE);
-	
+
 	changeDir(destdevice, destpath);
 	sprintf(deststring, "%s", currentfile);
 	sprintf(deststring, "%s,%c", currentfile, shorttype[ftype]);
-	
-	if(!(ftype & CBM_T_REG)){
+
+	if(!(ftype & _CBM_T_REG)){
 		sprintf(message, "Can't copy %s files", filetype[ftype]);
 		errc = 99;
 	}
@@ -978,13 +982,13 @@ unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned ch
 			#ifdef __C128__
 				if(*(char *)0x00d7 == 0x80) *(char *)0xd030 = 0;
 			#endif
-			
+
 			if (ftype == CBM_T_REL){
 				changeDir(srcdevice, srcpath);
 				sprintf(srcstring, "%s,l", currentfile);
 				cbm_open(2, drive[srcdevice], 2, srcstring);
 				cbm_open(5, drive[srcdevice], 15, "");
-				
+
 				command.position = 254;
 				do{
 					cbm_write(5, &command, sizeof command);
@@ -992,12 +996,12 @@ unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned ch
 					if(!(errn - 48)) break;
 				}
 				while (--command.position > 0);
-				
+
 				cbm_close(2);
 				cbm_close(5);
-				
+
 				relsize = command.position;
-				
+
 				if(!relsize){
 					strcpy(message, "Record not present");
 					errc = 99 ;
@@ -1005,59 +1009,59 @@ unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned ch
 				else{
 					sprintf(sbuffer, "Record size %d", relsize);
 					cprintf(sbuffer);
-					
+
 					delay(TIME);
 					cclearxy(24, BOTTOM, 15);
-					
+
 					em.buf = lbuffer;
 					em.count = sizeof lbuffer;
 					em.offs = 0;
 					em.page = 0;
-					
+
 					sprintf(srcstring, "%s,l,%c", currentfile, relsize);
 					cbm_open(2, drive[srcdevice], 2, srcstring);
 					cbm_open(5, drive[srcdevice], 15, "");
-					
+
 					gotoxy(32, BOTTOM);
 					cputs("R ");
-					
+
 					command.recnumber = 1;
 					command.position = 0;
-					
+
 					while(1){
 						cbm_write(5, &command, sizeof command);
 						memset(lbuffer, 0, sizeof lbuffer);
 						cbm_read(2, lbuffer, relsize);
 						cbm_read(5, &errn, sizeof errn);
-						
+
 						if(errn - 48) break;
-						
+
 						em_copyto(&em);
 						em.page += (em.count >> 8);
-						
+
 						++command.recnumber;
 					}
-					
+
 					changeDir(destdevice, destpath);
 					sprintf(deststring, "%s,l,%c", currentfile, relsize);
 					cbm_open(3, drive[destdevice], 3, deststring);
-					
+
 					emlastpage = em.page;
 					em.page = 0;
-					
+
 					gotoxy(33, BOTTOM);
 					cputs("W ");
-					
+
 					command.recnumber = 1;
 					command.position = 0;
-					
+
 					do{
 						em_copyfrom(&em);
 						em.page += (em.count >> 8);
-						
+
 						cbm_write(5, &command, sizeof command);
 						cbm_write(3, lbuffer, relsize);
-						
+
 						++command.recnumber;
 					}
 					while(em.page < emlastpage);
@@ -1067,20 +1071,20 @@ unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned ch
 				changeDir(srcdevice, srcpath);
 				cbm_open(2, drive[srcdevice], ftype ? CBM_SEQ : CBM_READ, currentfile);
 				cbm_open(5, drive[srcdevice], 15, "");
-				
+
 				em.buf = buffer;
 				em.count = BUFFERSIZE;
 				em.offs = 0;
 				em.page = 0;
-				
+
 				gotoxy(32, BOTTOM);
 				cputs("R ");
-				
+
 				do{
 					length = cbm_read(2, buffer, em.count);
 					em_copyto(&em);
 					em.page += (em.count >> 8);
-					
+
 					if (em.page > em_pagecount()){
 						strcpy(message, "File too large");
 						errc = 99;
@@ -1088,22 +1092,22 @@ unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned ch
 					}
 				}
 				while(length == em.count);
-				
+
 				changeDir(destdevice, destpath);
 				cbm_open(3, drive[destdevice], CBM_WRITE, deststring);
-				
+
 				lastlength = length;
 				emlastpage = em.page;
 				em.page = 0;
-				
+
 				gotoxy(33, BOTTOM);
 				cputs("W ");
-				
+
 				do{
 					em_copyfrom(&em);
 					em.page += (em.count >> 8);
 					em.page == emlastpage ? length = lastlength : length = em.count;
-					
+
 					if(cbm_write(3, buffer, length) != length){
 						errc = 99;
 						break;
@@ -1127,21 +1131,21 @@ unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned ch
 				sprintf(srcstring, "%s%s,l", srcpath->top, currentfile);
 				cbm_open(2, drive[srcdevice], 2, srcstring);
 				cbm_open(5, drive[srcdevice], 15, "");
-				
+
 				command.position = 254;
-				
+
 				do{
 					cbm_write(5, &command, sizeof command);
 					cbm_read(5, &errn, sizeof errn);
 					if(!(errn - 48)) break;
 				}
 				while (--command.position > 0);
-				
+
 				cbm_close(2);
 				cbm_close(5);
-				
+
 				relsize = command.position;
-				
+
 				if(!relsize){
 					strcpy(message, "Record not present");
 					errc = 99;
@@ -1149,33 +1153,33 @@ unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned ch
 				else{
 					sprintf(sbuffer, "Record Size %d", relsize);
 					cprintf(sbuffer);
-					
+
 					delay(TIME);
 					cclearxy(24, BOTTOM, 15);
-					
+
 					sprintf(srcstring, "%s%s,l,%c", srcpath->top, currentfile, relsize);
 					sprintf(deststring, "%s%s,l,%c", destpath->top, currentfile, relsize);
-					
+
 					cbm_open(2, drive[srcdevice], 2, srcstring);
 					cbm_open(3, drive[destdevice], 3, deststring);
 					cbm_open(5, drive[srcdevice], 15, "");
-					
+
 					command.recnumber = 1;
 					command.position = 0;
-					
+
 					while(1){
 						gotoxy(32, BOTTOM);
 						cputs("R ");
-						
+
 						cbm_write(5, &command, sizeof command);
 						cbm_read(2, lbuffer, relsize);
 						cbm_read(5, &errn, sizeof errn);
-						
+
 						if(errn - 48) break;
-						
+
 						gotoxy(33, BOTTOM);
 						cputs("W ");
-						
+
 						cbm_write(3, lbuffer, relsize);
 						++command.recnumber;
 					}
@@ -1184,21 +1188,21 @@ unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned ch
 			else{
 				sprintf(srcstring, "%s%s", srcpath->top, currentfile);
 				sprintf(deststring, "%s%s,%c", destpath->top, currentfile, shorttype[ftype]);
-				
+
 				cbm_open(2, drive[srcdevice], ftype ? CBM_SEQ : CBM_READ, srcstring);
 				cbm_open(3, drive[destdevice], CBM_WRITE, deststring);
 				cbm_open(5, drive[srcdevice], 15, "");
-				
+
 				do{
 					gotoxy(32, BOTTOM);
 					cputs("R  ");
 
 					length = cbm_read(2, buffer, BUFFERSIZE);
-					
+
 					if(length >= 0){
 						gotoxy(33, BOTTOM);
 						cputs("W ");
-						
+
 						if(cbm_write(3, buffer, length) != length){
 							errc = 99;
 							break;
@@ -1213,16 +1217,16 @@ unsigned char fileCopy(unsigned char srcdevice, struct pwd *srcpath, unsigned ch
 	cbm_close(5);
 	cbm_close(3);
 	cbm_close(2);
-	
+
 	free(buffer);
 	free(srcstring);
 	free(deststring);
-	
+
 	return errc;
 }
 
 unsigned char diskCopy(unsigned char srcdevice, unsigned char destdevice){
-	
+
 	unsigned int br;
 	unsigned char track;
 	unsigned char sector;
@@ -1232,41 +1236,41 @@ unsigned char diskCopy(unsigned char srcdevice, unsigned char destdevice){
 	struct errors{unsigned char track; unsigned char sector; struct errors *next;};
 	struct errors *head = NULL;
 	struct errors *current = NULL;
-	
+
 	track = diskType(srcdevice);
 	itrack = diskType(destdevice);
-	
+
 	if(track & itrack){
-		
+
 		head = (struct errors *)malloc(sizeof(struct errors));
 		current = head;
-		
+
 		sprintf(lbuffer, "Copying from drive %d to %d", drive[srcdevice], drive[destdevice]);
 		printMessage(COLOR_TEXT, lbuffer);
-		
+
 		cbm_open(2, drive[srcdevice], 5, "#");
 		cbm_open(3, drive[destdevice], 5, "#");
 		cbm_open(4, drive[srcdevice], 15, "");
 		cbm_open(5, drive[destdevice], 15, "");
-		
+
 		for(track = 0; track < itrack; ++track){
-			
+
 			itrack == 35 || itrack == 70 ? isector = sectors[track % 35] : isector = 40;
 			for(sector = 0; sector < isector; ++sector){
-				
+
 				if(kbhit() && cgetc() == CH_ESC){
 					track = itrack;
 					break;
 				}
 				gotoxy(30, BOTTOM);
 				cprintf("T:%02d S:%02d", track + 1, sector);
-				
+
 				cbm_write(4, lbuffer, sprintf(lbuffer, "u1:5 0 %d %d", track + 1, sector));
 				cbm_write(5, "b-p:5 0", 7);
 				cbm_read(2, buffer, 256);
 				br = cbm_write(3, buffer, 256);
 				cbm_write(5, lbuffer, sprintf(lbuffer, "u2:5 0 %d %d", track + 1, sector));
-				
+
 				if(br != 256){
 					current->next = (struct errors *)malloc(sizeof(struct errors));
 					current = current->next;
@@ -1279,7 +1283,7 @@ unsigned char diskCopy(unsigned char srcdevice, unsigned char destdevice){
 		cbm_close(4);
 		cbm_close(3);
 		cbm_close(2);
-		
+
 		if(head->next){
 			current->next = NULL;
 			printMessage(COLOR_SIGNAL, "Write errors occurred. Print");
@@ -1300,7 +1304,7 @@ unsigned char diskCopy(unsigned char srcdevice, unsigned char destdevice){
 			}
 		}
 		while((current = head) != NULL){
-			head = head->next; 
+			head = head->next;
 			free(current);
 		}
 	}
@@ -1309,40 +1313,40 @@ unsigned char diskCopy(unsigned char srcdevice, unsigned char destdevice){
 		return 99;
 	}
 	free(buffer);
-	
+
 	return 0;
 }
 
 void doMakeImage(void){
-	
+
 	unsigned char track;
 	unsigned char sector;
 	unsigned char isector;
 	unsigned char itrack;
 	char *pname = &name[0];
-	
+
 	printMessage(COLOR_TEXT, "Name:                     <return> <esc>");
 	memset(name, 0, sizeof name);
-	
+
 	if(textInput(6, BOTTOM, name) && !imgtype[device]){
-	
+
 		for(idx = 1; idx < sizeof imagetype / sizeof imagetype[0]; ++idx){
 			if(strstr(strlower(strcpy(sbuffer, pname)), imagetype[idx])) break;
 		}
 		switch(idx){
-		
+
 			case D1541:
 				itrack = 35;
 				break;
-					
+
 			case D1571:
 				itrack = 70;
 				break;
-				
+
 			case D1581:
 				itrack = 80;
 				break;
-				
+
 			default:
 				printMessage(COLOR_SIGNAL, "Image type not supported");
 				clearBar();
@@ -1358,7 +1362,7 @@ void doMakeImage(void){
 		memset(lbuffer, 0, sizeof lbuffer);
 		for(track = 0; track < itrack; ++track){
 			itrack == 35 || itrack == 70 ? isector = sectors[track % 35] : isector = 40;
-			
+
 			for(sector = 0; sector < isector; ++sector){
 				if(kbhit() && cgetc() == CH_ESC){
 					track = itrack;
@@ -1370,16 +1374,16 @@ void doMakeImage(void){
 			}
 		}
 		cbm_close(3);
-		
+
 		sprintf(sbuffer, "cd:%s", name);
 		if(!dosCommand(15, drive[device], 15, sbuffer)){
-			
+
 			printMessage(COLOR_TEXT, "Name:                     <return> <esc>");
 			memset(name, 0, sizeof name);
-			
+
 			sprintf(sbuffer, "n:%s", textInput(6, BOTTOM, name) ? name : "");
 			dosCommand(15, drive[device], 15, sbuffer);
-			
+
 			sprintf(sbuffer, "cd:%s", leftarrow);
 			dosCommand(15, drive[device], 15, sbuffer);
 		}
@@ -1391,67 +1395,67 @@ void doMakeImage(void){
 }
 
 void doRelabel(void){
-	
+
 	unsigned char track;
 	unsigned char sector;
 	unsigned char offset;
 	unsigned int length = 0;
 	char *buffer = (char *)malloc(257);
-	
+
 	if(idx = diskType(device)){
-		
+
 		switch(idx){
-		
+
 			case 70:
 			case 35:
 				track = 18;
 				sector = 0;
 				offset = 0x90;
 				break;
-				
+
 			case 80:
 				track = 40;
 				sector = 0;
 				offset = 0x04;
 				break;
-				
+
 			default:
 				track = 1;
 				sector = 1;
 				offset = 0x04;
 		}
-		
+
 		cbm_open(2, drive[device], 5, "#");
 		cbm_open(4, drive[device], 15, "");
-		
+
 		memset(name, 0, sizeof name);
 		printMessage(COLOR_TEXT, "Label:                    <return> <esc>");
 		cbm_write(4, lbuffer, sprintf(lbuffer, "u1:5 0 %d %d",track, sector));
 		cbm_read(2, buffer, 256);
-		
+
 		for(length = 0; buffer[offset + length] != 0xa0 && length < 16; ++length) name[length] = buffer[offset + length];
 
 		length = textInput(7, BOTTOM, name);
-		
+
 		if(length){
-			
+
 			memset(buffer + offset, 0xa0, 16);
 			strncpy(buffer + offset, name, length);
 			cbm_write(4, "b-p:5 0", 7);
 			length = cbm_write(2, buffer, 256);
 			cbm_write(4, lbuffer, sprintf(lbuffer, "u2:5 0 %d %d", track, sector));
-			
+
 			if(length != 256) printMessage(COLOR_SIGNAL, "Relabel error");
-			
+
 			refreshDir();
 		}
 		cbm_close(4);
 		cbm_close(2);
 	}
 	else printMessage(COLOR_SIGNAL, "Can't relabel");
-	
+
 	clearBar();
 	free(buffer);
-	
+
 	return;
 }

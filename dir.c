@@ -1,3 +1,7 @@
+/* -*- c-basic-offset: 2; tab-width: 2; indent-tabs-mode: nil -*-
+ * vi: set shiftwidth=2 tabstop=2 expandtab:
+ * :indentSize=2:tabSize=2:noTabs=true:
+ */
 /*
  * dir.c
  * Created on: 22.04.2018
@@ -19,20 +23,20 @@
 #include <defines.h>
 
 Directory *readDir(Directory *dir, unsigned char device){
-	
+
 	DirElement *previous = NULL;
 	DirElement *current = NULL;
 	unsigned char stat = 0;
-	
+
 	/* free old dir */
 	if(dir) freeDir(&dir);
 	cbm_opendir(8, device);
-	
+
 	do{
 		DirElement *current = (DirElement *) malloc(sizeof(DirElement));
 		memset(current, 0, sizeof(DirElement));
 		stat = cbmReadDir(8, &current->dirent);
-		
+
 		if(!stat){
 			if(!dir){
 				/* initialize directory */
@@ -67,10 +71,10 @@ Directory *readDir(Directory *dir, unsigned char device){
 }
 
 unsigned char cbmReadDir(unsigned char lfn, register struct cbm_dirent *l_dirent){
-	
+
 	unsigned char byte;
 	unsigned char i = 0;
-	
+
 	if(!cbm_k_chkin(lfn)){
 		if(!cbm_k_readst()){
 			/* 0x01, 0x01, next basic line */
@@ -78,7 +82,7 @@ unsigned char cbmReadDir(unsigned char lfn, register struct cbm_dirent *l_dirent
 			cbm_k_basin();
 			/* file-size */
 			l_dirent->size = cbm_k_basin() | (cbm_k_basin() << 8);
-			
+
 			byte = cbm_k_basin();
 			/* Blocks free */
 			if(byte == 0x42){
@@ -107,7 +111,7 @@ unsigned char cbmReadDir(unsigned char lfn, register struct cbm_dirent *l_dirent
 				}
 			}
 			l_dirent->name[i] = 0x00;
-			
+
 			while((byte = cbm_k_basin()) == 0x20){
 				if(cbm_k_readst()){
 					cbm_k_clrch();	/* prevent endless sort */
@@ -161,9 +165,9 @@ unsigned char cbmReadDir(unsigned char lfn, register struct cbm_dirent *l_dirent
 }
 
 void freeDir(Directory ** dir){
-	
+
 	struct direlement *acurrent;
-	
+
 	if(*dir){
 		acurrent = (*dir)->firstelement;
 		while(acurrent){
@@ -177,19 +181,19 @@ void freeDir(Directory ** dir){
 }
 
 Directory *sortDir(Directory *dir){
-	
+
 	struct cbm_dirent tmpdirent;
 	unsigned char tmpflags;
 	DirElement *sort, *current;
-	
-	for(sort = dir->firstelement; sort->next; sort = sort->next){	
+
+	for(sort = dir->firstelement; sort->next; sort = sort->next){
 		for(current = dir->firstelement; current->next; current = current->next){
 			if(stricmp(current->dirent.name, current->next->dirent.name) > 0){
-				
+
 				tmpdirent = current->dirent;
 				current->dirent = current->next->dirent;
 				current->next->dirent = tmpdirent;
-				
+
 				tmpflags = current->flags;
 				current->flags = current->next->flags;
 				current->next->flags = tmpflags;
