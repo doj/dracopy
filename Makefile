@@ -2,7 +2,11 @@ src/%.o: src/%.c include/%.h
 	cc65 -O -I include -t c64 $<
 	ca65 -I include -t c64 src/$$(basename $< .c).s
 
-all: dc610 dc64 dc128 dc1280 dcp4 dcpet8 db64 db128 db1280 dbp4 dbpet8 db610 package
+D64=dc10c.d64
+all: dc64 dc128 dc1280 dcp4 dcpet8 db64 db128 db1280 dbp4 dbpet8 db610 dc610
+	$(RM) $(D64)
+	c1541 -format dracopy,dc d64 $(D64)
+	for i in $^ ; do c1541 -attach $(D64) -write $$i ; done
 
 dc64: src/screen.c src/dc.c src/cat.c src/dir.c src/base.c
 	cl65 -I include -t c64 $^ -o $@.prg
@@ -48,6 +52,7 @@ db610: src/screen.c src/db.c src/cat.c src/dir.c src/base.c
 dbpet8: src/screen.c src/db.c src/cat.c src/dir.c src/base.c
 	cl65 -I include -t pet -DCHAR80 -DNOCOLOR $^ -o $@
 
+# todo: doesn't build
 dbv: src/screen.c src/db.c src/cat.c src/dir.c src/base.c
 	cl65 -I include -t vic20 $^ -o $@
 
@@ -57,37 +62,9 @@ test: src/test.c
 test128: src/test.c
 	cl65 -t c128 $^ -o $@
 
-package: all
-	c1541 -attach dc10c.d64 -delete dc64 || exit 0
-	c1541 -attach dc10c.d64 -delete dc128 || exit 0
-	c1541 -attach dc10c.d64 -delete dc1280 || exit 0
-	c1541 -attach dc10c.d64 -delete dc610 || exit 0
-	c1541 -attach dc10c.d64 -delete dcp4 || exit 0
-	c1541 -attach dc10c.d64 -delete dcpet8 || exit 0
-
-	c1541 -attach dc10c.d64 -write dc64 || exit 0
-	c1541 -attach dc10c.d64 -write dc128 || exit 0
-	c1541 -attach dc10c.d64 -write dc1280 || exit 0
-	c1541 -attach dc10c.d64 -write dc610 || exit 0
-	c1541 -attach dc10c.d64 -write dcp4 || exit 0
-	c1541 -attach dc10c.d64 -write dcpet8 || exit 0
-
-	c1541 -attach dc10c.d64 -delete db64 || exit 0
-	c1541 -attach dc10c.d64 -delete db128 || exit 0
-	c1541 -attach dc10c.d64 -delete db1280 || exit 0
-	c1541 -attach dc10c.d64 -delete db610 || exit 0
-	c1541 -attach dc10c.d64 -delete dbp4 || exit 0
-	c1541 -attach dc10c.d64 -delete dbpet8 || exit 0
-
-	c1541 -attach dc10c.d64 -write db64 || exit 0
-	c1541 -attach dc10c.d64 -write db128 || exit 0
-	c1541 -attach dc10c.d64 -write db1280 || exit 0
-	c1541 -attach dc10c.d64 -write db610 || exit 0
-	c1541 -attach dc10c.d64 -write dbp4 || exit 0
-	c1541 -attach dc10c.d64 -write dbpet8 || exit 0
-
 clean:
-	$(RM) -rf d src/*.o src/*.s *.prg \
+	$(RM) -rf d src/*.o src/*.s *.prg $(D64) \
 	dc64 dc128 dc1280 dcpet8 dcp4 dc610 \
-	db64 db128 db1280 dbpet8 dbp4 db610
+	db64 db128 db1280 dbpet8 dbp4 db610 \
+	test test128 dbv
 	find . -name '*~' -delete
