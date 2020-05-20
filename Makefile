@@ -8,6 +8,11 @@ all: dc64 dc128 dc1280 dcp4 dcpet8 db64 db128 db1280 dbp4 dbpet8 db610 dc610
 	c1541 -format dracopy,dc d64 $(D64)
 	for i in $^ ; do c1541 -attach $(D64) -write $$i ; done
 
+X64?=x64sc
+x64:	all
+	c1541 -format dracopy,dc d64 9.d64
+	$(X64) -8 $(D64) -autostart $(D64) -9 9.d64
+
 dc64: src/screen.c src/dc.c src/cat.c src/dir.c src/base.c
 	cl65 -I include -t c64 $^ -o $@.prg
 	-pucrunch -c64 $@.prg $@
@@ -56,15 +61,9 @@ dbpet8: src/screen.c src/db.c src/cat.c src/dir.c src/base.c
 dbv: src/screen.c src/db.c src/cat.c src/dir.c src/base.c
 	cl65 -I include -t vic20 $^ -o $@
 
-test: src/test.c
-	cl65 -t c64 $^ -o $@
-
-test128: src/test.c
-	cl65 -t c128 $^ -o $@
-
 clean:
-	$(RM) -rf d src/*.o src/*.s *.prg $(D64) \
+	$(RM) -rf d src/*.o src/*.s *.prg $(D64) 9.d64 \
 	dc64 dc128 dc1280 dcpet8 dcp4 dc610 \
 	db64 db128 db1280 dbpet8 dbp4 db610 \
-	test test128 dbv
+	dbv
 	find . -name '*~' -delete

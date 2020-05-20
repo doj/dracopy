@@ -23,7 +23,9 @@
  * BUT WITHOUT ANY WARRANTY. USE THEM AT YOUR OWN RISK!
  *
  * Newer versions might be available here: http://www.sascha-bader.de/html/code.html
- *
+ */
+/*
+ * this code is now maintained on https://github.com/doj/dracopy
  */
 
 #include <stdio.h>
@@ -33,11 +35,11 @@
 #include <conio.h>
 #include <cbm.h>
 #include <errno.h>
-#include <cat.h>
-#include <dir.h>
-#include <base.h>
-#include <defines.h>
-
+#include "cat.h"
+#include "dir.h"
+#include "base.h"
+#include "defines.h"
+#include "version.h"
 
 /* declarations */
 void mainLoop(void);
@@ -167,9 +169,9 @@ void updateMenu(void)
 	gotoxy(0,24);
 
   #ifdef CHAR80
-	  cprintf("               DraCopy V1.0C 8 Bit (27.12.2009) 80 Characters                   ");
+	  cprintf("               DraCopy " DRA_VER "       80 Characters                   ");
   #else
-	  cprintf("    DraCopy V1.0C 8 Bit (27.12.2009)    ");
+	  cprintf("       DraCopy " DRA_VER "       ");
   #endif
 
 	textcolor(textc);
@@ -573,20 +575,18 @@ void about(void)
 	textcolor(COLOR_YELLOW);
 	idx=4;
 	gotoxy(0,idx++);
+	cprintf("DraCopy " DRA_VER);
 #ifdef CHAR80
-	cprintf("DraCopy V1.0C 8 Bit (27.12.2009) 80 Chars");
-#else
-	cprintf("DraCopy V1.0C 8 Bit (27.12.2009)");
+	cprintf(" 80 Chars");
 #endif
 	textcolor(COLOR_GREEN);
 	idx++;
 	idx++;
 	gotoxy(0,idx++);
-	cprintf("       Copyright 2009 by Draco");
+	cprintf("      Copyright 2009 by Draco");
 	idx++;
 	gotoxy(0,idx++);
-	cprintf("    Mail: DracoSan@googlemail.com");
-	idx++;
+	cprintf("     https://github.com/doj/dracopy");
 	idx++;
 	idx++;
 	gotoxy(0,idx++);
