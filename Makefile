@@ -33,6 +33,8 @@ all:	$(EXE)
 
 $(EXE):	$(OBJ)
 	$(LD) $(LDFLAGS) $^ $(LDLIBS)
+	-pucrunch -c64 $@ > $@.new
+	mv $@.new $@
 
 $(D64):	$(EXE)
 	rm -f $(D64)

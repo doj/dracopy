@@ -17,7 +17,7 @@
 #ifndef DIR_H
 #define DIR_H
 
-#include <defines.h>
+#include "defines.h"
 
 typedef struct{
 	unsigned char *name;

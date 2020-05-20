@@ -17,8 +17,8 @@
 #include <stdio.h>
 #include <conio.h>
 #include <string.h>
-#include <defines.h>
-#include <base.h>
+#include "defines.h"
+#include "base.h"
 
 static unsigned char screen_bgc;
 static unsigned char screen_borderc;

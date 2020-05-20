@@ -17,7 +17,7 @@
 #ifndef CAT_H
 #define CAT_H
 
-#include <defines.h>
+#include "defines.h"
 
 void cathex(unsigned char drive, char *currentfile, unsigned char ftype);
 void catasc(unsigned char drive, char *currentfile, unsigned char ftype);

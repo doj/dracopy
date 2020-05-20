@@ -20,13 +20,13 @@
 #include <conio.h>
 #include <errno.h>
 #include <cbm.h>
-#include <base.h>
-#include <dir.h>
-#include <screen.h>
-#include <cat.h>
 #include <em.h>
-#include <defines.h>
 #include <dio.h>
+#include "base.h"
+#include "dir.h"
+#include "screen.h"
+#include "cat.h"
+#include "defines.h"
 
 void about(void);
 void mainLoop(void);

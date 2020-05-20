@@ -18,9 +18,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <conio.h>
-#include <dir.h>
 #include <cbm.h>
-#include <defines.h>
+#include "dir.h"
+#include "defines.h"
 
 Directory *readDir(Directory *dir, unsigned char device){
 
