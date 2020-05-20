@@ -20,8 +20,28 @@ The master branch is currently empty. Look at the branches
 
 for source code of those versions. The code was tested to build on a unix system with GNU make.
 
+You can use pucrunch to compress the compiled dracopy program.
+See http://a1bert.kapsi.fi/Dev/pucrunch/ or https://github.com/mist64/pucrunch
+for the source code.
+
+Version Information
+--------------------
+
+| Ver  | Date        | Feature | Author |
+| ---- | ------------| --------| ------ |
+| 1.0  | 23 Jan 2009 | Initial Version | Sascha Bader
+| 1.0b | 23 May 2009 | Minor Bugfixes | Sascha Bader
+| 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader
+| 1.0d | ?           | implemented disk copy | Sascha Bader
+| 1.0e | 2018        | combined DraBrowse and DraCopy, single window | unknown
+
 Copyright Notice
 -----------------
 The code can be used freely as long as you retain a notice describing original source and author.
 THE PROGRAMS ARE DISTRIBUTED IN THE HOPE THAT THEY WILL BE USEFUL, BUT WITHOUT ANY WARRANTY.
 USE THEM AT YOUR OWN RISK!
+
+Contact
+--------
+The github repository https://github.com/doj/dracopy is maintained by
+Dirk Jagdmann <doj@cubic.org>
