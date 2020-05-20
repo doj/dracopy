@@ -1,3 +1,7 @@
+/* -*- c-basic-offset: 2; tab-width: 2; indent-tabs-mode: nil -*-
+ * vi: set shiftwidth=2 tabstop=2 expandtab:
+ * :indentSize=2:tabSize=2:noTabs=true:
+ */
 /*
  * dc.c
  *
@@ -274,7 +278,7 @@ void mainLoop(void)
 					cwd=GETCWD;
 					current = cwd->firstelement;
 					pos=0;
-					while (1==1)
+					while (1)
 					{
 						if (current->next!=NULL)
 						{
@@ -461,7 +465,6 @@ void doCopySelected(void)
 
 void deleteSelected(void)
 {
-  char c;
   DirElement * lastSel;
   Directory * cwd = GETCWD;
 
@@ -525,7 +528,6 @@ void deleteSelected(void)
 		}
 		updateScreen();
 	}
-
 }
 
 
@@ -698,7 +700,6 @@ void doDeleteMulti(void)
 	int selidx = 0;
 	int x=0;
 	int sx=0;
-	char c;
 	Directory * cwd = GETCWD;
 
 	if (dirs[context]==NULL)
@@ -762,10 +763,7 @@ void doDeleteMulti(void)
 					clrDir(1-context);
 					dirs[1-context] = readDir(dirs[1-context],devices[1-context],(BYTE)(1-context));
 				}
-
 		}
-
-
 	}
 }
 
@@ -937,7 +935,6 @@ void printElement(Directory * dir,int xpos, int ypos)
 
 void doFormat(void)
 {
-	char c;
 	sprintf(linebuffer,"Format device %d\n",devices[context]);
 	newscreen(linebuffer);
 	if (really())

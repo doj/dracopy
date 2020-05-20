@@ -1,3 +1,7 @@
+/* -*- c-basic-offset: 2; tab-width: 2; indent-tabs-mode: nil -*-
+ * vi: set shiftwidth=2 tabstop=2 expandtab:
+ * :indentSize=2:tabSize=2:noTabs=true:
+ */
 /*
  * db.c
  *
@@ -159,11 +163,9 @@ void updateMenu(void)
 void mainLoop(void)
 {
 	Directory * cwd = NULL;
-	Directory * oldcwd;
 	DirElement * current = NULL;
 	unsigned int index = 0;
 	unsigned int pos = 0;
-	BYTE oldcontext;
 	BYTE exitflag = 0;
 	BYTE c;
 	BYTE lfn = 8;
@@ -216,7 +218,7 @@ void mainLoop(void)
 					cwd=GETCWD;
 					current = cwd->firstelement;
 					pos=0;
-					while (1==1)
+					while (1)
 					{
 						if (current->next!=NULL)
 						{

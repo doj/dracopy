@@ -1,3 +1,7 @@
+/* -*- c-basic-offset: 2; tab-width: 2; indent-tabs-mode: nil -*-
+ * vi: set shiftwidth=2 tabstop=2 expandtab:
+ * :indentSize=2:tabSize=2:noTabs=true:
+ */
 /*
  * cat.c
  *
@@ -129,10 +133,10 @@ int catasc(BYTE device, char * filename)
 				}
 				else
 				{
-					if (! (	pchar==13 || pchar==10 ||
-							(pchar >= 0x20 && pchar <= 0x7f) ||
-
-							(pchar >= 0xA0 && pchar <= 0xFF) ) )
+					if (! (	pchar==13 ||
+                  pchar==10 ||
+                  (pchar >= 0x20 && pchar <= 0x7f) ||
+                  (pchar >= 0xA0) ) )
 					{
 						pchar = '.';
 					}
@@ -225,10 +229,10 @@ int catasc(BYTE device, char * filename)
 
 BYTE filterchar(BYTE pchar)
 {
-	if (! (	pchar==13 || pchar==10 ||
-			(pchar >= 0x20 && pchar <= 0x7f) ||
-
-			(pchar >= 0xA0 && pchar <= 0xFF) ) )
+	if (! (	pchar==13 ||
+          pchar==10 ||
+          (pchar >= 0x20 && pchar <= 0x7f) ||
+          (pchar >= 0xA0) ) )
 	{
 		pchar = '.';
 	}
