@@ -3,7 +3,7 @@
 
 D64=dracopy10doj.d64
 
-all: dc64 dc128 dc1280 dcp4 db64 db128 db1280 dbp4 dbpet8 dbv # db610 dc610
+all: dc64 dc128 dc1280 dcp4 db64 db128 db1280 dbp4 dbpet8 db610 dc610
 	sh d64.sh 'dracopy 1.0doj,dc' $(D64) $^
 
 COMMON_SRC=src/screen.c src/cat.c src/dir.c src/base.c src/ops.c
@@ -56,14 +56,10 @@ db610:	$(DB_SRC)
 dbpet8:	$(DB_SRC)
 	cl65 -I include -t pet -DCHAR80 -DNOCOLOR $^ -o $@
 
-dbv:	$(DB_SRC)
-	cl65 -I include -t vic20 $^ -o $@ -C vic20-32k.cfg
-
 clean:
 	$(RM) -rf d src/*.o src/*.s *.prg *.d64 *.d71 *.d81 \
 	dc64 dc128 dc1280 dcpet8 dcp4 dc610 \
-	db64 db128 db1280 dbpet8 dbp4 db610 \
-	dbv
+	db64 db128 db1280 dbpet8 dbp4 db610
 	find . -name '*~' -delete
 
 ##############################################################################
@@ -119,7 +115,3 @@ xplus4:	all $(D64_9)
 XPET?=xpet
 xpet:	all $(D64_9)
 	$(XPET) -autostart dbpet8.prg -8 $(D64) -9 $(D64_9)
-
-XVIC?=xvic
-xvic:	all  $(D64_9)
-	$(XVIC) -autostart dbv -drive8type 1540 -8 $(D64) -drive9type 1540 -9 $(D64_9)
