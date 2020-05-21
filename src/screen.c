@@ -48,15 +48,17 @@ clearArea(BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize)
 void
 newscreen(char * title)
 {
-	int i;
+	BYTE i;
 	clrscr();
 	revers(1);
-	for (i=0;i<SCREENW;i++)
+	for (i=0; *title && i < SCREENW; ++i)
+    {
+      cputc(*title++);
+    }
+	for (; i < SCREENW; ++i)
     {
       cputc(' ');
     }
-	gotoxy(0,0);
-	cputs(title);
 	revers(0);
 	gotoxy(0,1);
 }

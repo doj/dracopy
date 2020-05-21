@@ -1094,12 +1094,163 @@ int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE 
   }
 */
 
+const char sectors[40] = {
+  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+  19, 19, 19, 19, 19, 19, 19,
+  18, 18, 18, 18, 18, 18,
+  17, 17, 17, 17, 17,
+  17, 17, 17, 17, 17
+};
+
+BYTE diskCopyBuf[256];
+
+void
+printSecStatus(BYTE t, BYTE s, BYTE st)
+{
+  if (t & 0x80)
+    {
+      textcolor(COLOR_RED);
+    }
+  else
+    {
+      textcolor((t < 35) ? COLOR_GRAY3 : COLOR_GRAY1);
+    }
+  gotoxy(2+t, 3+s);
+  cputc(st);
+}
+
 void
 doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 {
-	clrscr();
-	gotoxy(0,0);
-	cprintf("copy %i %i", deviceFrom,deviceTo);
-	waitKey(0);
-  
+  BYTE i, track;
+  BYTE max_track = 35; // TODO: detect disk type
+
+	sprintf(linebuffer, "Copy disk from device %d to %d? (Y/N)", deviceFrom, deviceTo);
+  newscreen(linebuffer);
+  cputs("  00000000011111111112222222222333333333");
+  gotoxy(0,2);
+  cputs("  12345678901234567890123456789012345678");
+  for(i = 0; i < 21; ++i)
+    {
+      gotoxy(0,3+i);
+      cprintf("%02i", i);
+    }
+  for(i = 0; i < 38; ++i)
+    {
+      const BYTE max_s = sectors[i];
+      BYTE j;
+      for(j = 0; j < max_s; ++j)
+        {
+          printSecStatus(i, j, '.');
+        }
+    }
+
+  while(1)
+    {
+      i = cgetc();
+      if (i == 'y')
+        break;
+      if (i == 'n' ||
+          i == 27 ||
+          i == 95)
+        return;
+    }
+
+  if ((i = cbm_open(2, deviceFrom, 5, "#")) != 0)
+    {
+      sprintf(diskCopyBuf, "device %i: open data failed: %i", deviceFrom, i);
+      goto error;
+    }
+  if ((i = cbm_open(6, deviceFrom, 15, "")) != 0)
+    {
+      sprintf(diskCopyBuf, "device %i: open cmd failed: %i", deviceFrom, i);
+      goto error;
+    }
+  if ((i = cbm_open(7, deviceTo,   5, "#")) != 0)
+    {
+      sprintf(diskCopyBuf, "device %i: open data failed: %i", deviceTo, i);
+      goto error;
+    }
+  if ((i = cbm_open(8, deviceTo,   15, "")) != 0)
+    {
+      sprintf(diskCopyBuf, "device %i: open cmd failed: %i", deviceTo, i);
+      goto error;
+    }
+
+  for(track = 0; track < max_track; ++track)
+    {
+      const BYTE max_sector = sectors[track];
+      BYTE sector;
+      for(sector = 0; sector < max_sector; ++sector)
+        {
+          int ret;
+          if (kbhit())
+            {
+              i = cgetc();
+              if (i == 27 || i == 95)
+                {
+                  goto done;
+                }
+            }
+          printSecStatus(track, sector, 'R');
+          ret = cbm_write(6, linebuffer, sprintf(linebuffer, "u1:5 0 %d %d", track + 1, sector));
+          if (ret < 0)
+            {
+              sprintf(diskCopyBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
+#define SECTOR_ERROR                                    \
+              gotoxy(0,24);                             \
+              textcolor(COLOR_LIGHTRED);                \
+              cputs(diskCopyBuf);                       \
+              printSecStatus(track|0x80, sector, 'E');
+              SECTOR_ERROR;
+              continue;
+            }
+
+          ret = cbm_write(8, "b-p:5 0", 7);
+          if (ret < 0)
+            {
+              sprintf(diskCopyBuf, "setup buffer failed: %i", track+1, sector, _oserror);
+              SECTOR_ERROR;
+              continue;
+            }
+
+          ret = cbm_read(2, diskCopyBuf, 256);
+          if (ret != 256)
+            {
+              sprintf(diskCopyBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
+              SECTOR_ERROR;
+              continue;
+            }
+
+          printSecStatus(track, sector, 'W');
+          ret = cbm_write(7, diskCopyBuf, 256);
+          if (ret != 256)
+            {
+              sprintf(diskCopyBuf, "write %i/%i failed: %i", track+1, sector, _oserror);
+              SECTOR_ERROR;
+              continue;
+            }
+
+          ret = cbm_write(8, linebuffer, sprintf(linebuffer, "u2:5 0 %d %d", track + 1, sector));
+          if (ret < 0)
+            {
+              sprintf(diskCopyBuf, "write cmd %i/%i failed: %i", track+1, sector, _oserror);
+              SECTOR_ERROR;
+              continue;
+            }
+        }
+    }
+  goto done;
+
+ error:
+  gotoxy(0,24);
+  textcolor(COLOR_LIGHTRED);
+  cputs(diskCopyBuf);
+  cgetc();
+
+ done:
+  cbm_close(5);
+  cbm_close(4);
+  cbm_close(3);
+  cbm_close(2);
 }

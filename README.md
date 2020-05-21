@@ -43,6 +43,11 @@ You can use pucrunch to compress the compiled dracopy program.
 See http://a1bert.kapsi.fi/Dev/pucrunch/ or https://github.com/mist64/pucrunch
 for the source code.
 
+TODO
+-----
+the following features or bugs should be fixed:
+- [ ] support d71 or d81 disk copy
+
 Version Information
 --------------------
 
@@ -53,7 +58,7 @@ Version Information
 | 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader
 | 1.0d | ?           | implemented disk copy | Sascha Bader
 | 1.0e | 2018        | combined DraBrowse and DraCopy, single window | unknown
-| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy in DraCopy | doj
+| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy in DraCopy, currently d64 is supported. | doj
 
 Copyright Notice
 -----------------
