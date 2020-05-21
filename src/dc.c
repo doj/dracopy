@@ -54,7 +54,7 @@ void doToggleAll(void);
 void doCopy(void);
 void doCopySelected(void);
 void doDeleteMulti(void);
-void doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo);
+int doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo);
 void execute(char * prg, BYTE device);
 int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE type);
 int cmd(unsigned char lfn, unsigned char * cmd);
@@ -100,10 +100,6 @@ fileTypeToStr(BYTE ft)
   bad_type[3] = 0;
   return bad_type;
 }
-
-// some filetypes are not yet supported, using u instead
-// char shorttypes [8] = {'d','s','p','u','l','c','v','-' };
-const char shorttypes [8] = {'u','s','p','u','u','u','u','u' };
 
 #ifdef NOCOLOR
 const BYTE textc = COLOR_WHITE;
@@ -160,7 +156,7 @@ void updateMenu(void)
 #else
 	cputc(' ');
 	cputc(95); // arrow left
-	cputs(" SWITCH");
+	cputs(" SWITCH W");
 #endif
 	gotoxy(MENUX+1,menuy++);
 	cputs("CR CHG DIR");
@@ -171,7 +167,7 @@ void updateMenu(void)
 	gotoxy(MENUX+1,menuy++);
 	cputs(" B BOTTOM");
 	gotoxy(MENUX+1,menuy++);
-	cputs(" * SEL");
+	cputs(" * INV SEL");
 	gotoxy(MENUX+1,menuy++);
 	cputs(" C COPY F");
 	gotoxy(MENUX+1,menuy++);
@@ -179,7 +175,7 @@ void updateMenu(void)
 	gotoxy(MENUX+1,menuy++);
 	cputs(" R REN F");
 	gotoxy(MENUX+1,menuy++);
-	cputs(" M MAKE D");
+	cputs(" M MAKE DIR");
 	gotoxy(MENUX+1,menuy++);
 	cputs(" F FORMAT");
 	gotoxy(MENUX+1,menuy++);
@@ -210,7 +206,6 @@ void mainLoop(void)
 	unsigned int pos = 0;
 	BYTE oldcontext;
 	BYTE exitflag = 0;
-	BYTE c;
 	BYTE lfn = 8;
 	BYTE lastpage = 0;
 	BYTE nextpage = 0;
@@ -226,7 +221,7 @@ void mainLoop(void)
 	updateScreen();
 	do
     {
-      c = cgetc();
+      const BYTE c = cgetc();
     	switch (c)
       	{
     		case 10:
@@ -262,7 +257,10 @@ void mainLoop(void)
 					doCopy();
 					clrscr();
 					// refresh destination dir
-					dirs[1-context] = readDir(dirs[1-context],devices[1-context],context);
+          {
+            const BYTE other_context = 1-context;
+            dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+          }
 					updateScreen();
 					break;
 
@@ -280,8 +278,15 @@ void mainLoop(void)
 					break;
 
         case CH_F8:
-          doDiskCopy(devices[context], devices[1-context]);
-					updateScreen();
+          {
+            const BYTE other_context = 1-context;
+            int ret = doDiskCopy(devices[context], devices[other_context]);
+            if (ret == 0)
+              {
+                dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+              }
+            updateScreen();
+          }
 					break;
 
           // ----- switch context -----
@@ -301,6 +306,7 @@ void mainLoop(void)
 					cwd->pos=0;
 					printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
           break;
+
 		    case 'b':
 					cwd=GETCWD;
 					current = cwd->firstelement;
@@ -325,6 +331,7 @@ void mainLoop(void)
 		    case 'q':
 					exitflag = 1;
           break;
+
         case ' ':
 					cwd=GETCWD;
 					cwd->selected->flags=!cwd->selected->flags;
@@ -463,7 +470,7 @@ void doCopySelected(void)
 
   if (cwd->selected!=NULL)
     {
-      sprintf(linebuffer,"Filecopy from device %d to device %d\n",devices[context],devices[1-context]);
+      sprintf(linebuffer,"Filecopy from device %d to device %d",devices[context],devices[1-context]);
       newscreen(linebuffer);
       if (copy(cwd->selected->dirent.name,
                devices[context],
@@ -497,7 +504,7 @@ void deleteSelected(void)
 
 	if (cwd->selected!=NULL)
     {
-      sprintf(linebuffer,"Delete file/directory on device %d\n",devices[context]);
+      sprintf(linebuffer,"Delete file/directory on device %d",devices[context]);
       newscreen(linebuffer);
       if (really())
         {
@@ -600,10 +607,10 @@ void about(void)
 	idx++;
 	idx++;
 	gotoxy(0,idx++);
-	cputs("      Copyright 2009 by Draco");
+	cputs("Copyright 2009 by Draco and others");
 	idx++;
 	gotoxy(0,idx++);
-	cputs("     https://github.com/doj/dracopy");
+	cputs("https://github.com/doj/dracopy");
 	idx++;
 	idx++;
 	gotoxy(0,idx++);
@@ -614,7 +621,7 @@ void about(void)
 	gotoxy(0,idx++);
 	cputs("IT IS PROVIDED WITH NO WARRANTY OF ANY ");
 	gotoxy(0,idx++);
-	cputs("KIND.\n");
+	cputs("KIND.");
 	idx++;
 	gotoxy(0,idx++);
 	textcolor(COLOR_LIGHTRED);
@@ -643,7 +650,7 @@ void doCopy(void)
 	srcdir=dirs[context];
 	destdir=dirs[1-context];
 
-	sprintf(linebuffer,"Filecopy from device %d to device %d\n",srcdev,destdev);
+	sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
 	newscreen(linebuffer);
 	if (srcdir==NULL || destdir==NULL)
     {
@@ -665,8 +672,8 @@ void doCopy(void)
             }
           current=current->next;
         }
-      cputs("\n\r");
-      waitKey(0);
+      //cputs("\n\r");
+      //waitKey(0);
     }
 }
 
@@ -716,7 +723,7 @@ void doDeleteMulti(void)
     }
 	else
     {
-      sprintf(linebuffer,"Delete files from device %d\n",devices[context]);
+      sprintf(linebuffer,"Delete files from device %d",devices[context]);
       newscreen(linebuffer);
       current = dirs[context]->firstelement;
       while (current!=NULL)
@@ -758,7 +765,7 @@ void doDeleteMulti(void)
               current=current->next;
             }
 
-          waitKey(0);
+          //waitKey(0);
 
           // refresh directories
           clrscr();
@@ -910,7 +917,7 @@ void printElement(Directory * dir,int xpos, int ypos)
 
 void doFormat(void)
 {
-	sprintf(linebuffer,"Format device %d\n",devices[context]);
+	sprintf(linebuffer,"Format device %d",devices[context]);
 	newscreen(linebuffer);
 	if (really())
     {
@@ -939,7 +946,7 @@ void doRename(void)
 
 	if (cwd->selected!=NULL)
     {
-      sprintf(linebuffer,"Rename file %s on device %d\n",cwd->selected->dirent.name,devices[context]);
+      sprintf(linebuffer,"Rename file %s on device %d",cwd->selected->dirent.name,devices[context]);
       newscreen(linebuffer);
       cputs("\n\rNew name (enter to skip): ");
       n=scanf ("%s",answer);
@@ -967,7 +974,7 @@ void doMakedir(void)
 	int n;
 	Directory * cwd = GETCWD;
 
-	sprintf(linebuffer,"Make directory on device %d\n",cwd->selected->dirent.name,devices[context]);
+	sprintf(linebuffer,"Make directory on device %d",cwd->selected->dirent.name,devices[context]);
 	newscreen(linebuffer);
 	cputs("\n\rName (enter to skip): ");
 	n=scanf ("%s",answer);
@@ -1009,6 +1016,22 @@ int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE 
 	int length=0;
 	unsigned char * linebuffer;
 	char deststring[30];
+  char type_ch;
+
+  switch(type)
+    {
+    case _CBM_T_SEQ:
+      type_ch = 's';
+      break;
+    case _CBM_T_PRG:
+      type_ch = 'p';
+      break;
+    case _CBM_T_USR:
+      type_ch = 'u';
+      break;
+    default:
+      return ERROR;
+    }
 
 	if( cbm_open (6,srcdevice,CBM_READ,srcfile) != 0)
     {
@@ -1017,7 +1040,7 @@ int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE 
     }
 
 	// create destination string with filetype like "FILE,P"
-	sprintf(deststring,"%s,%c",destfile,shorttypes[type]);
+	sprintf(deststring, "%s,%c", destfile, type_ch);
 	if( cbm_open (7,destdevice,CBM_WRITE,deststring) != 0)
     {
       cputs("Can't open output file\n");
@@ -1119,9 +1142,10 @@ printSecStatus(BYTE t, BYTE s, BYTE st)
   cputc(st);
 }
 
-void
+int
 doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 {
+  int ret;
   BYTE i, track;
   BYTE max_track = 35; // TODO: detect disk type
 
@@ -1153,10 +1177,10 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
       if (i == 'n' ||
           i == 27 ||
           i == 95)
-        return;
+        return 1;
     }
 
-  if ((i = cbm_open(2, deviceFrom, 5, "#")) != 0)
+  if ((i = cbm_open(9, deviceFrom, 5, "#")) != 0)
     {
       sprintf(diskCopyBuf, "device %i: open data failed: %i", deviceFrom, i);
       goto error;
@@ -1183,7 +1207,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
       BYTE sector;
       for(sector = 0; sector < max_sector; ++sector)
         {
-          int ret;
+          // TODO: kbhit() doesn't work
           if (kbhit())
             {
               i = cgetc();
@@ -1192,6 +1216,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
                   goto done;
                 }
             }
+
           printSecStatus(track, sector, 'R');
           ret = cbm_write(6, linebuffer, sprintf(linebuffer, "u1:5 0 %d %d", track + 1, sector));
           if (ret < 0)
@@ -1214,7 +1239,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
               continue;
             }
 
-          ret = cbm_read(2, diskCopyBuf, 256);
+          ret = cbm_read(9, diskCopyBuf, 256);
           if (ret != 256)
             {
               sprintf(diskCopyBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
@@ -1239,18 +1264,36 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
               continue;
             }
         }
+
+      gotoxy(0,24);
+      textcolor(COLOR_LIGHTBLUE);
+      switch(track)
+        {
+        case 5: cputs("this will take a while"); break;
+        case 6: cputs("                      "); break;
+        case 17: cputs("halftime"); break;
+        case 18: cputs("        "); break;
+        case 32: cputs("almost there"); break;
+        case 33: cputs("any minute now"); break;
+        case 34: cputs("writing last track!!!"); break;
+        }
     }
+
+  ret = 0;
   goto done;
 
  error:
+  ret = -1;
   gotoxy(0,24);
   textcolor(COLOR_LIGHTRED);
   cputs(diskCopyBuf);
   cgetc();
 
  done:
-  cbm_close(5);
-  cbm_close(4);
-  cbm_close(3);
-  cbm_close(2);
+  cbm_close(6);
+  cbm_close(7);
+  cbm_close(8);
+  cbm_close(9);
+
+  return ret;
 }

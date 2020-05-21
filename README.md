@@ -56,7 +56,7 @@ Version Information
 | 1.0  | 23 Jan 2009 | Initial Version | Sascha Bader
 | 1.0b | 23 May 2009 | Minor Bugfixes | Sascha Bader
 | 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader
-| 1.0d | ?           | implemented disk copy | Sascha Bader
+| 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader
 | 1.0e | 2018        | combined DraBrowse and DraCopy, single window | unknown
 | 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy in DraCopy, currently d64 is supported. | doj
 
