@@ -873,12 +873,13 @@ copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE type
   }
 */
 
-const char sectors[40] = {
+const char sectors[42] = {
   21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
   19, 19, 19, 19, 19, 19, 19,
   18, 18, 18, 18, 18, 18,
   17, 17, 17, 17, 17,
-  17, 17, 17, 17, 17
+  17, 17, 17, 17, 17, // track 36-40
+  17, 17 // track 41-42
 };
 
 BYTE diskCopyBuf[256];
@@ -889,12 +890,15 @@ printSecStatus(BYTE t, BYTE s, BYTE st)
   if (t & 0x80)
     {
       textcolor(COLOR_RED);
+      t &= 0x7f;
     }
   else
     {
       textcolor((t < 35) ? COLOR_GRAY3 : COLOR_GRAY1);
     }
-  gotoxy(2+t, 3+s);
+  if (t >= 40)
+    t = 39;
+  gotoxy(t, 3+s);
   cputc(st);
 }
 
@@ -907,24 +911,6 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 
 	sprintf(linebuffer, "Copy disk from device %d to %d? (Y/N)", deviceFrom, deviceTo);
   newscreen(linebuffer);
-  cputs("  00000000011111111112222222222333333333");
-  gotoxy(0,2);
-  cputs("  12345678901234567890123456789012345678");
-  for(i = 0; i < 21; ++i)
-    {
-      gotoxy(0,3+i);
-      cprintf("%02i", i);
-    }
-  for(i = 0; i < 38; ++i)
-    {
-      const BYTE max_s = sectors[i];
-      BYTE j;
-      for(j = 0; j < max_s; ++j)
-        {
-          printSecStatus(i, j, '.');
-        }
-    }
-
   while(1)
     {
       i = cgetc();
@@ -934,6 +920,19 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
           i == 27 ||
           i == 95)
         return 1;
+    }
+
+  cputs("0000000001111111111222222222233333333334");
+  gotoxy(0,2);
+  cputs("1234567890123456789012345678901234567890");
+  for(i = 0; i < 40; ++i)
+    {
+      const BYTE max_s = sectors[i];
+      BYTE j;
+      for(j = 0; j < max_s; ++j)
+        {
+          printSecStatus(i, j, '.');
+        }
     }
 
   if ((i = cbm_open(9, deviceFrom, 5, "#")) != 0)
@@ -957,10 +956,18 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
       goto error;
     }
 
-  for(track = 0; track < max_track; ++track)
+  for(track = 34; track < 42; ++track)
     {
       const BYTE max_sector = sectors[track];
       BYTE sector;
+
+      if (track >= 40)
+        {
+          gotoxy(39,2);
+          textcolor(textc);
+          cputc('1'+track-40);
+        }
+
       for(sector = 0; sector < max_sector; ++sector)
         {
           // TODO: kbhit() doesn't work
@@ -998,6 +1005,11 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
           ret = cbm_read(9, diskCopyBuf, 256);
           if (ret != 256)
             {
+              if (track == max_track && sector == 0)
+                {
+                  ret = 0;
+                  goto success;
+                }
               sprintf(diskCopyBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR;
               continue;
@@ -1029,12 +1041,17 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
         case 6: cputs("                      "); break;
         case 17: cputs("halftime"); break;
         case 18: cputs("        "); break;
-        case 32: cputs("almost there"); break;
-        case 33: cputs("any minute now"); break;
-        case 34: cputs("writing last track!!!"); break;
+        case 31: cputs("almost there"); break;
+        case 32: cputs("any minute now"); break;
+        case 33: cputs("writing last track!!!"); break;
+        case 35: cputs("this disk is oversized"); break;
         }
     }
 
+ success:
+  gotoxy(0,24);
+  textcolor(COLOR_LIGHTBLUE);
+  cputs("disk copy success          ");
   ret = 0;
   goto done;
 
@@ -1051,5 +1068,6 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
   cbm_close(8);
   cbm_close(9);
 
+  textcolor(textc);
   return ret;
 }

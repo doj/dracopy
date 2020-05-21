@@ -53,6 +53,8 @@ the following features or bugs should be fixed:
 - [ ] check keys on plus4
 - [ ] check pet
 - [ ] support d71 or d81 disk copy
+- [ ] test with JiffyDOS
+- [ ] test with FC3
 
 Version Information
 --------------------

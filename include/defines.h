@@ -81,17 +81,15 @@
 #define OK 0
 
 // keyboard buffer
-#ifdef __PLUS4__
-  #define  KBCHARS 1319
-  #define  KBNUM 239
+#if defined(__PLUS4__)
+#define KBCHARS 1319
+#define KBNUM 239
+#elif defined(__C128__)
+#define KBCHARS 842
+#define KBNUM 208
 #else
-  #ifdef __C128__
-    #define  KBCHARS 842
-    #define KBNUM 208
-  #else
-      #define KBCHARS 631
-      #define KBNUM 198
-  #endif
+#define KBCHARS 631
+#define KBNUM 198
 #endif
 
 
