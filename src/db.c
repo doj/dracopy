@@ -51,7 +51,7 @@ updateMenu(void)
 	BYTE menuy=MENUY;
 
 	revers(0);
-	drawFrame(NULL,MENUX,MENUY,MENUW,MENUH+1);
+	drawFrame(NULL,MENUX,MENUY,MENUW,MENUH+1,NULL);
 
 	menuy+=2;
 	gotoxy(MENUX+1,menuy++);

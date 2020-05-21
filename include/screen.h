@@ -29,8 +29,8 @@
 #define SCREEN_H
 #include "defines.h"
 void clearArea(BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize);
-void newscreen(char * title);
-void drawFrame( char * title, BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize);
-void initScreen( unsigned char border, unsigned char bg, unsigned char text);
+void newscreen(char *title);
+void drawFrame(char *title, BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize, char *subtitle);
+void initScreen(unsigned char border, unsigned char bg, unsigned char text);
 void exitScreen(void);
 #endif

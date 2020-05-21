@@ -22,6 +22,7 @@ Directory* dirs[] = {NULL,NULL};
 BYTE context = 0;
 BYTE devices[] = {8,9};
 char linebuffer[SCREENW+1];
+char linebuffer2[SCREENW+1];
 
 #ifdef CHAR80
 BYTE DIRH = 22;
@@ -39,8 +40,8 @@ cmd(unsigned char device, unsigned char * cmd)
 	{
 	  cputs("ERROR");
 	  return(ERROR);
-    }
-  	cbm_close(15);
+  }
+  cbm_close(15);
 	return OK;
 }
 
@@ -311,9 +312,9 @@ showDir(Directory * dir, BYTE mycontext)
       textcolor(textc);
     }
 
-	drawFrame(linebuffer,(mycontext==0)?DIR1X:DIR2X,(mycontext==0)?DIR1Y:DIR2Y,DIRW+2,DIRH+2);
-	gotoxy((mycontext==0)?DIR1X+1:DIR2X+1,(mycontext==0)?(DIR1Y+DIRH+1):(DIR2Y+DIRH+1));
-	cprintf(">%u blocks free<",dir->free);
+	sprintf(linebuffer2, ">%u blocks free<", dir->free);
+	drawFrame(linebuffer, (mycontext==0)?DIR1X:DIR2X, (mycontext==0)?DIR1Y:DIR2Y, DIRW+2, DIRH+2, linebuffer2);
+
 	textcolor(textc);
 	printDir(dir,(mycontext==0)?DIR1X+1:DIR2X+1,(mycontext==0)?DIR1Y:DIR2Y);
 }

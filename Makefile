@@ -4,15 +4,13 @@
 
 D64=dracopy10doj.d64
 all: dc64 dc128 dc1280 dcp4 dcpet8 db64 db128 db1280 dbp4 dbpet8 db610 dc610
-	$(RM) $(D64)
-	c1541 -format 'dracopy 1.0doj,dc' d64 $(D64)
-	for i in $^ ; do c1541 -attach $(D64) -write $$i ; done
+	sh d64.sh 'dracopy 1.0doj,dc' $(D64) $^
 
 D64_9=9.d64
 
 $(D64_9):
-	c1541 -format 'number nine,dc' d64 $@
-	for i in `perl -e 'for(1..60){print "$$_ "}'` ; do echo $$i > $$i.seq ; c1541 -attach $(D64_9) -write $$i.seq ; done
+	for i in `perl -e 'for(1..60){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
+	sh d64.sh 'number nine,n9' $@ *.seq
 	$(RM) *.seq
 
 X64?=x64sc

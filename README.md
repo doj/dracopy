@@ -1,11 +1,11 @@
-DraCopy and DraBro
-===================
+DraCopy and DraBrowsw
+======================
 
 DraCopy - a simple copy program.
 
 ![dracopy screenshot](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64.png)
 
-DraBro  - a simple file browser.
+DraBrowse  - a simple file browser.
 
 ![drabro screenshot](https://raw.githubusercontent.com/doj/dracopy/master/images/db64.png)
 

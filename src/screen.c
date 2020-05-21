@@ -64,32 +64,22 @@ newscreen(char * title)
 }
 
 void
-drawFrame(char * title, BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize)
+drawFrame(char * title, BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize, char *subtitle)
 {
-  BYTE h1 = 0;
-  BYTE title_len = 0;
-
   // top
   gotoxy(xpos,ypos);
   cputc(CH_ULCORNER);
+  chline(xsize-2);
+  cputc(CH_URCORNER);
 
   if (title)
     {
-      title_len = strlen(title);
-      h1 = (xsize-2-title_len)/2;
-      chline(h1);
-
+      BYTE title_len = strlen(title);
+      gotoxy(xpos + (xsize-title_len)/2 ,ypos);
       revers(1);
       cputs(title);
       revers(0);
-
-      chline(xsize-h1-title_len-2);
     }
-  else
-    {
-      chline(xsize-2);
-    }
-  cputc(CH_URCORNER);
 
   // left
   cvlinexy(xpos, ypos + 1, ysize - 2);
@@ -98,6 +88,14 @@ drawFrame(char * title, BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize)
   cputc(CH_LLCORNER);
   chline(xsize - 2);
   cputc(CH_LRCORNER);
+
+  if (subtitle)
+    {
+      gotoxy(xpos+2, ypos+ysize-1);
+      revers(1);
+      cputs(subtitle);
+      revers(0);
+    }
 
   // right
   cvlinexy(xpos + xsize - 1, ypos + 1, ysize - 2);
