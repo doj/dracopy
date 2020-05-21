@@ -36,6 +36,9 @@
 
 # define CBM_T_FREE 100
 
+static const char progressBar[4] = { 0xA5, 0xA1, 0xA7, ' ' };
+static const char progressRev[4] = { 0,    0,    1,    1 };
+
 /**
  * read directory of device @p device and print information to window @p context.
  * @param[in,out] dir pointer to Directory object, if dir!=NULL it will be freed.
@@ -48,7 +51,9 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
 	DirElement * previous = NULL;
 	DirElement * current = NULL;
 
-  BYTE xpos = 0xff;
+  BYTE cnt = 0xff;
+  const BYTE y = (context==0) ? DIR1Y : DIR2Y;
+  BYTE x = 0;
 
 	unsigned char stat = 0;
 
@@ -78,19 +83,22 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
       if (stat==0)
         {
           // print progress bar
-          if (xpos >= MENUX)
+          if ((cnt>>2) >= MENUX-1)
             {
+              cnt = 0;
+              x = (context==0) ? DIR1X : DIR2X;
               revers(0);
-              gotoxy((context==0) ? DIR1X : DIR2X, (context==0) ? DIR1Y : DIR2Y );
-              cputs("                         ");
-              gotoxy((context==0) ? DIR1X : DIR2X, (context==0) ? DIR1Y : DIR2Y );
-              revers(1);
-              xpos = 0;
+              gotoxy(x, y);
+              cclear(MENUX);
+              gotoxy(MENUX/2-5, y);
+              cprintf("read dir: %02i", device);
             }
           else
             {
-              cputc(' ');
-              ++xpos;
+              gotoxy(x + (cnt>>2), y);
+              revers(progressRev[cnt & 3]);
+              cputc(progressBar[cnt & 3]);
+              ++cnt;
             }
 
           if (dir==NULL)
