@@ -24,7 +24,7 @@ const char* fileTypeToStr(BYTE ft);
 void showDir(Directory * dir, BYTE mycontext);
 unsigned char dosCommand(unsigned char lfn, unsigned char drive, unsigned char sec_addr, char *cmd);
 
-enum drive_e {NONE=0, D1541, D1571, D1581, SD2IEC, CMD, VICE, LAST_DRIVE_E};
+enum drive_e {NONE=0, D1540, D1541, D1551, D1570, D1571, D1581, SD2IEC, CMD, VICE, LAST_DRIVE_E};
 
 extern BYTE DIRH;
 extern BYTE devicetype[];

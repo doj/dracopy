@@ -48,13 +48,9 @@ for the source code.
 TODO
 -----
 the following features or bugs should be fixed:
-- [ ] fix keys on 128
-- [ ] check c128 80 cols
-- [ ] check keys on plus4
-- [ ] support d71 or d81 disk copy
-- [ ] test with JiffyDOS
 - [ ] support directories and sd2iec stuff
 - [ ] format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
+- [ ] find out why 1540 and 1570 don't work (?)
 
 Version Information
 --------------------

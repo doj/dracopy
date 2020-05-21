@@ -26,7 +26,7 @@ char linebuffer[SCREENW+1];
 char linebuffer2[SCREENW+1];
 
 #ifdef CHAR80
-BYTE DIRH = 22;
+BYTE DIRH = 23;
 #else
 BYTE DIRH = 10;
 #endif
@@ -34,7 +34,7 @@ BYTE DIRH = 10;
 char message[40];
 
 /// string descriptions of enum drive_e
-const char* drivetype[LAST_DRIVE_E] = {"\0", "1541", "1571", "1581", "sd2iec", "cmd", "vice"};
+const char* drivetype[LAST_DRIVE_E] = {"\0", "1540", "1541", "1551", "1570", "1571", "1581", "sd2iec", "cmd", "vice"};
 /// enum drive_e value for each device 0-11.
 BYTE devicetype[12];
 
@@ -64,6 +64,12 @@ getDeviceType(BYTE context)
           return drivetype[idx];
         }
     }
+  if(strstr(message, "tdisk"))
+    {
+      devicetype[device] = D1551;
+      return drivetype[D1551];
+    }
+  return message;
   return "!nf";
 }
 

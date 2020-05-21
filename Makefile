@@ -3,7 +3,7 @@
 
 D64=dracopy10doj.d64
 
-all: dc64 dc128 dc1280 dcp4 db64 db128 db1280 dbp4 dbpet8 db610 dc610
+all: dc64 dc128 dc1280 dcp4 db64 db128 db1280 dbp4 dbpet8 dbv # db610 dc610
 	sh d64.sh 'dracopy 1.0doj,dc' $(D64) $^
 
 COMMON_SRC=src/screen.c src/cat.c src/dir.c src/base.c src/ops.c
@@ -56,9 +56,8 @@ db610:	$(DB_SRC)
 dbpet8:	$(DB_SRC)
 	cl65 -I include -t pet -DCHAR80 -DNOCOLOR $^ -o $@
 
-# code too big
 dbv:	$(DB_SRC)
-	cl65 -I include -t vic20 $^ -o $@
+	cl65 -I include -t vic20 $^ -o $@ -C vic20-32k.cfg
 
 clean:
 	$(RM) -rf d src/*.o src/*.s *.prg *.d64 *.d71 *.d81 \
@@ -71,16 +70,15 @@ clean:
 # testing
 
 D64_9=9.d64
-
 $(D64_9):
-	for i in `perl -e 'for(1..6){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
+	for i in `perl -e 'for(1..66){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
 	sh d64.sh 'number nine,n9' $@ *.seq
 	$(RM) *.seq
 
 D71=10.d71
 $(D71):
-	for i in `perl -e 'for(1..6){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
-	TYPE=d71 sh d64.sh 'test,71' $@ *.seq
+	for i in `perl -e 'for(1..66){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
+	TYPE=d71 sh d64.sh 'test,71' $@ *.seq dc128.prg dc1280.prg
 	$(RM) *.seq
 
 D71_2=10_2.d71
@@ -89,7 +87,7 @@ $(D71_2):
 
 D81=11.d81
 $(D81):
-	for i in `perl -e 'for(1..6){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
+	for i in `perl -e 'for(1..66){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
 	TYPE=d81 sh d64.sh 'test,81' $@ *.seq
 	$(RM) *.seq
 
@@ -99,7 +97,7 @@ $(D81_2):
 
 X64?=x64sc
 x64:	all $(D64_9) $(D71) $(D81)
-	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -9 $(D64_9) -drive10type 1571 -10 $(D71) -drive11type 1581 -11 $(D81)
+	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1571 -10 $(D71) -drive11type 1581 -11 $(D81)
 
 x64_71:	all $(D71) $(D71_2)
 	$(X64) -autostart dc64.prg -drive8type 1571 -8 $(D71) -drive9type 1571 -9 $(D71_2)
@@ -107,11 +105,21 @@ x64_71:	all $(D71) $(D71_2)
 x64_81:	all $(D81) $(D81_2)
 	$(X64) -autostart dc64.prg -drive8type 1581 -8 $(D81) -drive9type 1581 -9 $(D81_2)
 
-x128:	all $(D64_9)
-	$@ -8 $(D64) -autostart dc128.prg -9 $(D64_9)
+X128?=x128
+x128:	all $(D71) $(D71_2) $(D64) $(D64_9)
+	$(X128) -autostart dc128.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1570 -10 $(D64) -drive11type 1570 -11 $(D64_9)
 
+x1280:	all $(D64_9)
+	$(X128) -80col -drive8type 1571 -8 $(D71) -drive9type 1571 -9 $(D71_2)
+
+XPLUS4?=xplus4
 xplus4:	all $(D64_9)
-	$@ -8 $(D64) -autostart dcp4.prg -9 $(D64_9)
+	$(XPLUS4) -autostart dcp4.prg -drive8type 1551 -8 $(D64) -drive9type 1551 -9 $(D64_9)
 
+XPET?=xpet
 xpet:	all $(D64_9)
-	$@ -8 $(D64) -autostart dbpet8.prg -9 $(D64_9)
+	$(XPET) -autostart dbpet8.prg -8 $(D64) -9 $(D64_9)
+
+XVIC?=xvic
+xvic:	all  $(D64_9)
+	$(XVIC) -autostart dbv -drive8type 1540 -8 $(D64) -drive9type 1540 -9 $(D64_9)

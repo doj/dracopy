@@ -98,7 +98,7 @@ mainLoop(void)
 	BYTE lastpage = 0;
 	BYTE nextpage = 0;
 
-  DIRH = 22;
+  DIRH = 23;
 	context = 0;
 	devices[0]=8;
 	devices[1]=9;
@@ -111,12 +111,14 @@ mainLoop(void)
       c = cgetc();
     	switch (c)
       	{
+        case '1':
         case CH_F1:
 					dirs[context]=readDir(dirs[context],devices[context],context);
 					clrDir(context);
 					showDir(dirs[context],context);
 					break;
 
+        case '2':
         case CH_F2:
 					if (++devices[context] >= 12)
             devices[context]=8;
@@ -125,11 +127,13 @@ mainLoop(void)
 					updateScreen(1);
 					break;
 
+        case '3':
         case CH_F3:
 					cathex(devices[context],dirs[context]->selected->dirent.name);
 					updateScreen(1);
 					break;
 
+        case '4':
         case CH_F4:
 					catasc(devices[context],dirs[context]->selected->dirent.name);
 					updateScreen(1);

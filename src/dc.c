@@ -156,12 +156,14 @@ mainLoop(void)
       const BYTE c = cgetc();
     	switch (c)
       	{
+        case '1':
         case CH_F1:
 					dirs[context]=readDir(dirs[context],devices[context],context);
 					clrDir(context);
 					showDir(dirs[context],context);
 					break;
 
+        case '2':
         case CH_F2:
 					do
             {
@@ -174,16 +176,19 @@ mainLoop(void)
 					updateScreen(2);
 					break;
 
+        case '3':
         case CH_F3:
 					cathex(devices[context],dirs[context]->selected->dirent.name);
 					updateScreen(2);
 					break;
 
+        case '4':
         case CH_F4:
 					catasc(devices[context],dirs[context]->selected->dirent.name);
 					updateScreen(2);
 					break;
 
+        case '5':
         case CH_F5:
 					doCopy();
 					clrscr();
@@ -195,11 +200,13 @@ mainLoop(void)
 					updateScreen(2);
 					break;
 
+        case '6':
         case CH_F6:
 					doDeleteMulti();
 					updateScreen(2);
 					break;
 
+        case '7':
         case CH_F7:
 					if (dirs[context]->selected)
             {
@@ -207,19 +214,18 @@ mainLoop(void)
             }
 					break;
 
+        case '8':
         case CH_F8:
           {
             const BYTE other_context = 1-context;
             int ret = doDiskCopy(devices[context], devices[other_context]);
-            if (ret == 0)
-              {
-                dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
-              }
+            dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
             updateScreen(2);
           }
 					break;
 
           // ----- switch context -----
+        case '0':
         case 27:  // escape
 		    case 95:  // arrow left
 					oldcwd=GETCWD;
@@ -883,10 +889,24 @@ const char sectors1571[70] = {
 
 BYTE diskCopyBuf[256];
 
+#define IS_1541(dt) (dt == D1540 || dt == D1541 || dt == D1551 || dt == D1570)
+
+BYTE
+maxTrack(BYTE dt)
+{
+  if (IS_1541(dt))
+    return 42;
+  else if (dt == D1571)
+    return 70;
+  else if (dt == D1581)
+    return 80;
+  return 0;
+}
+
 BYTE
 maxSector(BYTE dt, BYTE t)
 {
-  if (dt == D1541)
+  if (IS_1541(dt))
     return sectors1541[t];
   if (dt == D1571)
     return sectors1571[t];
@@ -907,7 +927,7 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
     {
       textcolor(COLOR_GRAY3);
     }
-  if (dt == D1541)
+  if (IS_1541(dt))
     {
       if (t >= 35)
         textcolor(COLOR_GRAY1);
@@ -941,24 +961,19 @@ int
 doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 {
   int ret;
-  BYTE i, track;
-  BYTE max_track;
   const BYTE dt = devicetype[deviceFrom];
-  if (dt != devicetype[deviceTo])
+  const BYTE max_track = maxTrack(dt);
+  BYTE i = devicetype[deviceTo];
+  BYTE track = maxTrack(i);
+  if (max_track != track)
     {
-      sprintf(linebuffer, "can't copy from %s to %s", drivetype[dt], drivetype[devicetype[deviceTo]]);
+      sprintf(linebuffer, "can't copy from %s (%i) to %s (%i)", drivetype[dt], max_track, drivetype[i], track);
       newscreen(linebuffer);
       cgetc();
       return ERROR;
     }
 
-  if (dt == D1541)
-    max_track = 42;
-  else if (dt == D1571)
-    max_track = 70;
-  else if (dt == D1581)
-    max_track = 80;
-  else
+  if (max_track == 0)
     {
       sprintf(linebuffer, "can't copy drive type %s", drivetype[dt]);
       newscreen(linebuffer);
@@ -986,7 +1001,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
     {
       BYTE max_s = 40;
       BYTE sector;
-      if (dt == D1541)
+      if (IS_1541(dt))
         max_s = sectors1541[track];
       else if (dt == D1571)
         {
@@ -1027,7 +1042,8 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
       BYTE sector;
 
       // check if 1541 writes to extra tracks
-      if (dt == D1541 && track >= 40)
+      if (IS_1541(dt)
+          && track >= 40)
         {
           gotoxy(39,2);
           textcolor(textc);
@@ -1052,7 +1068,6 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 
       for(sector = 0; sector < max_sector; ++sector)
         {
-          // TODO: kbhit() doesn't work
           if (kbhit())
             {
               i = cgetc();
@@ -1088,7 +1103,9 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
           if (ret != 256)
             {
               // check for expected failures at the end of a disk
-              if (dt == D1541 && track >= 35 && sector == 0)
+              if (IS_1541(dt)
+                  && track >= 35
+                  && sector == 0)
                 {
                   ret = 0;
                   goto success;
@@ -1121,7 +1138,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
             }
         }
 
-      if (dt == D1541)
+      if (IS_1541(dt))
         {
           gotoxy(0,24);
           textcolor(COLOR_LIGHTBLUE);
