@@ -66,18 +66,16 @@
 #define GETCWD dirs[context]
 #define DIRW  25
 #define DIR1X 0
+#define DIR1Y 0
 
 #ifdef CHAR80
   #define DIR2X DIRW+4
   #define DIR2Y 0
-  #define DIRH 22
 #else
   #define DIR2X 0
   #define DIR2Y 12
-  #define DIRH 10
 #endif
 
-#define DIR1Y 0
 #define SPLITTER 12
 #define ERROR -1
 #define OK 0

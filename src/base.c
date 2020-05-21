@@ -26,9 +26,9 @@
  *
  */
 
+#include "base.h"
 #include <stdio.h>
 #include <conio.h>
-#include <base.h>
 
 BYTE waitKey(BYTE flag)
 {

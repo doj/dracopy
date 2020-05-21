@@ -32,9 +32,8 @@
 #include <cbm.h>
 #include <sys/types.h>
 #include <stdlib.h>
-#include <cat.h>
-#include <base.h>
-
+#include "cat.h"
+#include "base.h"
 #include "defines.h"
 
 #define x2(x) (buffer[x] < 10 ? "0" : ""), buffer[x]
@@ -168,65 +167,6 @@ int catasc(BYTE device, char * filename)
 	return 0;
 }
 
-/*
-int catasc(BYTE device, char * filename)
-{
-	unsigned int c;
-	BYTE pchar = 0;
-	BYTE cnt = 0;
-	int offset = 0;
-	unsigned int len;
-	char buffer[40];
-
-	if( cbm_open (6,device,CBM_READ,filename) != 0)
-	{
-		cputs("Can't open input file!\n");
-	}
-	else
-	{
-		offset=0;
-		do
-		{
-			if (cnt==0)
-			{
-			 	clrscr();
-#ifdef __cbm610__
-			 	gotoxy(0,0);
-#endif
-			}
-			len = cbm_read (6, buffer, sizeof(buffer));
-			for (c=0;c<len;c++)
-			{
-				pchar = buffer[c];
-				if (pchar==9)	// tab
-				{
-				  puts("    ");
-				}
-				else if (pchar==13)	// cr
-				{
-				  puts("\n\r");
-				}
-				else
-				{
-					putchar(filterchar(pchar));
-				}
-			}
-			cnt++;
-			if (cnt==23 || (len!=sizeof(buffer)))
-			{
-				cnt=0;
-				gotoxy(0,24);
-				c=waitKey(1);
-			}
-	    }
-	    while(len==sizeof(buffer) && c!=3 && c!='q');
-		cbm_close (6);
-	}
-
-	return 0;
-}
-*/
-
 BYTE filterchar(BYTE pchar)
 {
 	if (! (	pchar==13 ||
@@ -246,30 +186,3 @@ BYTE filterchar(BYTE pchar)
 	}
 	return pchar;
 }
-
-
-/*
-
-int cata(char * filename)
-{
-	  FILE * pFile;
-	  int c;
-	  int n = 0;
-	  pFile=fopen (filename,"r");
-	  if (pFile==NULL) perror ("Error opening file");
-	  else
-	  {
-	    do {
-	      c = fgetc (pFile);
-	      putchar(c);
-	    } while (c != EOF);
-	    fclose (pFile);
-	  }
-	  return 0;
-}*/
-
-
-
-
-
-

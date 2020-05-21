@@ -29,6 +29,7 @@
 #define DIR_H_
 
 #include "defines.h"
+#include <cbm.h>
 
 typedef struct direlement {
 	struct cbm_dirent dirent;
