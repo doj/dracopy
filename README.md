@@ -2,7 +2,12 @@ DraCopy and DraBro
 ===================
 
 DraCopy - a simple copy program.
+
+![dracopy screenshot](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64.png)
+
 DraBro  - a simple file browser.
+
+![drabro screenshot](https://raw.githubusercontent.com/doj/dracopy/master/images/db64.png)
 
 Created 2009 by Sascha Bader.
 
@@ -13,11 +18,11 @@ Directories are supported on CMD compatible devices only.
 
 | Platforms | Executables |
 | --------- | ----------- |
-| C64       | dc64/db64
-| C128      | dc128/db128 (40 Columns), dc1280/db1280 (80 Columns)
-| Plus 4    | dcp4/dbp4
-| CBM 610   | dc610/db610
-| PET 8096  | dcpet8/dbpet8  (Note: use keys 1-8 instead of fkeys)
+| C64       | dc64, db64
+| C128      | dc128, db128 (40 Columns), [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.gif), db1280 (80 Columns)
+| Plus 4    | dcp4, dbp4
+| CBM 610   | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
+| PET 8096  | dcpet8, dbpet8  (Note: use keys 1-8 instead of fkeys)
 
 source code
 ------------
@@ -32,12 +37,9 @@ it currently has version 1.0d for download, but the source code is not available
 
 The 1.0e version was updated by an unknown developer.
 
-The master branch is currently empty. Look at the branches
+The master branch is currently used to develop the 1.0doj version.
 
-- 1.0c
-- 1.0e
-
-for source code of those versions. The code was tested to build on a unix system with GNU make.
+The code was tested to build on a unix system with GNU make.
 
 You can use pucrunch to compress the compiled dracopy program.
 See http://a1bert.kapsi.fi/Dev/pucrunch/ or https://github.com/mist64/pucrunch
