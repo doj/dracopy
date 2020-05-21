@@ -1,5 +1,26 @@
-dracopy
-========
+DraCopy and DraBro
+===================
+
+DraCopy - a simple copy program.
+DraBro  - a simple file browser.
+
+Created 2009 by Sascha Bader.
+
+Since both programs make use of kernal routines they shall
+be able to work with most file oriented IEC devices.
+
+Directories are supported on CMD compatible devices only.
+
+| Platforms | Executables |
+| --------- | ----------- |
+| C64       | dc64/db64
+| C128      | dc128/db128 (40 Columns), dc1280/db1280 (80 Columns)
+| Plus 4    | dcp4/dbp4
+| CBM 610   | dc610/db610
+| PET 8096  | dcpet8/dbpet8  (Note: use keys 1-8 instead of fkeys)
+
+source code
+------------
 This repository contains the source code of the Commodore 64 copy program dracopy.
 I have found two versions of the source code:
 - 1.0c on https://csdb.dk/release/?id=89910
@@ -11,8 +32,6 @@ it currently has version 1.0d for download, but the source code is not available
 
 The 1.0e version was updated by an unknown developer.
 
-source code
-------------
 The master branch is currently empty. Look at the branches
 
 - 1.0c
@@ -24,6 +43,11 @@ You can use pucrunch to compress the compiled dracopy program.
 See http://a1bert.kapsi.fi/Dev/pucrunch/ or https://github.com/mist64/pucrunch
 for the source code.
 
+TODO
+-----
+the following features or bugs should be fixed:
+- [ ] support d71 or d81 disk copy
+
 Version Information
 --------------------
 
@@ -34,6 +58,7 @@ Version Information
 | 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader
 | 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader
 | 1.0e | 2018        | combined DraBrowse and DraCopy, single window | unknown
+| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy in DraCopy, currently d64 is supported. | doj
 
 Copyright Notice
 -----------------
