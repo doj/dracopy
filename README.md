@@ -53,8 +53,8 @@ the following features or bugs should be fixed:
 - [ ] check keys on plus4
 - [ ] support d71 or d81 disk copy
 - [ ] test with JiffyDOS
-- [ ] test with FC3
 - [ ] support directories and sd2iec stuff
+- [ ] format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
 
 Version Information
 --------------------

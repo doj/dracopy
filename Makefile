@@ -1,30 +1,10 @@
-#src/%.o: src/%.c include/%.h
-#	cc65 -O -I include -t c64 $<
-#	ca65 -I include -t c64 src/$$(basename $< .c).s
+##############################################################################
+# building
 
 D64=dracopy10doj.d64
+
 all: dc64 dc128 dc1280 dcp4 db64 db128 db1280 dbp4 dbpet8 db610 dc610
 	sh d64.sh 'dracopy 1.0doj,dc' $(D64) $^
-
-D64_9=9.d64
-
-$(D64_9):
-	for i in `perl -e 'for(1..6){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
-	sh d64.sh 'number nine,n9' $@ *.seq
-	$(RM) *.seq
-
-X64?=x64sc
-x64:	all $(D64_9)
-	$(X64) -8 $(D64) -autostart dc64.prg -9 $(D64_9)
-
-x128:	all $(D64_9)
-	$@ -8 $(D64) -autostart dc128.prg -9 $(D64_9)
-
-xplus4:	all $(D64_9)
-	$@ -8 $(D64) -autostart dcp4.prg -9 $(D64_9)
-
-xpet:	all $(D64_9)
-	$@ -8 $(D64) -autostart dbpet8.prg -9 $(D64_9)
 
 COMMON_SRC=src/screen.c src/cat.c src/dir.c src/base.c src/ops.c
 DC_SRC=src/dc.c $(COMMON_SRC)
@@ -48,8 +28,9 @@ dcp4:	$(DC_SRC)
 dc610:	$(DC_SRC)
 	cl65 -I include -t cbm610 -DCHAR80 -DNOCOLOR $^ -o $@
 
-#dcpet8:	$(DC_SRC)
-#	cl65 -I include -t pet -DCHAR80 -DNOCOLOR $^ -o $@
+# code too big
+dcpet8:	$(DC_SRC)
+	cl65 -I include -t pet -DCHAR80 -DNOCOLOR $^ -o $@
 
 DB_SRC=src/db.c $(COMMON_SRC)
 
@@ -75,13 +56,62 @@ db610:	$(DB_SRC)
 dbpet8:	$(DB_SRC)
 	cl65 -I include -t pet -DCHAR80 -DNOCOLOR $^ -o $@
 
-# todo: doesn't build
+# code too big
 dbv:	$(DB_SRC)
 	cl65 -I include -t vic20 $^ -o $@
 
 clean:
-	$(RM) -rf d src/*.o src/*.s *.prg $(D64) 9.d64 \
+	$(RM) -rf d src/*.o src/*.s *.prg *.d64 *.d71 *.d81 \
 	dc64 dc128 dc1280 dcpet8 dcp4 dc610 \
 	db64 db128 db1280 dbpet8 dbp4 db610 \
 	dbv
 	find . -name '*~' -delete
+
+##############################################################################
+# testing
+
+D64_9=9.d64
+
+$(D64_9):
+	for i in `perl -e 'for(1..6){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
+	sh d64.sh 'number nine,n9' $@ *.seq
+	$(RM) *.seq
+
+D71=10.d71
+$(D71):
+	for i in `perl -e 'for(1..6){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
+	TYPE=d71 sh d64.sh 'test,71' $@ *.seq
+	$(RM) *.seq
+
+D71_2=10_2.d71
+$(D71_2):
+	c1541 -format 'test2,71' d71 $@
+
+D81=11.d81
+$(D81):
+	for i in `perl -e 'for(1..6){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
+	TYPE=d81 sh d64.sh 'test,81' $@ *.seq
+	$(RM) *.seq
+
+D81_2=11_2.d81
+$(D81_2):
+	c1541 -format 'test2,81' d81 $@
+
+X64?=x64sc
+x64:	all $(D64_9) $(D71) $(D81)
+	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -9 $(D64_9) -drive10type 1571 -10 $(D71) -drive11type 1581 -11 $(D81)
+
+x64_71:	all $(D71) $(D71_2)
+	$(X64) -autostart dc64.prg -drive8type 1571 -8 $(D71) -drive9type 1571 -9 $(D71_2)
+
+x64_81:	all $(D81) $(D81_2)
+	$(X64) -autostart dc64.prg -drive8type 1581 -8 $(D81) -drive9type 1581 -9 $(D81_2)
+
+x128:	all $(D64_9)
+	$@ -8 $(D64) -autostart dc128.prg -9 $(D64_9)
+
+xplus4:	all $(D64_9)
+	$@ -8 $(D64) -autostart dcp4.prg -9 $(D64_9)
+
+xpet:	all $(D64_9)
+	$@ -8 $(D64) -autostart dbpet8.prg -9 $(D64_9)

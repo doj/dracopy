@@ -156,8 +156,6 @@ mainLoop(void)
       const BYTE c = cgetc();
     	switch (c)
       	{
-    		case 10:
-
         case CH_F1:
 					dirs[context]=readDir(dirs[context],devices[context],context);
 					clrDir(context);
@@ -167,7 +165,8 @@ mainLoop(void)
         case CH_F2:
 					do
             {
-              if (devices[context]++>12) devices[context]=8;
+              if (++devices[context] > 11)
+                devices[context] = 8;
             }
 					while(devices[context]==devices[1-context]);
 					freeDir(&dirs[context]);
@@ -862,7 +861,7 @@ copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE type
   }
 */
 
-const char sectors[42] = {
+const char sectors1541[42] = {
   21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
   19, 19, 19, 19, 19, 19, 19,
   18, 18, 18, 18, 18, 18,
@@ -871,10 +870,33 @@ const char sectors[42] = {
   17, 17 // track 41-42
 };
 
+const char sectors1571[70] = {
+  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+  19, 19, 19, 19, 19, 19, 19,
+  18, 18, 18, 18, 18, 18,
+  17, 17, 17, 17, 17,
+  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+  19, 19, 19, 19, 19, 19, 19,
+  18, 18, 18, 18, 18, 18,
+  17, 17, 17, 17, 17
+};
+
 BYTE diskCopyBuf[256];
 
+BYTE
+maxSector(BYTE dt, BYTE t)
+{
+  if (dt == D1541)
+    return sectors1541[t];
+  if (dt == D1571)
+    return sectors1571[t];
+  if (dt == D1581)
+    return 40;
+  return 0;
+}
+
 void
-printSecStatus(BYTE t, BYTE s, BYTE st)
+printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
 {
   if (t & 0x80)
     {
@@ -883,10 +905,34 @@ printSecStatus(BYTE t, BYTE s, BYTE st)
     }
   else
     {
-      textcolor((t < 35) ? COLOR_GRAY3 : COLOR_GRAY1);
+      textcolor(COLOR_GRAY3);
     }
-  if (t >= 40)
-    t = 39;
+  if (dt == D1541)
+    {
+      if (t >= 35)
+        textcolor(COLOR_GRAY1);
+      if (t >= 40)
+        t = 39;
+    }
+  else if (dt == D1571 && t >= 35)
+    {
+      t -= 35;
+      textcolor(COLOR_WHITE);
+    }
+  else if (dt == D1581)
+    {
+      if (t >= 40)
+        {
+          textcolor(COLOR_WHITE);
+          t -= 40;
+        }
+      if ((s&1) == 0)
+        {
+          if (st == 'R') st = 'r';
+          else if (st == 'W') st = 'w';
+        }
+      s >>= 1;
+    }
   gotoxy(t, 3+s);
   cputc(st);
 }
@@ -896,7 +942,29 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 {
   int ret;
   BYTE i, track;
-  BYTE max_track = 35; // TODO: detect disk type
+  BYTE max_track;
+  const BYTE dt = devicetype[deviceFrom];
+  if (dt != devicetype[deviceTo])
+    {
+      sprintf(linebuffer, "can't copy from %s to %s", drivetype[dt], drivetype[devicetype[deviceTo]]);
+      newscreen(linebuffer);
+      cgetc();
+      return ERROR;
+    }
+
+  if (dt == D1541)
+    max_track = 42;
+  else if (dt == D1571)
+    max_track = 70;
+  else if (dt == D1581)
+    max_track = 80;
+  else
+    {
+      sprintf(linebuffer, "can't copy drive type %s", drivetype[dt]);
+      newscreen(linebuffer);
+      cgetc();
+      return ERROR;
+    }
 
 	sprintf(linebuffer, "Copy disk from device %d to %d? (Y/N)", deviceFrom, deviceTo);
   newscreen(linebuffer);
@@ -914,13 +982,21 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
   cputs("0000000001111111111222222222233333333334");
   gotoxy(0,2);
   cputs("1234567890123456789012345678901234567890");
-  for(i = 0; i < 40; ++i)
+  for(track = 0; track < 40; ++track)
     {
-      const BYTE max_s = sectors[i];
-      BYTE j;
-      for(j = 0; j < max_s; ++j)
+      BYTE max_s = 40;
+      BYTE sector;
+      if (dt == D1541)
+        max_s = sectors1541[track];
+      else if (dt == D1571)
         {
-          printSecStatus(i, j, '.');
+          if (track == 35)
+            break;
+          max_s = sectors1571[track];
+        }
+      for(sector = 0; sector < max_s; ++sector)
+        {
+          printSecStatus(dt, track, sector, '.');
         }
     }
 
@@ -945,16 +1021,33 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
       goto error;
     }
 
-  for(track = 34; track < 42; ++track)
+  for(track = 0; track < max_track; ++track)
     {
-      const BYTE max_sector = sectors[track];
+      const BYTE max_sector = maxSector(dt, track);
       BYTE sector;
 
-      if (track >= 40)
+      // check if 1541 writes to extra tracks
+      if (dt == D1541 && track >= 40)
         {
           gotoxy(39,2);
           textcolor(textc);
           cputc('1'+track-40);
+        }
+      // check if 1571 writes on back side
+      if (dt == D1571 && track == 35)
+        {
+          textcolor(textc);
+          gotoxy(0,1);
+          cputs("33334444444444555555555566666666667     ");
+          gotoxy(0,1);
+          cputs("67890123456789012345678901234567890     ");
+        }
+      // check if 1581 writes on back side
+      if (dt == D1581 && track == 40)
+        {
+          textcolor(textc);
+          gotoxy(0,1);
+          cputs("4444444445555555555666666666677777777778");
         }
 
       for(sector = 0; sector < max_sector; ++sector)
@@ -969,7 +1062,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
                 }
             }
 
-          printSecStatus(track, sector, 'R');
+          printSecStatus(dt, track, sector, 'R');
           ret = cbm_write(6, linebuffer, sprintf(linebuffer, "u1:5 0 %d %d", track + 1, sector));
           if (ret < 0)
             {
@@ -978,7 +1071,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
               gotoxy(0,24);                             \
               textcolor(COLOR_LIGHTRED);                \
               cputs(diskCopyBuf);                       \
-              printSecStatus(track|0x80, sector, 'E');
+              printSecStatus(dt, track|0x80, sector, 'E');
               SECTOR_ERROR;
               continue;
             }
@@ -994,7 +1087,13 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
           ret = cbm_read(9, diskCopyBuf, 256);
           if (ret != 256)
             {
-              if (track == max_track && sector == 0)
+              // check for expected failures at the end of a disk
+              if (dt == D1541 && track >= 35 && sector == 0)
+                {
+                  ret = 0;
+                  goto success;
+                }
+              if (dt == D1571 && track == 35 && sector == 0)
                 {
                   ret = 0;
                   goto success;
@@ -1004,7 +1103,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
               continue;
             }
 
-          printSecStatus(track, sector, 'W');
+          printSecStatus(dt, track, sector, 'W');
           ret = cbm_write(7, diskCopyBuf, 256);
           if (ret != 256)
             {
@@ -1022,18 +1121,41 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
             }
         }
 
-      gotoxy(0,24);
-      textcolor(COLOR_LIGHTBLUE);
-      switch(track)
+      if (dt == D1541)
         {
-        case 5: cputs("this will take a while"); break;
-        case 6: cputs("                      "); break;
-        case 17: cputs("halftime"); break;
-        case 18: cputs("        "); break;
-        case 31: cputs("almost there"); break;
-        case 32: cputs("any minute now"); break;
-        case 33: cputs("writing last track!!!"); break;
-        case 35: cputs("this disk is oversized"); break;
+          gotoxy(0,24);
+          textcolor(COLOR_LIGHTBLUE);
+          switch(track)
+            {
+            case 5: cputs("this will take a while"); break;
+            case 6: cputs("                      "); break;
+            case 17: cputs("halftime"); break;
+            case 18: cputs("        "); break;
+            case 31: cputs("almost there"); break;
+            case 32: cputs("any minute now"); break;
+            case 33: cputs("writing last track!!!"); break;
+            case 35: cputs("this disk is oversized"); break;
+            }
+        }
+      else if (dt == D1571)
+        {
+          gotoxy(0,24);
+          textcolor(COLOR_LIGHTBLUE);
+          switch(track)
+            {
+            case 35: cputs("copy the back side"); break;
+            case 69: cputs("writing last track!!!"); break;
+            }
+        }
+      else if (dt == D1581)
+        {
+          gotoxy(0,24);
+          textcolor(COLOR_LIGHTBLUE);
+          switch(track)
+            {
+            case 40: cputs("copy the back side"); break;
+            case 79: cputs("writing last track!!!"); break;
+            }
         }
     }
 

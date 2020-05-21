@@ -33,22 +33,26 @@ BYTE DIRH = 10;
 
 char message[40];
 
-enum drive_e {NONE=0, D1541, D1571, D1581, SD2IEC, CMD, VICE, LAST_DRIVE_E};
 /// string descriptions of enum drive_e
 const char* drivetype[LAST_DRIVE_E] = {"\0", "1541", "1571", "1581", "sd2iec", "cmd", "vice"};
-/// enum drive_e value for each context
-unsigned char devicetype[2];
+/// enum drive_e value for each device 0-11.
+BYTE devicetype[12];
 
 const char*
 getDeviceType(BYTE context)
 {
-  BYTE idx = 0;
-  devicetype[context] = idx;
+  BYTE device;
+  BYTE idx;
   if (context > 1)
     {
       return "!ic";
     }
-  if (dosCommand(15, devices[context], 15, "ui") != 73)
+  device = devices[context];
+  if (device > sizeof(devicetype))
+    {
+      return "!d";
+    }
+  if (dosCommand(15, device, 15, "ui") != 73)
     {
       return message;
     }
@@ -56,7 +60,7 @@ getDeviceType(BYTE context)
     {
       if(strstr(message, drivetype[idx]))
         {
-          devicetype[context] = idx;
+          devicetype[device] = idx;
           return drivetype[idx];
         }
     }
