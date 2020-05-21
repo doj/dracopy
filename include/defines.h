@@ -31,14 +31,14 @@
 
 #define OK 0
 #define ERROR -1
-#ifdef __C64__
+#define ABORT +1
+
+#if defined(__C64__)
 	#define BUFFERSIZE 16*1024 // 16K for C64
+#elif defined(__PET__)
+  #define BUFFERSIZE 1024 // 1K for PET
 #else
-  #ifdef __PET__
-   #define BUFFERSIZE 1024 // 1K for PET
-  #else
-   #define BUFFERSIZE 10*1024 // 10K
-  #endif
+  #define BUFFERSIZE 10*1024 // 10K
 #endif
 
 #ifdef NOCOLOR
@@ -63,7 +63,7 @@
 #define MENUY 0
 
 
-#define GETCWD dirs[context];
+#define GETCWD dirs[context]
 #define DIRW  25
 #define DIR1X 0
 

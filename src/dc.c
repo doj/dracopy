@@ -466,17 +466,19 @@ void refreshDir(void)
 
 void doCopySelected(void)
 {
+  int ret;
   Directory * cwd = GETCWD;
 
   if (cwd->selected!=NULL)
     {
       sprintf(linebuffer,"Filecopy from device %d to device %d",devices[context],devices[1-context]);
       newscreen(linebuffer);
-      if (copy(cwd->selected->dirent.name,
-               devices[context],
-               cwd->selected->dirent.name,
-               devices[1-context],
-               cwd->selected->dirent.type)==ERROR)
+      ret = copy(cwd->selected->dirent.name,
+                 devices[context],
+                 cwd->selected->dirent.name,
+                 devices[1-context],
+                 cwd->selected->dirent.type);
+      if (ret == ERROR)
         {
           cputc(13);
           cputc(10);
@@ -634,24 +636,19 @@ void about(void)
 
 void doCopy(void)
 {
+  BYTE cnt = 0;
 	DirElement * current;
 
 	Directory * srcdir;
 	Directory * destdir;
 
-	BYTE srcdev = devices[context];
-	BYTE destdev = devices[1-context];
-
-	int idx = 0;
-	int selidx = 0;
-	int x=0;
-	int sx=0;
+	const BYTE srcdev = devices[context];
+	const BYTE destdev = devices[1-context];
 
 	srcdir=dirs[context];
 	destdir=dirs[1-context];
 
 	sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
-	newscreen(linebuffer);
 	if (srcdir==NULL || destdir==NULL)
     {
       cputs("no directory");
@@ -662,18 +659,29 @@ void doCopy(void)
       current = srcdir->firstelement;
       while (current!=NULL)
         {
+          if (cnt == 0)
+            {
+              newscreen(linebuffer);
+            }
           if (current->flags==1)
             {
-              if (copy(current->dirent.name,srcdev,current->dirent.name,destdev,current->dirent.type)==OK)
+              int ret = copy(current->dirent.name, srcdev, current->dirent.name, destdev, current->dirent.type);
+              if (ret == OK)
                 {
                   // deselect
                   current->flags=0;
                 }
+              else if (ret == ABORT)
+                {
+                  return;
+                }
             }
           current=current->next;
+          if (++cnt >= 24)
+            {
+              cnt = 0;
+            }
         }
-      //cputs("\n\r");
-      //waitKey(0);
     }
 }
 
@@ -1017,6 +1025,8 @@ int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE 
 	unsigned char * linebuffer;
 	char deststring[30];
   char type_ch;
+  int ret = OK;
+  unsigned long total_length = 0;
 
   switch(type)
     {
@@ -1051,45 +1061,71 @@ int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE 
 	linebuffer = (unsigned char *) malloc(BUFFERSIZE);
 
 	cprintf("%-16s:",srcfile);
-	do
+	while(1)
     {
+      if (kbhit())
+        {
+          char c = cgetc();
+          if (c == 27 || c == 95)
+            {
+              ret = ABORT;
+              break;
+            }
+        }
+
 	  	cputs("R");
       length = cbm_read (6, linebuffer, BUFFERSIZE);
-
-      if (length>=0)
+      if (length < 0)
         {
-          //cprintf("%d",length);
+#define ERRMSG(color,msg) \
+          cputc(' ');     \
+          revers(1);            \
+          textcolor(color);     \
+          cputs(msg);           \
+          textcolor(textc);     \
+          revers(0);            \
+          cputs("\r\n");
+
+          ERRMSG(COLOR_YELLOW,"READ ERROR");
+          ret = ERROR;
+          break;
+        }
+
+      if (kbhit())
+        {
+          char c = cgetc();
+          if (c == 27 || c == 95)
+            {
+              ret = ABORT;
+              ERRMSG(COLOR_YELLOW,"ABORT");
+              break;
+            }
+        }
+
+      if (length > 0)
+        {
           cputs("W");
           if (cbm_write(7, linebuffer, length) != length)
             {
-              cputc(' ');
-              revers(1);
-              textcolor(COLOR_VIOLET);
-              cputs("ERROR");
-              textcolor(textc);
-              revers(0);
-              cputc(13);
-              cputc(10);
-              free(linebuffer);
-              cbm_close (6);
-              cbm_close (7);
-              return ERROR;
+              ERRMSG(COLOR_YELLOW,"WRITE ERROR");
+              break;
             }
-          //cprintf("%d",length);
+          total_length += length;
         }
+
+      if (length < BUFFERSIZE)
+        {
+          cprintf(" %lu bytes", total_length);
+          ERRMSG(textc,"OK");
+          break;
+        }
+
     }
-  while(length==BUFFERSIZE);
+
 	free(linebuffer);
 	cbm_close (6);
 	cbm_close (7);
-	cputc(' ');
-	revers(1);
-	cputs("OK");
-	revers(0);
-	cputc(13);
-	cputc(10);
-
-	return OK;
+	return ret;
 }
 
 /*

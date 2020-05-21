@@ -11,6 +11,7 @@ all: dc64 # dc128 dc1280 dcp4 dcpet8 db64 db128 db1280 dbp4 dbpet8 db610 dc610
 X64?=x64sc
 x64:	all
 	c1541 -format 'number nine,dc' d64 9.d64
+	for i in `perl -e 'for(1..60){print "$$_ "}'` ; do echo $$i > $$i.seq ; c1541 -attach $(D64) -write $$i.seq ; done
 	$(X64) -8 $(D64) -autostart dc64.prg -9 9.d64
 	#$(X64) -8 $(D64) -autostart $(D64) -9 9.d64
 
