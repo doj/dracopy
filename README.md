@@ -51,10 +51,10 @@ the following features or bugs should be fixed:
 - [ ] fix keys on 128
 - [ ] check c128 80 cols
 - [ ] check keys on plus4
-- [ ] check pet
 - [ ] support d71 or d81 disk copy
 - [ ] test with JiffyDOS
 - [ ] test with FC3
+- [ ] support directories and sd2iec stuff
 
 Version Information
 --------------------

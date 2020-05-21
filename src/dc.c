@@ -64,6 +64,7 @@ extern const BYTE textc;
 
 /* definitions */
 char answer[40];
+char menustatus[MENUW];
 
 void
 updateMenu(void)
@@ -71,7 +72,8 @@ updateMenu(void)
 	BYTE menuy=MENUY;
 
 	revers(0);
-	drawFrame(NULL,MENUX,MENUY,MENUW,MENUH+1,NULL);
+	textcolor(textc);
+	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,menustatus);
 
 	menuy+=1;
 	gotoxy(MENUX+1,menuy++);
@@ -124,18 +126,6 @@ updateMenu(void)
 	cputs(" . ABOUT");
 	gotoxy(MENUX+1,menuy++);
 	cputs(" Q QUIT");
-
-	revers(1);
-	textcolor(COLOR_GREEN);
-	gotoxy(0,24);
-#ifdef CHAR80
-  cputs("               DraCopy " DRA_VER "       80 Characters                   ");
-#else
-  cputs("       DraCopy " DRA_VER "       ");
-#endif
-
-	textcolor(textc);
-	revers(0);
 }
 
 void
@@ -389,7 +379,6 @@ mainLoop(void)
   if (dirs[1]!=NULL) freeDir(&dirs[1]);
 #endif
 }
-
 
 void
 doCopySelected(void)

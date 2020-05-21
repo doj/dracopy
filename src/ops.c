@@ -10,6 +10,7 @@
 #include <cbm.h>
 #include <conio.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifdef NOCOLOR
 const BYTE textc = COLOR_WHITE;
@@ -30,19 +31,60 @@ BYTE DIRH = 22;
 BYTE DIRH = 10;
 #endif
 
+char message[40];
+
+enum drive_e {NONE=0, D1541, D1571, D1581, SD2IEC, CMD, VICE, LAST_DRIVE_E};
+/// string descriptions of enum drive_e
+const char* drivetype[LAST_DRIVE_E] = {"\0", "1541", "1571", "1581", "sd2iec", "cmd", "vice"};
+/// enum drive_e value for each context
+unsigned char devicetype[2];
+
+const char*
+getDeviceType(BYTE context)
+{
+  BYTE idx = 0;
+  devicetype[context] = idx;
+  if (context > 1)
+    {
+      return "!ic";
+    }
+  if (dosCommand(15, devices[context], 15, "ui") != 73)
+    {
+      return message;
+    }
+  for(idx = 1; idx < LAST_DRIVE_E; ++idx)
+    {
+      if(strstr(message, drivetype[idx]))
+        {
+          devicetype[context] = idx;
+          return drivetype[idx];
+        }
+    }
+  return "!nf";
+}
+
+unsigned char
+dosCommand(unsigned char lfn, unsigned char drive, unsigned char sec_addr, char *cmd)
+{
+	cbm_open(lfn, drive, sec_addr, cmd);
+	if (lfn != 15)
+    cbm_open(15, drive, 15, "");
+
+	memset(message, 0, sizeof(message));
+	cbm_read(15, message, sizeof message);
+
+	if(lfn != 15)
+    cbm_close(15);
+	cbm_close(lfn);
+
+	message[strcspn(message, "\n")] = 0;
+	return (message[0] - 48) * 10 + message[1] - 48;
+}
+
 int
 cmd(unsigned char device, unsigned char * cmd)
 {
-	int length=0;
-	unsigned char f;
-
-	if ((f = cbm_open(15, device, 15, cmd)) != 0)
-	{
-	  cputs("ERROR");
-	  return(ERROR);
-  }
-  cbm_close(15);
-	return OK;
+  return dosCommand(15, device, 15, cmd);
 }
 
 void
@@ -127,7 +169,7 @@ about(const char *progname)
 void
 clrDir(BYTE context)
 {
-	clearArea((context==0)?DIR1X+1:DIR2X+1,((context==0)?DIR1Y:DIR2Y ) ,DIRW,DIRH+1);
+	clearArea((context==0)?DIR1X+1:DIR2X+1, ((context==0)?DIR1Y:DIR2Y ), DIRW,DIRH+1);
 }
 
 void
@@ -298,6 +340,7 @@ printElement(Directory * dir,int xpos, int ypos)
 void
 showDir(Directory * dir, BYTE mycontext)
 {
+  const char *device_type;
 	char *title = dir ? dir->name : "    no directory";
   if (mycontext > 1)
     return;
@@ -312,7 +355,9 @@ showDir(Directory * dir, BYTE mycontext)
       textcolor(textc);
     }
 
-	sprintf(linebuffer2, ">%u blocks free<", dir->free);
+  device_type = getDeviceType(mycontext);
+
+	sprintf(linebuffer2, "%s>%u blocks free", device_type, dir->free);
 	drawFrame(linebuffer, (mycontext==0)?DIR1X:DIR2X, (mycontext==0)?DIR1Y:DIR2Y, DIRW+2, DIRH+2, linebuffer2);
 
 	textcolor(textc);

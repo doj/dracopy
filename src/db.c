@@ -51,7 +51,8 @@ updateMenu(void)
 	BYTE menuy=MENUY;
 
 	revers(0);
-	drawFrame(NULL,MENUX,MENUY,MENUW,MENUH+1,NULL);
+	textcolor(textc);
+	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,NULL);
 
 	menuy+=2;
 	gotoxy(MENUX+1,menuy++);
@@ -85,18 +86,6 @@ updateMenu(void)
 	menuy++;
 	gotoxy(MENUX+1,menuy++);
 	cprintf(" Device:%02d",devices[0]);
-
-	revers(1);
-	textcolor(COLOR_GREEN);
-	gotoxy(0,BOTTOM);
-#ifdef CHAR80
-  cputs("               DraBrowse " DRA_VER " 80 Characters                 ");
-#else
-  cputs("      DraBrowse " DRA_VER "      ");
-#endif
-
-	textcolor(textc);
-	revers(0);
 }
 
 void
@@ -129,7 +118,8 @@ mainLoop(void)
 					break;
 
         case CH_F2:
-					if (devices[context]++>12) devices[context]=8;
+					if (++devices[context] >= 12)
+            devices[context]=8;
 					freeDir(&dirs[context]);
 					dirs[context]=NULL;
 					updateScreen(1);

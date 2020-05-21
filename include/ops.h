@@ -22,6 +22,7 @@ void printDir(Directory * dir,int xpos, int ypos);
 void printElement(Directory * dir,int xpos, int ypos);
 const char* fileTypeToStr(BYTE ft);
 void showDir(Directory * dir, BYTE mycontext);
+unsigned char dosCommand(unsigned char lfn, unsigned char drive, unsigned char sec_addr, char *cmd);
 
 extern BYTE DIRH;
 

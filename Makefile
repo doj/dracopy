@@ -3,13 +3,13 @@
 #	ca65 -I include -t c64 src/$$(basename $< .c).s
 
 D64=dracopy10doj.d64
-all: dc64 dc128 dc1280 dcp4 dcpet8 db64 db128 db1280 dbp4 dbpet8 db610 dc610
+all: dc64 dc128 dc1280 dcp4 db64 db128 db1280 dbp4 dbpet8 db610 dc610
 	sh d64.sh 'dracopy 1.0doj,dc' $(D64) $^
 
 D64_9=9.d64
 
 $(D64_9):
-	for i in `perl -e 'for(1..60){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
+	for i in `perl -e 'for(1..6){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
 	sh d64.sh 'number nine,n9' $@ *.seq
 	$(RM) *.seq
 
@@ -24,7 +24,7 @@ xplus4:	all $(D64_9)
 	$@ -8 $(D64) -autostart dcp4.prg -9 $(D64_9)
 
 xpet:	all $(D64_9)
-	$@ -8 $(D64) -autostart dcpet8.prg -9 $(D64_9)
+	$@ -8 $(D64) -autostart dbpet8.prg -9 $(D64_9)
 
 COMMON_SRC=src/screen.c src/cat.c src/dir.c src/base.c src/ops.c
 DC_SRC=src/dc.c $(COMMON_SRC)
@@ -48,8 +48,8 @@ dcp4:	$(DC_SRC)
 dc610:	$(DC_SRC)
 	cl65 -I include -t cbm610 -DCHAR80 -DNOCOLOR $^ -o $@
 
-dcpet8:	$(DC_SRC)
-	cl65 -I include -t pet -DCHAR80 -DNOCOLOR $^ -o $@
+#dcpet8:	$(DC_SRC)
+#	cl65 -I include -t pet -DCHAR80 -DNOCOLOR $^ -o $@
 
 DB_SRC=src/db.c $(COMMON_SRC)
 

@@ -47,11 +47,11 @@
   #define COLOR_SIGNAL COLOR_VIOLET
 #endif
 
-#define MENUW 13
-#define MENUH 23
-
 #define SCREENH 25
 #define BOTTOM (SCREENH-1)
+
+#define MENUW 13
+#define MENUH SCREENH
 
 #ifdef CHAR80
 	#define SCREENW 80
