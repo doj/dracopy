@@ -42,7 +42,7 @@ $(D64):	$(EXE)
 	c1541 $(D64) -write $(EXE)
 
 x64:	$(D64)
-	$(X64) -autostartprgmode 1 -autostart $(EXE)
+	$(X64) -autostartprgmode 1 -autostart $(EXE) -8 $(D64)
 
 %.o:	%.c
 	$(CC) $(CFLAGS) $<
