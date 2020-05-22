@@ -1,10 +1,9 @@
-src/%.o: src/%.c include/%.h
-	cc65 -O -I include -t c64 $<
-	ca65 -I include -t c64 src/$$(basename $< .c).s
+TARGETS=dc64 dc128 dc1280 dcp4 dcpet8 db64 db128 db1280 dbp4 dbpet8 db610 dc610
+
+all:	$(TARGETS)
 
 D64=dc10c.d64
-all: dc64 dc128 dc1280 dcp4 dcpet8 db64 db128 db1280 dbp4 dbpet8 db610 dc610
-	$(RM) $(D64)
+$(D64):	$(TARGETS)
 	c1541 -format dracopy,dc d64 $(D64)
 	for i in $^ ; do c1541 -attach $(D64) -write $$i ; done
 
@@ -52,19 +51,12 @@ db610: src/screen.c src/db.c src/cat.c src/dir.c src/base.c
 dbpet8: src/screen.c src/db.c src/cat.c src/dir.c src/base.c
 	cl65 -I include -t pet -DCHAR80 -DNOCOLOR $^ -o $@
 
-# todo: doesn't build
-dbv: src/screen.c src/db.c src/cat.c src/dir.c src/base.c
-	cl65 -I include -t vic20 $^ -o $@
-
-test: src/test.c
-	cl65 -t c64 $^ -o $@
-
-test128: src/test.c
-	cl65 -t c128 $^ -o $@
-
 clean:
 	$(RM) -rf d src/*.o src/*.s *.prg $(D64) \
 	dc64 dc128 dc1280 dcpet8 dcp4 dc610 \
-	db64 db128 db1280 dbpet8 dbp4 db610 \
-	test test128 dbv
+	db64 db128 db1280 dbpet8 dbp4 db610
 	find . -name '*~' -delete
+
+X64?=x64sc
+x64:	dc64 $(D64)
+	$(X64) -autostart $< -8 $(D64)
