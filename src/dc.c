@@ -59,11 +59,11 @@ void deleteSelected(void);
 extern BYTE context;
 extern BYTE devices[];
 extern char linebuffer[];
+extern char answer[];
 extern Directory* dirs[];
 extern const BYTE textc;
 
 /* definitions */
-char answer[40];
 char menustatus[MENUW];
 
 void
@@ -75,26 +75,25 @@ updateMenu(void)
 	textcolor(textc);
 	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,menustatus);
 
-	menuy+=1;
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("F1 READ DIR");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("F2 DEVICE");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("F3 VIEW HEX");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("F4 VIEW ASC");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("F5 COPY MUL");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("F6 DEL MUL");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("F7 RUN");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("F8 DISKCOPY");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("SP TAG");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 #ifdef __PLUS4__
 	cputs("ESC SWITCH");
 #else
@@ -102,30 +101,33 @@ updateMenu(void)
 	cputc(95); // arrow left
 	cputs(" SWITCH W");
 #endif
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("CR CHG DIR");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("BS DIR UP");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" T TOP");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" B BOTTOM");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" * INV SEL");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" C COPY F");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" D DEL F/D");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" R RENAME");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" M MAKE DIR");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" F FORMAT");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" . ABOUT");
-	gotoxy(MENUX+1,menuy++);
-	cputs(" Q QUIT");
+	gotoxy(MENUX+2,++menuy);
+	cputc(0x5c); // pound
+	cputs(" DEV ID");
+	gotoxy(MENUX+1,++menuy);
+	cputs(" @ DOS CMD");
 }
 
 void
@@ -165,6 +167,8 @@ mainLoop(void)
 
         case '2':
         case CH_F2:
+          // cycle through devices until we found the next one, not
+          // used by the other context.
 					do
             {
               if (++devices[context] > 11)
@@ -172,7 +176,6 @@ mainLoop(void)
             }
 					while(devices[context]==devices[1-context]);
 					freeDir(&dirs[context]);
-					dirs[context]=NULL;
 					updateScreen(2);
 					break;
 
@@ -310,6 +313,15 @@ mainLoop(void)
           updateScreen(2);
           break;
 
+        case '@':
+          // TODO: DOS command
+          break;
+
+        case 0x5c:
+          changeDeviceID(devices[context]);
+          updateScreen(2);
+          break;
+
     		case CH_CURS_DOWN:
 					cwd=GETCWD;
 					if (cwd->selected!=NULL && cwd->selected->next!=NULL)
@@ -385,8 +397,8 @@ mainLoop(void)
 
   // nobody cares about freeing memory upon program exit.
 #if 0
-  if (dirs[0]!=NULL) freeDir(&dirs[0]);
-  if (dirs[1]!=NULL) freeDir(&dirs[1]);
+  freeDir(&dirs[0]);
+  freeDir(&dirs[1]);
 #endif
 }
 

@@ -49,12 +49,15 @@ TODO
 -----
 the following features or bugs should be fixed:
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
-- find out why 1540 and 1570 don't work (?)
+- enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038
 - copy some more features from 10.e
  + better dir handling (vice)
  + make image
 - make drive window height flexible
-- change sd2iec device num
+- change device num
+- send DOS command
+- copy on same device with C0 DOS command
+- reset disk drive (DOS command UI and UJ, see https://www.pagetable.com/?p=1038)
 
 Version Information
 --------------------

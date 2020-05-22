@@ -61,7 +61,6 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
 	if (dir!=NULL)
     {
       freeDir(&dir);
-      dir=NULL;
     }
 
 	if (cbm_opendir(8, device) != 0)

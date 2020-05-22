@@ -25,6 +25,7 @@ BYTE context = 0;
 BYTE devices[] = {8,9};
 char linebuffer[SCREENW+1];
 char linebuffer2[SCREENW+1];
+char answer[40];
 
 #ifdef CHAR80
 BYTE DIRH = 23;
@@ -32,7 +33,7 @@ BYTE DIRH = 23;
 BYTE DIRH = 10;
 #endif
 
-char message[40];
+char DOSstatus[40];
 
 /// string descriptions of enum drive_e
 const char* drivetype[LAST_DRIVE_E] = {"\0", "1540", "1541", "1551", "1570", "1571", "1581", "sd2iec", "cmd", "vice"};
@@ -55,22 +56,22 @@ getDeviceType(BYTE context)
     }
   if (dosCommand(15, device, 15, "ui") != 73)
     {
-      return message;
+      return DOSstatus;
     }
   for(idx = 1; idx < LAST_DRIVE_E; ++idx)
     {
-      if(strstr(message, drivetype[idx]))
+      if(strstr(DOSstatus, drivetype[idx]))
         {
           devicetype[device] = idx;
           return drivetype[idx];
         }
     }
-  if(strstr(message, "tdisk"))
+  if(strstr(DOSstatus, "tdisk"))
     {
       devicetype[device] = D1551;
       return drivetype[D1551];
     }
-  return message;
+  return DOSstatus;
   return "!nf";
 }
 
@@ -81,15 +82,15 @@ dosCommand(unsigned char lfn, unsigned char drive, unsigned char sec_addr, char 
 	if (lfn != 15)
     cbm_open(15, drive, 15, "");
 
-	memset(message, 0, sizeof(message));
-	cbm_read(15, message, sizeof message);
+	memset(DOSstatus, 0, sizeof(DOSstatus));
+	cbm_read(15, DOSstatus, sizeof DOSstatus);
 
 	if(lfn != 15)
     cbm_close(15);
 	cbm_close(lfn);
 
-	message[strcspn(message, "\n")] = 0;
-	return (message[0] - 48) * 10 + message[1] - 48;
+	DOSstatus[strcspn(DOSstatus, "\n")] = 0;
+	return (DOSstatus[0] - 48) * 10 + DOSstatus[1] - 48;
 }
 
 int
@@ -124,8 +125,6 @@ void
 updateScreen(BYTE num_dirs)
 {
 	clrscr();
-	textcolor(textc);
-	revers(0);
 	updateMenu();
 	showDir(dirs[0],0);
   if (num_dirs > 1)
@@ -185,7 +184,7 @@ about(const char *progname)
 void
 clrDir(BYTE context)
 {
-	clearArea((context==0)?DIR1X+1:DIR2X+1, ((context==0)?DIR1Y:DIR2Y ), DIRW,DIRH+1);
+	clearArea((context==0)?DIR1X+1:DIR2X+1, (context==0)?DIR1Y:DIR2Y, DIRW, DIRH+1);
 }
 
 void
@@ -193,16 +192,17 @@ refreshDir(void)
 {
 	Directory * cwd = NULL;
 	clrDir(context);
-	cwd = readDir(cwd, devices[context], context );
+	cwd = readDir(cwd, devices[context], context);
 	dirs[context]=cwd;
 	cwd->selected=cwd->firstelement;
 	showDir(cwd,context);
 	if (devices[0]==devices[1])
     {
       // refresh also other dir if it's the same drive
-      clrDir(1-context);
-      dirs[1-context] = readDir(dirs[1-context],devices[1-context],(BYTE)(1-context));
-      showDir(cwd,1-context);
+      const BYTE other_context = 1-context;
+      clrDir(other_context);
+      dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+      showDir(cwd, other_context);
     }
 }
 
@@ -415,4 +415,37 @@ changeDir(BYTE device, const char *dirname)
     }
   cmd(device, linebuffer);
   refreshDir();
+}
+
+void
+changeDeviceID(BYTE device)
+{
+  int i;
+  newscreen(" change device ID");
+  cprintf("\n\rchange device ID %i to (0-255): ", device);
+  scanf("%i", &i);
+
+  if (devicetype[device] == SD2IEC)
+    {
+      sprintf(linebuffer, "U0>%c", i);
+    }
+  else
+    {
+      // TODO: doesn't work
+
+      // Commodore drives:
+      // OPEN 15,8,15:PRINT#15,"M-W";CHR$(119);CHR$(0);CHR$(2);CHR$(device number+32);CHR$(device number+64):CLOSE 15
+      char *s = linebuffer;
+      *s++ = 'm';
+      *s++ = '-';
+      *s++ = 'w';
+      *s++ = 119; // addr lo
+      *s++ = 0;   // addr hi
+      *s++ = 2;   // number of bytes
+      *s++ = 32+i;// device num + 0x20 for LISTEN
+      *s++ = 64+i;// device num + 0x40 for TALK
+      *s = 0;
+    }
+
+  cmd(device, linebuffer);
 }

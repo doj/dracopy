@@ -123,7 +123,6 @@ mainLoop(void)
 					if (++devices[context] >= 12)
             devices[context]=8;
 					freeDir(&dirs[context]);
-					dirs[context]=NULL;
 					updateScreen(1);
 					break;
 
@@ -256,7 +255,6 @@ mainLoop(void)
  done:;
   // nobody cares about freeing memory upon program exit.
 #if 0
-  if (dirs[0]!=NULL)
-    freeDir(&dirs[0]);
+  freeDir(&dirs[0]);
 #endif
 }
