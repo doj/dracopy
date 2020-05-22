@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <conio.h>
 
+extern const BYTE textc;
 BYTE waitKey(BYTE flag)
 {
 	revers(1);
@@ -42,7 +43,7 @@ BYTE waitKey(BYTE flag)
 		cputs(" (RUNSTOP or Q to stop)");
 	}
 #ifndef __cbm610__
-	textcolor(COLOR_LIGHTGREEN);
+	textcolor(textc);
 #endif
 	revers(0);
 	return cgetc();

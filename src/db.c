@@ -171,6 +171,7 @@ mainLoop(void)
 
         case '.':
 					about("DraBrowse");
+          updateScreen(1);
           break;
 
     		case CH_CURS_DOWN:
@@ -224,7 +225,6 @@ mainLoop(void)
 					if (cwd->selected && cwd->selected->dirent.type==CBM_T_PRG)
             {
               execute(dirs[context]->selected->dirent.name,devices[context]);
-              exit(0);
             }
 					// else fallthrough to CURS_RIGHT
 

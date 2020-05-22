@@ -55,7 +55,6 @@ the following features or bugs should be fixed:
  + make image
 - make drive window height flexible
 - change sd2iec device num
-- execute a program does not work
 
 Version Information
 --------------------

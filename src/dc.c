@@ -307,6 +307,7 @@ mainLoop(void)
 
         case '.':
 					about("DraCopy");
+          updateScreen(2);
           break;
 
     		case CH_CURS_DOWN:

@@ -11,6 +11,7 @@
 #include <conio.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef NOCOLOR
 const BYTE textc = COLOR_WHITE;
@@ -100,26 +101,32 @@ cmd(unsigned char device, unsigned char * cmd)
 void
 execute(char * prg, BYTE device)
 {
-	clrscr();
+  // prepare the screen with the basic command to load the next program
+	exitScreen();
 	gotoxy(0,2);
 	cprintf("load\"%s\",%d\n\r\n\r\n\r\n\r\n\r",prg,device);
 	cputs("run\n\r");
-	gotoxy(0,0);
+  gotoxy(14,23);
+  cputs("this program was loaded by");
+  gotoxy(14,24);
+  cputs("DraCopy " DRA_VER);
+
+  // put two CR in keyboard buffer
 	*((unsigned char *)KBCHARS)=13;
 	*((unsigned char *)KBCHARS+1)=13;
 	*((unsigned char *)KBNUM)=2;
+  // exit DraCopy, which will execute the BASIC LOAD above
+	gotoxy(0,0);
+  exit(0);
 }
 
 void
 updateScreen(BYTE num_dirs)
 {
-	BYTE menuy=MENUY;
 	clrscr();
 	textcolor(textc);
 	revers(0);
-#ifndef __VIC20__
 	updateMenu();
-#endif
 	showDir(dirs[0],0);
   if (num_dirs > 1)
     showDir(dirs[1],1);
@@ -173,7 +180,6 @@ about(const char *progname)
 	gotoxy(0,24);
 	textcolor(COLOR_VIOLET);
 	waitKey(0);
-	updateScreen(2);
 }
 
 void
