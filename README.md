@@ -48,8 +48,6 @@ for the source code.
 TODO
 -----
 the following features or bugs should be fixed:
-- format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
-- enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038
 - copy some more features from 10.e
  + better dir handling (vice)
  + make image
@@ -58,6 +56,10 @@ the following features or bugs should be fixed:
 - send DOS command
 - copy on same device with C0 DOS command
 - reset disk drive (DOS command UI and UJ, see https://www.pagetable.com/?p=1038)
+- enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038
+- format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
+- support 1571 disk copy with sd2iec
+- support 1581 disk copy with sd2iec
 
 Version Information
 --------------------

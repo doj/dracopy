@@ -54,16 +54,16 @@ updateMenu(void)
 	textcolor(textc);
 	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,NULL);
 
-	menuy+=2;
-	gotoxy(MENUX+1,menuy++);
+	++menuy;
+	gotoxy(MENUX+1,++menuy);
 	cputs(" F1 DIR");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" F2 DEVICE");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" F3 HEX");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" F4 ASC");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 #ifdef __PLUS4__
 	cputs("ESC SWITCH");
 #else
@@ -71,20 +71,20 @@ updateMenu(void)
 	cputc(95); // arrow left
 	cputs("  SWITCH");
 #endif
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" CR RUN/CD");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs(" BS DIR UP");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("  T TOP");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("  B BOTTOM");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("  . ABOUT");
-	gotoxy(MENUX+1,menuy++);
+	gotoxy(MENUX+1,++menuy);
 	cputs("  Q QUIT");
-	menuy++;
-	gotoxy(MENUX+1,menuy++);
+	++menuy;
+	gotoxy(MENUX+1,++menuy);
 	cprintf(" Device:%02d",devices[0]);
 }
 

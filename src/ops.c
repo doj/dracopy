@@ -54,9 +54,9 @@ getDeviceType(BYTE context)
     {
       return "!d";
     }
-  if (dosCommand(15, device, 15, "ui") != 73)
+  if (cmd(device, "ui") != 73)
     {
-      return DOSstatus;
+      return "!dos";
     }
   for(idx = 1; idx < LAST_DRIVE_E; ++idx)
     {
@@ -71,14 +71,15 @@ getDeviceType(BYTE context)
       devicetype[device] = D1551;
       return drivetype[D1551];
     }
-  return DOSstatus;
   return "!nf";
 }
 
 unsigned char
 dosCommand(unsigned char lfn, unsigned char drive, unsigned char sec_addr, char *cmd)
 {
-	cbm_open(lfn, drive, sec_addr, cmd);
+	if (cbm_open(lfn, drive, sec_addr, cmd) != 0)
+    return 0;
+
 	if (lfn != 15)
     cbm_open(15, drive, 15, "");
 

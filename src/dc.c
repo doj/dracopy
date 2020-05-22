@@ -909,7 +909,7 @@ const char sectors1571[70] = {
 
 BYTE diskCopyBuf[256];
 
-#define IS_1541(dt) (dt == D1540 || dt == D1541 || dt == D1551 || dt == D1570)
+#define IS_1541(dt) (dt == D1540 || dt == D1541 || dt == D1551 || dt == D1570 || dt == SD2IEC)
 
 BYTE
 maxTrack(BYTE dt)
