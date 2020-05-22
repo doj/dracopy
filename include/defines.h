@@ -29,6 +29,8 @@
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
+typedef unsigned char BYTE;
+
 #define OK 0
 #define ERROR -1
 #define ABORT +1
@@ -75,8 +77,15 @@
   #define DIR2Y 0
 #else
   #define DIR2X 0
-  #define DIR2Y 12
+  #define DIR2Y (DIR1Y+DIR1H+2)
 #endif
+
+#define DIRH (context?DIR2H:DIR1H)
+#define DIRX (context?DIR2X:DIR1X)
+#define DIRY (context?DIR2Y:DIR1Y)
+
+extern BYTE DIR1H;
+extern BYTE DIR2H;
 
 #define SPLITTER 12
 #define ERROR -1
@@ -108,7 +117,5 @@
 #endif
 
 #define DIRTYPE 6
-
-typedef unsigned char BYTE;
 
 #endif

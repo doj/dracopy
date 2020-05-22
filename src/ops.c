@@ -21,16 +21,17 @@ const BYTE textc = COLOR_LIGHTGREEN;
 
 extern const BYTE textc;
 Directory* dirs[] = {NULL,NULL};
-BYTE context = 0;
 BYTE devices[] = {8,9};
 char linebuffer[SCREENW+1];
 char linebuffer2[SCREENW+1];
 char answer[40];
 
 #ifdef CHAR80
-BYTE DIRH = 23;
+BYTE DIR1H = 23;
+BYTE DIR2H = 23;
 #else
-BYTE DIRH = 10;
+BYTE DIR1H = 11;
+BYTE DIR2H = 10;
 #endif
 
 char DOSstatus[40];
@@ -117,19 +118,25 @@ execute(char * prg, BYTE device)
 	*((unsigned char *)KBCHARS)=13;
 	*((unsigned char *)KBCHARS+1)=13;
 	*((unsigned char *)KBNUM)=2;
+
   // exit DraCopy, which will execute the BASIC LOAD above
 	gotoxy(0,0);
   exit(0);
 }
 
 void
-updateScreen(BYTE num_dirs)
+updateScreen(const BYTE context, BYTE num_dirs)
 {
-	clrscr();
+	//clrscr();
 	updateMenu();
-	showDir(dirs[0],0);
+  clrDir(context);
+	showDir(context, dirs[context], context);
   if (num_dirs > 1)
-    showDir(dirs[1],1);
+    {
+      const BYTE other_context = 1 - context;
+      clrDir(other_context);
+      showDir(context, dirs[other_context], other_context);
+    }
 }
 
 int
@@ -185,25 +192,25 @@ about(const char *progname)
 void
 clrDir(BYTE context)
 {
-	clearArea((context==0)?DIR1X+1:DIR2X+1, (context==0)?DIR1Y:DIR2Y, DIRW, DIRH+1);
+	clearArea(DIRX+1, DIRY, DIRW, DIRH+1);
 }
 
 void
-refreshDir(void)
+refreshDir(const BYTE context)
 {
 	Directory * cwd = NULL;
 	clrDir(context);
 	cwd = readDir(cwd, devices[context], context);
 	dirs[context]=cwd;
 	cwd->selected=cwd->firstelement;
-	showDir(cwd,context);
+	showDir(context, cwd, context);
 	if (devices[0]==devices[1])
     {
       // refresh also other dir if it's the same drive
-      const BYTE other_context = 1-context;
+      const BYTE other_context = context^1;
       clrDir(other_context);
       dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
-      showDir(cwd, other_context);
+      showDir(context, cwd, other_context);
     }
 }
 
@@ -234,7 +241,7 @@ fileTypeToStr(BYTE ft)
 }
 
 static void
-printElementPriv(Directory * dir, DirElement *current, int xpos, int ypos)
+printElementPriv(const BYTE context, const Directory *dir, const DirElement *current, const BYTE xpos, const BYTE ypos)
 {
 	Directory * cwd = GETCWD;
   gotoxy(xpos,ypos);
@@ -257,7 +264,7 @@ printElementPriv(Directory * dir, DirElement *current, int xpos, int ypos)
 }
 
 void
-printDir(Directory * dir,int xpos, int ypos)
+printDir(const BYTE context, const Directory *dir, const BYTE xpos, const BYTE ypos)
 {
 	DirElement * current;
 	int selidx = 0;
@@ -272,55 +279,53 @@ printDir(Directory * dir,int xpos, int ypos)
       //cputs("no directory");
       return;
     }
-	else
+
+  revers(0);
+  current = dir->firstelement;
+  idx=0;
+  while (current!=NULL)
     {
-      revers(0);
-      current = dir->firstelement;
-      idx=0;
-      while (current!=NULL)
+      if (current==dir->selected)
         {
-          if (current==dir->selected)
-            {
-              break;
-            }
-          idx++;
+          break;
+        }
+      idx++;
+      current=current->next;
+    }
+
+  page=idx/DIRH;
+  skip=page*DIRH;
+
+  current = dir->firstelement;
+
+  // skip pages
+  if (page>0)
+    {
+      for (idx=0; (idx < skip) && (current != NULL); ++idx)
+        {
           current=current->next;
+          pos++;
         }
+    }
 
-      page=idx/DIRH;
-      skip=page*DIRH;
+  for(idx=0; (current != NULL) && (idx < DIRH); ++idx)
+    {
+      printElementPriv(context, dir, current, xpos, ypos+idx+1);
+      current = current->next;
+    }
 
-      current = dir->firstelement;
-
-      // skip pages
-      if (page>0)
-        {
-          for (idx=0; (idx < skip) && (current != NULL); ++idx)
-            {
-              current=current->next;
-              pos++;
-            }
-        }
-
-			for(idx=0; (current != NULL) && (idx < DIRH); ++idx)
-        {
-          printElementPriv(dir, current, xpos, ypos+idx+1);
-          current = current->next;
-        }
-
-			// clear empty lines
-			for (;idx < DIRH; ++idx)
-        {
-          gotoxy(xpos,ypos+idx+1);
-          cputs("                         ");
-        }
+  // clear empty lines
+  for (;idx < DIRH; ++idx)
+    {
+      gotoxy(xpos,ypos+idx+1);
+      cputs("                         ");
     }
 }
 
 void
-printElement(Directory * dir,int xpos, int ypos)
+printElement(const BYTE context, const Directory *dir, const BYTE xpos, const BYTE ypos)
 {
-	DirElement * current;
+	const DirElement *current;
 
 	int page = 0;
 	int idx = 0;
@@ -331,33 +336,29 @@ printElement(Directory * dir,int xpos, int ypos)
     {
       return;
     }
-	else
+
+  revers(0);
+  current = dir->firstelement;
+
+  pos = dir->pos;
+
+  idx=pos;
+  while (current!=NULL && (idx--) >0)
     {
-      revers(0);
-      current = dir->firstelement;
-
-      pos = dir->pos;
-
-      idx=pos;
-      while (current!=NULL && (idx--) >0)
-        {
-          current=current->next;
-        }
-
-      page=pos/DIRH;
-      yoff=pos-(page*DIRH);
-
-      printElementPriv(dir, current, xpos, ypos+yoff+1);
+      current=current->next;
     }
+
+  page=pos/DIRH;
+  yoff=pos-(page*DIRH);
+
+  printElementPriv(context, dir, current, xpos, ypos+yoff+1);
 }
 
 void
-showDir(Directory * dir, BYTE mycontext)
+drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext)
 {
   const char *device_type;
 	char *title = dir ? dir->name : "    no directory";
-  if (mycontext > 1)
-    return;
 	if(mycontext==context)
     {
       sprintf(linebuffer, ">%02i:%s", (int)devices[mycontext], title);
@@ -369,17 +370,24 @@ showDir(Directory * dir, BYTE mycontext)
       textcolor(textc);
     }
 
-  device_type = getDeviceType(mycontext);
+  device_type = "xx";//getDeviceType(mycontext); // TODO: only do when reading directory
 
 	sprintf(linebuffer2, "%s>%u blocks free", device_type, dir->free);
-	drawFrame(linebuffer, (mycontext==0)?DIR1X:DIR2X, (mycontext==0)?DIR1Y:DIR2Y, DIRW+2, DIRH+2, linebuffer2);
-
+  context = mycontext;
+	drawFrame(linebuffer, DIRX, DIRY, DIRW+2, DIRH+2, linebuffer2);
 	textcolor(textc);
-	printDir(dir,(mycontext==0)?DIR1X+1:DIR2X+1,(mycontext==0)?DIR1Y:DIR2Y);
 }
 
 void
-changeDir(BYTE device, const char *dirname)
+showDir(BYTE context, const Directory * dir, const BYTE mycontext)
+{
+  drawDirFrame(context, dir, mycontext);
+  context = mycontext;
+	printDir(context, dir, DIRX+1, DIRY);
+}
+
+void
+changeDir(const BYTE context, const BYTE device, const char *dirname)
 {
   if (dirname)
     {
@@ -415,7 +423,7 @@ changeDir(BYTE device, const char *dirname)
       strcpy(linebuffer, "cd//");
     }
   cmd(device, linebuffer);
-  refreshDir();
+  refreshDir(context);
 }
 
 void
@@ -449,4 +457,13 @@ changeDeviceID(BYTE device)
     }
 
   cmd(device, linebuffer);
+}
+
+void
+debugs(const char *s)
+{
+  gotoxy(30,24);
+  cclear(10);
+  gotoxy(30,24);
+  cputs(s);
 }

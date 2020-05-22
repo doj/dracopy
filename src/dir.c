@@ -52,7 +52,7 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
 	DirElement * current = NULL;
 
   BYTE cnt = 0xff;
-  const BYTE y = (context==0) ? DIR1Y : DIR2Y;
+  const BYTE y = DIRY;
   BYTE x = 0;
 
 	unsigned char stat = 0;
@@ -63,12 +63,12 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
       freeDir(&dir);
     }
 
-	if (cbm_opendir(8, device) != 0)
+	if (cbm_opendir(device, device) != 0)
     {
       cputs("could not open directory");
       //printErrorChannel(device);
       //cgetc();
-      cbm_closedir(8);
+      cbm_closedir(device);
       return NULL;
     }
 
@@ -78,19 +78,19 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
       memset(current,0,sizeof(DirElement));
       memset(&(current->dirent), 0x44, sizeof(current->dirent));
 
-      stat=myCbmReadDir(8, &(current->dirent));
+      stat=myCbmReadDir(device, &(current->dirent));
       if (stat==0)
         {
           // print progress bar
-          if ((cnt>>2) >= MENUX-1)
+          if ((cnt>>2) >= DIRW)
             {
-              cnt = 0;
-              x = (context==0) ? DIR1X : DIR2X;
+              x = DIRX + 1;
               revers(0);
+              cnt = 0;
               gotoxy(x, y);
-              cclear(MENUX);
-              gotoxy(MENUX/2-5, y);
-              cprintf("read dir: %02i", device);
+              cclear(DIRW);
+              //gotoxy(DIRW/2-5, y);
+              //cprintf("read dir: %02i", device);
             }
           else
             {
@@ -149,7 +149,7 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
     }
 	while(stat==0);
 
-	cbm_closedir(8);
+	cbm_closedir(device);
 
 	revers(0);
 

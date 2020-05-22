@@ -24,6 +24,41 @@ Directories are supported on CMD compatible devices only.
 | CBM 610   | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
 | PET 8096  | dcpet8, dbpet8  (Note: use keys 1-8 instead of fkeys)
 
+Keys
+-----
+The following key can be pressed to select a function.
+The DraBrowse program only supports a subset of these functions.
+See the TODO section below for some functions that may have issues.
+
+| Key | Function |
+| --- | -------- |
+| F1, 1 | (re) read directory in current window
+| F2, 2 | select the next device for the current window
+| F3, 3 | view current file as hex dump
+| F4, 4 | view current file as ASCII text
+| F5, 5 | copy all selected files from current window
+| F6, 6 | delete all selected file in current window
+| F7, 7 | execute selected program
+| F8, 8 | copy disk from current window to the other device
+| <-, ESC, 0 | switch window
+| Return, right | enter directory
+| DEL, left | go to parent directory
+| up arrow | go to root directory
+| space | select current file
+| * | toggle selection
+| t | move cursor to top row of first page in current window
+| n | go to the next page in current window
+| p | go to the previous page in current window
+| b | go to bottom (last) page in current window
+| c | copy current file
+| d | delete current file
+| r | rename current file
+| f | format device in current window
+| @ | send DOS command to device in current window
+| . | show about information
+| q | quit program to BASIC
+| pound | change device ID of current device
+
 source code
 ------------
 This repository contains the source code of the Commodore 64 copy program dracopy.
@@ -48,12 +83,13 @@ for the source code.
 TODO
 -----
 the following features or bugs should be fixed:
+- enlarge current window with
+- use 'n' 'p' to go to next/prev page in window
 - copy some more features from 10.e
  + better dir handling (vice)
- + make image
-- make drive window height flexible
-- change device num
-- send DOS command
+ + make image (i)
+- change device num (pound)
+- send DOS command (@)
 - copy on same device with C0 DOS command
 - reset disk drive (DOS command UI and UJ, see https://www.pagetable.com/?p=1038)
 - enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038

@@ -39,7 +39,6 @@
 #include "version.h"
 
 /* definitions */
-extern BYTE context;
 extern BYTE devices[];
 extern char linebuffer[];
 extern Directory* dirs[];
@@ -63,14 +62,6 @@ updateMenu(void)
 	cputs(" F3 HEX");
 	gotoxy(MENUX+1,++menuy);
 	cputs(" F4 ASC");
-	gotoxy(MENUX+1,++menuy);
-#ifdef __PLUS4__
-	cputs("ESC SWITCH");
-#else
-	cputc(' ');
-	cputc(95); // arrow left
-	cputs("  SWITCH");
-#endif
 	gotoxy(MENUX+1,++menuy);
 	cputs(" CR RUN/CD");
 	gotoxy(MENUX+1,++menuy);
@@ -97,15 +88,16 @@ mainLoop(void)
 	BYTE c;
 	BYTE lastpage = 0;
 	BYTE nextpage = 0;
+  BYTE context = 0;
 
-  DIRH = 23;
-	context = 0;
+  DIR1H = 23;
+  DIR2H = 23;
 	devices[0]=8;
 	devices[1]=9;
 	dirs[0]=readDir(dirs[0],devices[0],(BYTE)0);
 	dirs[1]=NULL;
 
-	updateScreen(1);
+	updateScreen(context, 1);
 	while(1)
     {
       c = cgetc();
@@ -115,7 +107,7 @@ mainLoop(void)
         case CH_F1:
 					dirs[context]=readDir(dirs[context],devices[context],context);
 					clrDir(context);
-					showDir(dirs[context],context);
+					showDir(context, dirs[context], context);
 					break;
 
         case '2':
@@ -123,27 +115,28 @@ mainLoop(void)
 					if (++devices[context] >= 12)
             devices[context]=8;
 					freeDir(&dirs[context]);
-					updateScreen(1);
+					updateScreen(context, 1);
 					break;
 
         case '3':
         case CH_F3:
 					cathex(devices[context],dirs[context]->selected->dirent.name);
-					updateScreen(1);
+					updateScreen(context, 1);
 					break;
 
         case '4':
         case CH_F4:
 					catasc(devices[context],dirs[context]->selected->dirent.name);
-					updateScreen(1);
+					updateScreen(context, 1);
 					break;
 
 		    case 't':
 					cwd=GETCWD;
 					cwd->selected=cwd->firstelement;
 					cwd->pos=0;
-					printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+					printDir(context, cwd, DIRX+1, DIRY);
           break;
+
 		    case 'b':
 					cwd=GETCWD;
 					current = cwd->firstelement;
@@ -162,7 +155,7 @@ mainLoop(void)
             }
 					cwd->selected=current;
 					cwd->pos=pos;
-					printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+					printDir(context, cwd, DIRX+1, DIRY);
 					break;
 
 		    case 'q':
@@ -170,7 +163,7 @@ mainLoop(void)
 
         case '.':
 					about("DraBrowse");
-          updateScreen(1);
+          updateScreen(context, 1);
           break;
 
     		case CH_CURS_DOWN:
@@ -184,13 +177,13 @@ mainLoop(void)
               if (lastpage!=nextpage)
                 {
                   cwd->pos++;
-                  printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                  printDir(context, cwd, DIRX+1, DIRY);
                 }
               else
                 {
-                  printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                  printElement(context, cwd, DIRX+1, DIRY);
                   cwd->pos++;
-                  printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                  printElement(context, cwd, DIRX+1, DIRY);
                 }
 
             }
@@ -207,13 +200,13 @@ mainLoop(void)
               if (lastpage!=nextpage)
                 {
                   cwd->pos--;
-                  printDir(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                  printDir(context, cwd, DIRX+1, DIRY);
                 }
               else
                 {
-                  printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                  printElement(context, cwd, DIRX+1, DIRY);
                   cwd->pos--;
-                  printElement(cwd,(context==0)?DIR1X+1:DIR2X+1,(context==0)?DIR1Y:DIR2Y);
+                  printElement(context, cwd, DIRX+1, DIRY);
                 }
             }
           break;
@@ -231,7 +224,7 @@ mainLoop(void)
 					cwd=GETCWD;
 					if (cwd->selected)
             {
-              changeDir(devices[context], cwd->selected->dirent.name);
+              changeDir(context, devices[context], cwd->selected->dirent.name);
             }
 					break;
 
@@ -242,12 +235,12 @@ mainLoop(void)
             char buf[2];
             buf[0] = 95; // arrow left
             buf[1] = 0;
-            changeDir(devices[context], buf);
+            changeDir(context, devices[context], buf);
           }
 					break;
 
         case 0x5e: // up arrow
-          changeDir(devices[context], NULL);
+          changeDir(context, devices[context], NULL);
           break;
         }
     }
