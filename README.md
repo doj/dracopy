@@ -48,9 +48,14 @@ for the source code.
 TODO
 -----
 the following features or bugs should be fixed:
-- [ ] support directories and sd2iec stuff
-- [ ] format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
-- [ ] find out why 1540 and 1570 don't work (?)
+- format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
+- find out why 1540 and 1570 don't work (?)
+- copy some more features from 10.e
+ + better dir handling (vice)
+ + make image
+- make drive window height flexible
+- change sd2iec device num
+- execute a program does not work
 
 Version Information
 --------------------

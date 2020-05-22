@@ -117,7 +117,7 @@ updateMenu(void)
 	gotoxy(MENUX+1,menuy++);
 	cputs(" D DEL F/D");
 	gotoxy(MENUX+1,menuy++);
-	cputs(" R REN F");
+	cputs(" R RENAME");
 	gotoxy(MENUX+1,menuy++);
 	cputs(" M MAKE DIR");
 	gotoxy(MENUX+1,menuy++);
@@ -358,22 +358,26 @@ mainLoop(void)
     		case 13:  // cr
     		case CH_CURS_RIGHT:
 					cwd=GETCWD;
-					if (cwd->selected!=NULL)
+					if (cwd->selected)
             {
-              sprintf(linebuffer,"cd:%s\n",cwd->selected->dirent.name);
-              cmd(devices[context],linebuffer);
-              refreshDir();
+              changeDir(devices[context], cwd->selected->dirent.name);
             }
 					break;
 
           // --- leave directory
     		case 20:  // backspace
     		case CH_CURS_LEFT:
-					sprintf(linebuffer,"cd: \n");
-					linebuffer[3]=95; // arrow left
-					cmd(devices[context],linebuffer);
-					refreshDir();
+          {
+            char buf[2];
+            buf[0] = 95; // arrow left
+            buf[1] = 0;
+            changeDir(devices[context], buf);
+          }
 					break;
+
+        case 0x5e: // up arrow
+          changeDir(devices[context], NULL);
+          break;
         }
     }
 	while(exitflag==0);
@@ -657,6 +661,8 @@ doFormat(void)
     {
       cputs("\n\rEnter new name: ");
       scanf ("%s",answer);
+      if (strlen(answer) == 0)
+        goto done;
       cputs("\n\rWorking...");
       sprintf(linebuffer,"n:%s\n",answer);
       if(cmd(devices[context],linebuffer)==OK)
@@ -670,6 +676,7 @@ doFormat(void)
           waitKey(0);
         }
     }
+ done:
 	updateScreen(2);
 }
 

@@ -221,7 +221,7 @@ mainLoop(void)
           // --- start / enter directory
 		    case 13:
 					cwd=GETCWD;
-					if (cwd->selected!=NULL && !(cwd->selected->dirent.type==DIRTYPE))
+					if (cwd->selected && cwd->selected->dirent.type==CBM_T_PRG)
             {
               execute(dirs[context]->selected->dirent.name,devices[context]);
               exit(0);
@@ -230,22 +230,26 @@ mainLoop(void)
 
     		case CH_CURS_RIGHT:
 					cwd=GETCWD;
-					if (cwd->selected!=NULL)
+					if (cwd->selected)
             {
-              sprintf(linebuffer,"cd:%s\n",cwd->selected->dirent.name);
-              cmd(devices[context],linebuffer);
-              refreshDir();
+              changeDir(devices[context], cwd->selected->dirent.name);
             }
 					break;
 
           // --- leave directory
         case 20:  // backspace
     		case CH_CURS_LEFT:
-					strcpy(linebuffer,"cd: \n");
-					linebuffer[3]=95; // arrow left
-					cmd(devices[context],linebuffer);
-					refreshDir();
+          {
+            char buf[2];
+            buf[0] = 95; // arrow left
+            buf[1] = 0;
+            changeDir(devices[context], buf);
+          }
 					break;
+
+        case 0x5e: // up arrow
+          changeDir(devices[context], NULL);
+          break;
         }
     }
 

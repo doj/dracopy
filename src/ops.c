@@ -235,19 +235,18 @@ printElementPriv(Directory * dir, DirElement *current, int xpos, int ypos)
     {
       revers(1);
     }
+
+  cprintf("%4d %-16s %s", current->dirent.size, current->dirent.name, fileTypeToStr(current->dirent.type));
+
   if (current->flags!=0)
     {
+      gotoxy(xpos,ypos);
       textcolor(COLOR_WHITE);
       cputc('>');
-    }
-  else
-    {
-      cputc(' ');
+      textcolor(textc);
     }
 
-  cprintf("%-4d%-16s %s", current->dirent.size, current->dirent.name, fileTypeToStr(current->dirent.type));
   revers(0);
-  textcolor(textc);
 }
 
 void
@@ -260,8 +259,6 @@ printDir(Directory * dir,int xpos, int ypos)
 	int pos = 0;
 	int idx = 0;
   const char *typestr = NULL;
-
-	//clr(xpos,ypos+1,DIRW,DIRH);
 
 	if (dir==NULL)
     {
@@ -372,4 +369,44 @@ showDir(Directory * dir, BYTE mycontext)
 
 	textcolor(textc);
 	printDir(dir,(mycontext==0)?DIR1X+1:DIR2X+1,(mycontext==0)?DIR1Y:DIR2Y);
+}
+
+void
+changeDir(BYTE device, const char *dirname)
+{
+  if (dirname)
+    {
+      BYTE mount = 0;
+      BYTE l = strlen(dirname);
+      if (l > 4 && dirname[l-4] == '.')
+        {
+          if (dirname[l-1] == '4' &&
+              dirname[l-2] == '6' &&
+              (dirname[l-3] == 'd' || dirname[l-3] == 'D'))
+            {
+              mount = 1;
+            }
+          else if (dirname[l-1] == '1' &&
+                   (dirname[l-2] == '7' || dirname[l-2] == '8') &&
+                   (dirname[l-3] == 'd' || dirname[l-3] == 'D'))
+            {
+              mount = 1;
+            }
+        }
+      if (mount ||
+          (l == 1 && dirname[0]==95)) // check for left arrow
+        {
+          sprintf(linebuffer, "cd:%s", dirname);
+        }
+      else
+        {
+          sprintf(linebuffer, "cd/%s/", dirname);
+        }
+    }
+  else
+    {
+      strcpy(linebuffer, "cd//");
+    }
+  cmd(device, linebuffer);
+  refreshDir();
 }
