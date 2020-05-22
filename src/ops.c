@@ -37,20 +37,15 @@ BYTE DIR2H = 10;
 char DOSstatus[40];
 
 /// string descriptions of enum drive_e
-const char* drivetype[LAST_DRIVE_E] = {"\0", "1540", "1541", "1551", "1570", "1571", "1581", "sd2iec", "cmd", "vice"};
+static const char* drivetype[LAST_DRIVE_E] = {"\0", "1540", "1541", "1551", "1570", "1571", "1581", "sd2iec", "cmd", "vice"};
 /// enum drive_e value for each device 0-11.
 BYTE devicetype[12];
 
 const char*
 getDeviceType(BYTE context)
 {
-  BYTE device;
+  const BYTE device = devices[context];
   BYTE idx;
-  if (context > 1)
-    {
-      return "!ic";
-    }
-  device = devices[context];
   if (device > sizeof(devicetype))
     {
       return "!d";
@@ -133,7 +128,7 @@ updateScreen(const BYTE context, BYTE num_dirs)
 	showDir(context, dirs[context], context);
   if (num_dirs > 1)
     {
-      const BYTE other_context = 1 - context;
+      const BYTE other_context = context^1;
       clrDir(other_context);
       showDir(context, dirs[other_context], other_context);
     }
@@ -357,23 +352,26 @@ printElement(const BYTE context, const Directory *dir, const BYTE xpos, const BY
 void
 drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext)
 {
-  const char *device_type;
-	char *title = dir ? dir->name : "    no directory";
+  sprintf(linebuffer, " %02i:%s", (int)devices[mycontext], dir ? dir->name : "");
 	if(mycontext==context)
     {
-      sprintf(linebuffer, ">%02i:%s", (int)devices[mycontext], title);
+      linebuffer[0] = '>';
       textcolor(COLOR_WHITE);
     }
 	else
     {
-      sprintf(linebuffer, " %02i:%s", (int)devices[mycontext], title);
       textcolor(textc);
     }
 
-  device_type = "xx";//getDeviceType(mycontext); // TODO: only do when reading directory
-
-	sprintf(linebuffer2, "%s>%u blocks free", device_type, dir->free);
-  context = mycontext;
+  if (dir)
+    {
+      sprintf(linebuffer2, "%s>%u blocks free", dir->device_type, dir->free);
+    }
+  else
+    {
+      linebuffer2[0] = 0;
+    }
+  context = mycontext; // set context so that DIRX and friends below work.
 	drawFrame(linebuffer, DIRX, DIRY, DIRW+2, DIRH+2, linebuffer2);
 	textcolor(textc);
 }

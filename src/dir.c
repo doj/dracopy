@@ -33,6 +33,7 @@
 #include <cbm.h>
 #include "dir.h"
 #include "defines.h"
+#include "ops.h"
 
 # define CBM_T_FREE 100
 
@@ -103,7 +104,7 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
           if (dir==NULL)
             {
               // initialize directory
-              dir = (Directory *) malloc(sizeof(Directory));
+              dir = (Directory *) calloc(1, sizeof(Directory));
               if (current->dirent.type == _CBM_T_HEADER)
                 {
                   memcpy(dir->name, current->dirent.name, 16);
@@ -116,11 +117,6 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
                 {
                   strcpy(dir->name, "unknown type");
                 }
-              dir->firstelement=NULL;
-              dir->selected=NULL;
-              dir->flags = 0;
-              dir->pos=0;
-              dir->free = 0;
               free(current);
             }
           else if (current->dirent.type==CBM_T_FREE)
@@ -152,6 +148,9 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
 	cbm_closedir(device);
 
 	revers(0);
+
+  // todo: see if we can get the DOS status without re-opening the lfn
+  dir->device_type = getDeviceType(context);
 
 	return dir;
 }
