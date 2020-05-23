@@ -566,7 +566,7 @@ doCopyMulti(const BYTE context)
 	sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
   for(current = srcdir->firstelement; current; current=current->next)
     {
-      if (++cnt >= 24)
+      if (++cnt >= BOTTOM)
         {
           cnt = 0;
           newscreen(linebuffer);
@@ -672,7 +672,7 @@ doDeleteMulti(const BYTE context)
           break;
         }
 
-      if (++idx > 24)
+      if (++idx > BOTTOM)
         {
           newscreen(linebuffer);
           idx = 1;
@@ -1147,7 +1147,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
             {
               sprintf(diskCopyBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
 #define SECTOR_ERROR                                    \
-              gotoxy(0,24);                             \
+              gotoxy(0,BOTTOM);                             \
               textcolor(COLOR_LIGHTRED);                \
               cputs(diskCopyBuf);                       \
               printSecStatus(dt, track|0x80, sector, 'E');
@@ -1204,7 +1204,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 
       if (IS_1541(dt))
         {
-          gotoxy(0,24);
+          gotoxy(0,BOTTOM);
           textcolor(COLOR_LIGHTBLUE);
           switch(track)
             {
@@ -1220,7 +1220,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
         }
       else if (dt == D1571)
         {
-          gotoxy(0,24);
+          gotoxy(0,BOTTOM);
           textcolor(COLOR_LIGHTBLUE);
           switch(track)
             {
@@ -1230,7 +1230,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
         }
       else if (dt == D1581)
         {
-          gotoxy(0,24);
+          gotoxy(0,BOTTOM);
           textcolor(COLOR_LIGHTBLUE);
           switch(track)
             {
@@ -1241,7 +1241,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
     }
 
  success:
-  gotoxy(0,24);
+  gotoxy(0,BOTTOM);
   textcolor(COLOR_LIGHTBLUE);
   cputs("disk copy success          ");
   ret = 0;
@@ -1249,7 +1249,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 
  error:
   ret = -1;
-  gotoxy(0,24);
+  gotoxy(0,BOTTOM);
   textcolor(COLOR_LIGHTRED);
   cputs(diskCopyBuf);
   cgetc();

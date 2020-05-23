@@ -155,13 +155,14 @@ execute(char * prg, BYTE device)
 void
 updateScreen(const BYTE context, BYTE num_dirs)
 {
+#ifdef CHAR80
+  clrscr();
+#endif
 	updateMenu();
-  //clrDir(context);
 	showDir(context, dirs[context], context);
   if (num_dirs > 1)
     {
       const BYTE other_context = context^1;
-      //clrDir(other_context);
       showDir(context, dirs[other_context], other_context);
     }
 }
@@ -226,7 +227,6 @@ void
 refreshDir(const BYTE context)
 {
 	Directory * cwd = NULL;
-	//clrDir(context);
   textcolor(COLOR_WHITE);
 	cwd = readDir(cwd, devices[context], context);
   debugs("D3");
@@ -239,7 +239,6 @@ refreshDir(const BYTE context)
     {
       // refresh also other dir if it's the same drive
       const BYTE other_context = context^1;
-      //clrDir(other_context);
       debugs("D6");
       dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
       debugs("D7");

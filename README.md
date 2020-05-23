@@ -97,7 +97,6 @@ the following features or bugs should be fixed:
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
 - support 1571 disk copy with sd2iec
 - support 1581 disk copy with sd2iec
-- investigate why c128 has so little heap available?
 
 Version Information
 --------------------
@@ -110,6 +109,12 @@ Version Information
 | 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader
 | 1.0e | 2018        | combined DraBrowse and DraCopy, single window | unknown
 | 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy in DraCopy, currently d64 is supported. | doj
+
+Platform Notes
+---------------
+The Commodore 128 has less memory available than the C64.
+This results from the memory layout of the [cc65](https://cc65.github.io/) compiler.
+If you use disk with many directory entries, you could run out of memory on the C128.
 
 Copyright Notice
 -----------------
