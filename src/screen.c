@@ -92,9 +92,9 @@ drawFrame(char * title, BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize, char *subt
   if (subtitle)
     {
       gotoxy(xpos+2, ypos+ysize-1);
-      revers(1);
+      //revers(1);
       cputs(subtitle);
-      revers(0);
+      //revers(0);
     }
 
   // right

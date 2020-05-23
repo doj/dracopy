@@ -2,7 +2,7 @@
 # building
 
 D64=dracopy10doj.d64
-TARGETS=dc64 db64 # dc128 db128 dc1280 db1280 dcp4 dbp4 dbpet8 db610 dc610
+TARGETS=dc64 db64 dc128 db128 dc1280 db1280 dcp4 dbp4 dbpet8 db610 dc610
 
 all:	$(TARGETS)
 	sh d64.sh 'dracopy 1.0doj,dc' $(D64) $^
