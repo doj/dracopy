@@ -54,17 +54,14 @@ getDeviceType(BYTE context)
 {
   const BYTE device = devices[context];
   BYTE idx;
-  debugs("D1a");
   if (device > sizeof(devicetype))
     {
       return "!d";
     }
-  debugs("D1b");
   if (cmd(device, "ui") != 73)
     {
       return "!dos";
     }
-  debugs("D1c");
   for(idx = 1; idx < LAST_DRIVE_E; ++idx)
     {
       if(strstr(DOSstatus, drivetype[idx]))
@@ -73,13 +70,11 @@ getDeviceType(BYTE context)
           return drivetype[idx];
         }
     }
-  debugs("D1d");
   if(strstr(DOSstatus, "tdisk"))
     {
       devicetype[device] = D1551;
       return drivetype[D1551];
     }
-  debugs("D1e");
   return "!nf";
 }
 
@@ -87,39 +82,31 @@ BYTE
 dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cmd)
 {
   int res;
-  debugs("D1b1");
 	if (cbm_open(lfn, drive, sec_addr, cmd) != 0)
     return _oserror;
 
 	if (lfn != 15)
     {
-      debugs("D1b2");
       if (cbm_open(15, drive, 15, "") != 0)
         return _oserror;
     }
 
 	DOSstatus[0] = 0;
-  debugs("D1b4");
 	res = cbm_read(15, DOSstatus, sizeof(DOSstatus));
-  debugs("D1b5");
 
 	if(lfn != 15)
     {
-      debugs("D1b6");
       cbm_close(15);
     }
-  debugs("D1b7");
 	cbm_close(lfn);
 
   if (res < 1)
     return _oserror;
 
-  debugs("D1b8");
 #if 0
   gotoxy(0,BOTTOM);
   cputs(DOSstatus);
 #endif
-  debugs("D1b9");
 	return (DOSstatus[0] - 48) * 10 + DOSstatus[1] - 48;
 }
 
@@ -229,21 +216,15 @@ refreshDir(const BYTE context)
 	Directory * cwd = NULL;
   textcolor(COLOR_WHITE);
 	cwd = readDir(cwd, devices[context], context);
-  debugs("D3");
 	dirs[context]=cwd;
 	cwd->selected=cwd->firstelement;
-  debugs("D4");
 	showDir(context, cwd, context);
-  debugs("D5");
 	if (devices[0]==devices[1])
     {
       // refresh also other dir if it's the same drive
       const BYTE other_context = context^1;
-      debugs("D6");
       dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
-      debugs("D7");
       showDir(context, cwd, other_context);
-      debugs("D8");
     }
 }
 
@@ -498,7 +479,6 @@ changeDeviceID(BYTE device)
 void
 debugs(const char *s)
 {
-  return;
   gotoxy(30,BOTTOM);
   cclear(10);
   gotoxy(30,BOTTOM);

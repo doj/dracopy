@@ -156,7 +156,6 @@ mainLoop(void)
 
 	while(1)
     {
-#if 1
       {
         const size_t s = _heapmemavail();
         if (s < 0x1000)
@@ -165,7 +164,6 @@ mainLoop(void)
             cprintf("lowmem:%04x",s);
           }
       }
-#endif
 
     	switch (cgetc())
       	{
@@ -173,9 +171,7 @@ mainLoop(void)
         case CH_F1:
           textcolor(COLOR_WHITE);
 					dirs[context]=readDir(dirs[context],devices[context],context);
-          debugs("D F1 1");
 					showDir(context, dirs[context], context);
-          debugs("D F1 2");
 					break;
 
         case '2':
@@ -188,11 +184,8 @@ mainLoop(void)
                 devices[context] = 8;
             }
 					while(devices[context]==devices[context^1]);
-          debugs("DF2 1");
 					freeDir(&dirs[context]);
-          debugs("DF2 2");
 					showDir(context, dirs[context], context);
-          debugs("DF2 3");
 					break;
 
         case '3':
@@ -213,20 +206,16 @@ mainLoop(void)
             const BYTE other_context = context^1;
             freeDir(&dirs[other_context]);
             doCopyMulti(context);
-            debugs("D12");
             updateScreen(context, 2);
             // refresh destination dir
             dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
-            debugs("D14b");
             showDir(context, dirs[other_context], other_context);
           }
-          debugs("D15");
 					break;
 
         case '6':
         case CH_F6:
 					doDeleteMulti(context);
-          debugs("D16");
 					break;
 
         case '7':
@@ -681,11 +670,9 @@ doDeleteMulti(const BYTE context)
 
   updateScreen(context, 2);
   // refresh directories
-  debugs("D9");
   cwd = readDir(cwd, devices[context], context);
   dirs[context]=cwd;
   cwd->selected=cwd->firstelement;
-  debugs("D10");
   showDir(context, cwd, context);
   if (devices[0] == devices[1])
     {

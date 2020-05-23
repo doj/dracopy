@@ -58,11 +58,7 @@ readDir(Directory *dir, const BYTE device, const BYTE context)
 
   const char *device_type;
 
-  // todo: see if we can get the DOS status without re-opening the lfn
-  // TODO: this seems to sometimes crash
-  debugs("D1");
   device_type = getDeviceType(context);
-  debugs("D2");
 
   freeDir(&dir);
 

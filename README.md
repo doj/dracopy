@@ -84,8 +84,6 @@ for the source code.
 TODO
 -----
 the following features or bugs should be fixed:
-- when in a low memory situation, free directory entries before file copy
-- reading device ID sometimes crashes
 - use 'n' 'p' to go to next/prev page in window
 - copy some more features from 10.e
   + better dir handling (vice)
