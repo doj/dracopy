@@ -94,9 +94,9 @@ $(D81_2):
 
 X64?=x64sc
 x64:	all $(D64_9) $(D71) $(D81)
-	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1571 -10 $(D71) -drive11type 1581 -11 $(D81)
+#	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1571 -10 $(D71) -drive11type 1581 -11 $(D81)
 #	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 0 -drive11type 0
-#	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 0 -drive10type 0 -drive11type 0
+	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 0 -drive10type 0 -drive11type 0
 
 x64_71:	all $(D71) $(D71_2)
 	$(X64) -autostart dc64.prg -drive8type 1571 -8 $(D71) -drive9type 1571 -9 $(D71_2)

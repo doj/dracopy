@@ -163,7 +163,9 @@ mainLoop(void)
         case CH_F1:
           textcolor(COLOR_WHITE);
 					dirs[context]=readDir(dirs[context],devices[context],context);
+          debugs("D F1 1");
 					showDir(context, dirs[context], context);
+          debugs("D F1 2");
 					break;
 
         case '2':
@@ -202,6 +204,7 @@ mainLoop(void)
             const BYTE other_context = context^1;
             debugs("D14");
             dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+            debugs("D14b");
             showDir(context, dirs[other_context], other_context);
           }
           debugs("D15");
