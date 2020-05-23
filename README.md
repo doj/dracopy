@@ -97,6 +97,7 @@ the following features or bugs should be fixed:
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
 - support 1571 disk copy with sd2iec
 - support 1581 disk copy with sd2iec
+- investigate why c128 has so little heap available?
 
 Version Information
 --------------------

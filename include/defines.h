@@ -35,11 +35,7 @@ typedef unsigned char BYTE;
 #define ERROR -1
 #define ABORT +1
 
-#if defined(__PET__)
-  #define BUFFERSIZE 1024
-#else
-  #define BUFFERSIZE 4*1024
-#endif
+#define BUFFERSIZE 1024
 
 #ifdef NOCOLOR
   #define COLOR_SIGNAL COLOR_WHITE
@@ -47,21 +43,33 @@ typedef unsigned char BYTE;
   #define COLOR_SIGNAL COLOR_VIOLET
 #endif
 
+// height of sceen
 #define SCREENH 25
+// bottom row on screen
 #define BOTTOM (SCREENH-1)
 
-#define MENUW 13
+// height of menu frame
 #define MENUH SCREENH
+// y position of menu frame
+#define MENUY 0
 
 #ifdef CHAR80
 	#define SCREENW 80
+// x position of menu
 	#define MENUX 58
+// x position of menu items
+  #define MENUXT MENUX+2
+// width of menu frame
+  #define MENUW 15
 #else
   #define SCREENW 40
+// x position of menu
   #define MENUX 27
+// x position of menu items
+  #define MENUXT MENUX+1
+// width of menu frame
+  #define MENUW 13
 #endif
-#define MENUY 0
-
 
 #define GETCWD dirs[context]
 #define DIRW  25

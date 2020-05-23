@@ -54,28 +54,28 @@ updateMenu(void)
 	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,NULL);
 
 	++menuy;
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" F1 DIR");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" F2 DEVICE");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" F3 HEX");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" F4 ASC");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" CR RUN/CD");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" BS DIR UP");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("  T TOP");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("  B BOTTOM");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("  . ABOUT");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("  Q QUIT");
 	++menuy;
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cprintf(" Device:%02d",devices[0]);
 }
 

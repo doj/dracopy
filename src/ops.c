@@ -116,7 +116,7 @@ dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cm
 
   debugs("D1b8");
 #if 0
-  gotoxy(0,24);
+  gotoxy(0,BOTTOM);
   cputs(DOSstatus);
 #endif
   debugs("D1b9");
@@ -137,9 +137,9 @@ execute(char * prg, BYTE device)
 	gotoxy(0,2);
 	cprintf("load\"%s\",%d\n\r\n\r\n\r\n\r\n\r",prg,device);
 	cputs("run\n\r");
-  gotoxy(14,23);
+  gotoxy(14,BOTTOM-1);
   cputs("this program was loaded by");
-  gotoxy(14,24);
+  gotoxy(14,BOTTOM);
   cputs("DraCopy " DRA_VER);
 
   // put two CR in keyboard buffer
@@ -499,8 +499,18 @@ changeDeviceID(BYTE device)
 void
 debugs(const char *s)
 {
-  gotoxy(30,24);
+  return;
+  gotoxy(30,BOTTOM);
   cclear(10);
-  gotoxy(30,24);
+  gotoxy(30,BOTTOM);
   cputs(s);
+}
+
+void
+debugu(const unsigned u)
+{
+  gotoxy(30,BOTTOM);
+  cclear(10);
+  gotoxy(30,BOTTOM);
+  cprintf("%04x", u);
 }

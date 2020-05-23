@@ -74,58 +74,58 @@ updateMenu(void)
 	textcolor(textc);
 	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,menustatus);
 
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("F1 READ DIR");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("F2 DEVICE");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("F3 VIEW HEX");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("F4 VIEW ASC");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("F5 COPY MUL");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("F6 DEL MUL");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("F7 RUN");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("F8 DISKCOPY");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("SP TAG");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 #ifdef __PLUS4__
 	cputs("ESC SWITCH");
 #else
 	cputc(' ');
-	cputc(CH_LARROW); // arrow left
+	cputc(CH_LARROW);
 	cputs(" SWITCH W");
 #endif
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("CR CHG DIR");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs("BS DIR UP");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" T TOP");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" B BOTTOM");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" * INV SEL");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" C COPY F");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" D DEL F/D");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" R RENAME");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" M MAKE DIR");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" F FORMAT");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" . ABOUT");
-	gotoxy(MENUX+2,++menuy);
-	cputc(0x5c); // pound
+	gotoxy(MENUXT+1,++menuy);
+	cputc(CH_POUND);
 	cputs(" DEV ID");
-	gotoxy(MENUX+1,++menuy);
+	gotoxy(MENUXT,++menuy);
 	cputs(" @ DOS CMD");
 }
 
@@ -156,8 +156,10 @@ mainLoop(void)
 
 	while(1)
     {
-      const BYTE c = cgetc();
-    	switch (c)
+#if 0
+      debugu(_heapmemavail());
+#endif
+    	switch (cgetc())
       	{
         case '1':
         case CH_F1:
@@ -791,6 +793,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
 	BYTE *buf;
   int ret = OK;
   unsigned long total_length = 0;
+  BYTE xpos, ypos;
 
   switch(type)
     {
@@ -809,7 +812,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
 
 	if (cbm_open(6,srcdevice,CBM_READ,srcfile) != 0)
     {
-      cputs("Can't open input file!\n");
+      cputs("Can't open input file!\n\r");
       return ERROR;
     }
 
@@ -817,14 +820,23 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
 	sprintf(linebuffer, "%s,%c", destfile, type);
 	if (cbm_open(7, destdevice, CBM_WRITE, linebuffer) != 0)
     {
-      cputs("Can't open output file\n");
+      cputs("Can't open output file\n\r");
       cbm_close (6);
       return ERROR;
     }
 
 	buf = (unsigned char *) malloc(BUFFERSIZE);
+  if (! buf)
+    {
+      cputs("Can't alloc\n\r");
+      cbm_close(6);
+      cbm_close(7);
+      return ERROR;
+    }
 
 	cprintf("%-16s:",srcfile);
+  xpos = wherex();
+  ypos = wherey();
 	while(1)
     {
       if (kbhit())
@@ -837,6 +849,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
             }
         }
 
+      gotoxy(xpos, ypos);
 	  	cputs("R");
       length = cbm_read (6, buf, BUFFERSIZE);
       if (length < 0)
@@ -868,6 +881,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
 
       if (length > 0)
         {
+          gotoxy(xpos, ypos);
           cputs("W");
           if (cbm_write(7, buf, length) != length)
             {

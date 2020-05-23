@@ -51,111 +51,106 @@ Directory*
 readDir(Directory *dir, const BYTE device, const BYTE context)
 {
 	DirElement * previous = NULL;
-	DirElement * current = NULL;
 
   BYTE cnt = 0xff;
   const BYTE y = DIRY;
   BYTE x = 0;
 
-	unsigned char stat = 0;
-
-	// free old dir
-	if (dir!=NULL)
-    {
-      freeDir(&dir);
-    }
-
-	if (cbm_opendir(device, device) != 0)
-    {
-      cputs("could not open directory");
-      //printErrorChannel(device);
-      //cgetc();
-      cbm_closedir(device);
-      return NULL;
-    }
-
-	do
-    {
-      DirElement * current = (DirElement *) malloc(sizeof(DirElement));
-      memset(current,0,sizeof(DirElement));
-      memset(&(current->dirent), 0x44, sizeof(current->dirent));
-
-      stat=myCbmReadDir(device, &(current->dirent));
-      if (stat==0)
-        {
-          // print progress bar
-          if ((cnt>>2) >= DIRW)
-            {
-              x = DIRX + 1;
-              revers(0);
-              cnt = 0;
-              gotoxy(x, y);
-              cclear(DIRW);
-              //gotoxy(DIRW/2-5, y);
-              //cprintf("read dir: %02i", device);
-            }
-          else
-            {
-              gotoxy(x + (cnt>>2), y);
-              revers(progressRev[cnt & 3]);
-              cputc(progressBar[cnt & 3]);
-              ++cnt;
-            }
-
-          if (dir==NULL)
-            {
-              // initialize directory
-              dir = (Directory *) calloc(1, sizeof(Directory));
-              if (current->dirent.type == _CBM_T_HEADER)
-                {
-                  memcpy(dir->name, current->dirent.name, 16);
-                  dir->name[16] = ',';
-                  dir->name[17] = current->dirent.size & 255;
-                  dir->name[18] = current->dirent.size >> 8;
-                  dir->name[19] = 0;
-                }
-              else
-                {
-                  strcpy(dir->name, "unknown type");
-                }
-              free(current);
-            }
-          else if (current->dirent.type==CBM_T_FREE)
-            {
-              // blocks free entry
-              dir->free=current->dirent.size;
-              free(current);
-            }
-          else if (dir->firstelement==NULL)
-            {
-              // first element
-              dir->firstelement = current;
-              dir->selected = current;
-              previous=current;
-            }
-          else
-            {
-              // all other elements
-              current->previous=previous;
-              previous->next=current;
-              previous=current;
-            }
-
-          //cprintf("file:%s\n",current->dirent.name);
-        }
-    }
-	while(stat==0);
-
-	cbm_closedir(device);
-
-	revers(0);
+  const char *device_type;
 
   // todo: see if we can get the DOS status without re-opening the lfn
   // TODO: this seems to sometimes crash
   debugs("D1");
-  dir->device_type = getDeviceType(context);
+  device_type = getDeviceType(context);
   debugs("D2");
 
+  freeDir(&dir);
+
+	if (cbm_opendir(device, device) != 0)
+    {
+      cputs("could not open directory");
+      cbm_closedir(device);
+      return NULL;
+    }
+
+	while(1)
+    {
+      DirElement * current = (DirElement *) calloc(1, sizeof(DirElement));
+      if (! current)
+        break;
+      //memset(&(current->dirent), 0x44, sizeof(current->dirent)); // TODO: is this required?
+
+      if (myCbmReadDir(device, &(current->dirent)) != 0)
+        {
+          free(current);
+          break;
+        }
+
+      // print progress bar
+      if ((cnt>>2) >= DIRW)
+        {
+          x = DIRX + 1;
+          revers(0);
+          cnt = 0;
+          gotoxy(x, y);
+          cclear(DIRW);
+          gotoxy(x+DIRW/2-2, y);
+          cprintf("[%02i]", device);
+        }
+      else
+        {
+          gotoxy(x + (cnt>>2), y);
+          revers(progressRev[cnt & 3]);
+          cputc(progressBar[cnt & 3]);
+          ++cnt;
+        }
+
+      if (dir==NULL)
+        {
+          // initialize directory
+          dir = (Directory *) calloc(1, sizeof(Directory));
+          if (! dir)
+            break;
+          if (current->dirent.type == _CBM_T_HEADER)
+            {
+              memcpy(dir->name, current->dirent.name, 16);
+              dir->name[16] = ',';
+              dir->name[17] = current->dirent.size & 255;
+              dir->name[18] = current->dirent.size >> 8;
+              dir->name[19] = 0;
+            }
+          else
+            {
+              strcpy(dir->name, "unknown type");
+            }
+          free(current);
+        }
+      else if (current->dirent.type==CBM_T_FREE)
+        {
+          // blocks free entry
+          dir->free=current->dirent.size;
+          free(current);
+        }
+      else if (dir->firstelement==NULL)
+        {
+          // first element
+          dir->firstelement = current;
+          dir->selected = current;
+          previous=current;
+        }
+      else
+        {
+          // all other elements
+          current->previous=previous;
+          previous->next=current;
+          previous=current;
+        }
+    }
+
+	cbm_closedir(device);
+	revers(0);
+
+  dir->device_type = device_type;
 	return dir;
 }
 
@@ -336,19 +331,18 @@ void freeDir(Directory * * dir)
 {
   DirElement * next;
 	DirElement * acurrent;
-	if (*dir!=NULL)
+	if (*dir==NULL)
+    return;
+
+  acurrent = (*dir)->firstelement;
+  while (acurrent)
     {
-      acurrent = (*dir)->firstelement;
-
-      while (acurrent!=NULL)
-        {
-          next = acurrent->next;
-          free(acurrent);
-          acurrent=next;
-        }
-
-      free(*dir);
+      next = acurrent->next;
+      free(acurrent);
+      acurrent = next;
     }
+
+  free(*dir);
 	*dir=NULL;
 }
 
