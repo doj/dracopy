@@ -58,6 +58,7 @@ See the TODO section below for some functions that may have issues.
 | . | show about information
 | q | quit program to BASIC
 | pound | change device ID of current device
+| w | enlarge or shrink current window
 
 source code
 ------------
@@ -83,7 +84,7 @@ for the source code.
 TODO
 -----
 the following features or bugs should be fixed:
-- enlarge current window with
+- reading device ID sometimes crashes
 - use 'n' 'p' to go to next/prev page in window
 - copy some more features from 10.e
  + better dir handling (vice)

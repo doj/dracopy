@@ -63,6 +63,7 @@ extern const BYTE textc;
 
 /* definitions */
 char menustatus[MENUW];
+static BYTE windowState = 0;
 
 void
 updateMenu(void)
@@ -133,12 +134,12 @@ mainLoop(void)
 {
 	Directory * cwd = NULL;
 	DirElement * current = NULL;
-	unsigned int index = 0;
-	unsigned int pos = 0;
-	BYTE lfn = 8;
+  unsigned int pos = 0;
 	BYTE lastpage = 0;
 	BYTE nextpage = 0;
   BYTE context = 0;
+
+  initDirWindowHeight();
 
   dirs[0] = dirs[1] = NULL;
 	updateScreen(context, 2);
@@ -245,24 +246,23 @@ mainLoop(void)
           break;
 
 		    case 'b':
-					cwd=GETCWD;
-					current = cwd->firstelement;
-					pos=0;
-					while (1)
+          cwd = GETCWD;
+          current = cwd->firstelement;
+          while (1)
             {
               if (current->next!=NULL)
                 {
                   current=current->next;
-                  pos++;
+                  ++pos;
                 }
               else
                 {
                   break;
                 }
             }
-					cwd->selected=current;
-					cwd->pos=pos;
-					printDir(context, cwd, DIRX+1, DIRY);
+          cwd->selected=current;
+          cwd->pos=pos;
+          printDir(context, cwd, DIRX+1, DIRY);
 					break;
 
         case 'n':
@@ -396,6 +396,30 @@ mainLoop(void)
 
         case 0x5e: // up arrow
           changeDir(context, devices[context], NULL);
+          break;
+
+        case 'w':
+          switch(++windowState)
+            {
+            default:
+            case 0:
+              windowState = 0;
+              initDirWindowHeight();
+              break;
+            case 1:
+              DIR1H += DIR2H - 2;
+              DIR2H = 2;
+              break;
+            case 2:
+              {
+                const BYTE tmp = DIR1H;
+                DIR1H = DIR2H;
+                DIR2H = tmp;
+              }
+              break;
+            }
+          showDir(context, dirs[0], 0);
+          showDir(context, dirs[1], 1);
           break;
         }
     }

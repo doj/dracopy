@@ -26,13 +26,20 @@ char linebuffer[SCREENW+1];
 char linebuffer2[SCREENW+1];
 char answer[40];
 
+BYTE DIR1H;
+BYTE DIR2H;
+
+void
+initDirWindowHeight()
+{
 #ifdef CHAR80
-BYTE DIR1H = 23;
-BYTE DIR2H = 23;
+  DIR1H = 23;
+  DIR2H = 23;
 #else
-BYTE DIR1H = 11;
-BYTE DIR2H = 10;
+  DIR1H = 11;
+  DIR2H = 10;
 #endif
+}
 
 char DOSstatus[40];
 
