@@ -47,7 +47,8 @@ static const char progressRev[4] = { 0,    0,    1,    1 };
  * @param context window ID, must be 0 or 1.
  * @return new allocated Directory object.
  */
-Directory * readDir(Directory  * dir, BYTE device, BYTE context)
+Directory*
+readDir(Directory *dir, const BYTE device, const BYTE context)
 {
 	DirElement * previous = NULL;
 	DirElement * current = NULL;
@@ -163,7 +164,7 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
  * @return >0 upon error.
  */
 unsigned char
-myCbmReadDir (unsigned char device, struct cbm_dirent* l_dirent)
+myCbmReadDir(const BYTE device, struct cbm_dirent* l_dirent)
 {
   unsigned char byte, i, byte2, byte3;
 

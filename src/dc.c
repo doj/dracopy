@@ -48,7 +48,7 @@ void doFormat(const BYTE context);
 void doRename(const BYTE context);
 void doMakedir(const BYTE context);
 void doToggleAll(const BYTE context);
-void doCopy(const BYTE context);
+void doCopyMulti(const BYTE context);
 void doCopySelected(const BYTE context);
 void doDeleteMulti(const BYTE context);
 int doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo);
@@ -97,7 +97,7 @@ updateMenu(void)
 	cputs("ESC SWITCH");
 #else
 	cputc(' ');
-	cputc(95); // arrow left
+	cputc(CH_LARROW); // arrow left
 	cputs(" SWITCH W");
 #endif
 	gotoxy(MENUX+1,++menuy);
@@ -144,10 +144,12 @@ mainLoop(void)
   dirs[0] = dirs[1] = NULL;
 	updateScreen(context, 2);
 
+  textcolor(COLOR_WHITE);
 	devices[context] = 8;
 	dirs[context] = readDir(NULL, devices[context], context);
   showDir(context, dirs[context], context);
 
+  textcolor(textc);
 	devices[1] = 9;
 	dirs[1] = readDir(NULL, devices[1], 1);
   showDir(context, dirs[1], 1);
@@ -159,8 +161,8 @@ mainLoop(void)
       	{
         case '1':
         case CH_F1:
+          textcolor(COLOR_WHITE);
 					dirs[context]=readDir(dirs[context],devices[context],context);
-					clrDir(context);
 					showDir(context, dirs[context], context);
 					break;
 
@@ -175,7 +177,7 @@ mainLoop(void)
             }
 					while(devices[context]==devices[context^1]);
 					freeDir(&dirs[context]);
-					updateScreen(context, 2);
+					showDir(context, dirs[context], context);
 					break;
 
         case '3':
@@ -192,20 +194,23 @@ mainLoop(void)
 
         case '5':
         case CH_F5:
-					doCopy(context);
-					clrscr();
+					doCopyMulti(context);
+          debugs("D12");
+					updateScreen(context, 2);
 					// refresh destination dir
           {
             const BYTE other_context = context^1;
+            debugs("D14");
             dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+            showDir(context, dirs[other_context], other_context);
           }
-					updateScreen(context, 2);
+          debugs("D15");
 					break;
 
         case '6':
         case CH_F6:
 					doDeleteMulti(context);
-					updateScreen(context, 2);
+          debugs("D16");
 					break;
 
         case '7':
@@ -221,15 +226,15 @@ mainLoop(void)
           {
             const BYTE other_context = context^1;
             int ret = doDiskCopy(devices[context], devices[other_context]);
-            dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
             updateScreen(context, 2);
+            dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
           }
 					break;
 
           // ----- switch context -----
         case '0':
-        case 27:  // escape
-		    case 95:  // arrow left
+        case CH_ESC:
+		    case CH_LARROW:  // arrow left
           {
             Directory *oldcwd = GETCWD;
             context = context ^ 1;
@@ -238,7 +243,8 @@ mainLoop(void)
           }
 					break;
 
-		    case 't':
+        case 't':
+		    case CH_HOME:
 					cwd=GETCWD;
 					cwd->selected=cwd->firstelement;
 					cwd->pos=0;
@@ -323,7 +329,7 @@ mainLoop(void)
           // TODO: DOS command
           break;
 
-        case 0x5c:
+        case CH_POUND:
           changeDeviceID(devices[context]);
           updateScreen(context, 2);
           break;
@@ -374,7 +380,7 @@ mainLoop(void)
           break;
 
           // --- enter directory
-    		case 13:  // cr
+    		case CH_ENTER:
     		case CH_CURS_RIGHT:
 					cwd=GETCWD;
 					if (cwd->selected)
@@ -384,17 +390,17 @@ mainLoop(void)
 					break;
 
           // --- leave directory
-    		case 20:  // backspace
+    		case CH_DEL:
     		case CH_CURS_LEFT:
           {
             char buf[2];
-            buf[0] = 95; // arrow left
+            buf[0] = CH_LARROW; // arrow left
             buf[1] = 0;
             changeDir(context, devices[context], buf);
           }
 					break;
 
-        case 0x5e: // up arrow
+        case CH_UARROW:
           changeDir(context, devices[context], NULL);
           break;
 
@@ -439,33 +445,31 @@ doCopySelected(const BYTE context)
   int ret;
   Directory * cwd = GETCWD;
 
-  if (cwd->selected!=NULL)
+  if (cwd->selected == NULL)
+    return;
+
+  sprintf(linebuffer ,"Filecopy from device %d to device %d", devices[context], devices[other_context]);
+  newscreen(linebuffer);
+  ret = copy(cwd->selected->dirent.name,
+             devices[context],
+             cwd->selected->dirent.name,
+             devices[other_context],
+             cwd->selected->dirent.type);
+  if (ret == ERROR)
     {
-      sprintf(linebuffer ,"Filecopy from device %d to device %d", devices[context], devices[other_context]);
-      newscreen(linebuffer);
-      ret = copy(cwd->selected->dirent.name,
-                 devices[context],
-                 cwd->selected->dirent.name,
-                 devices[other_context],
-                 cwd->selected->dirent.type);
-      if (ret == ERROR)
-        {
-          cputc(13);
-          cputc(10);
-          waitKey(0);
-        }
+      cputc(CH_ENTER);
+      cputc(10);
+      waitKey(0);
+    }
 
-      // refresh destination dir
-      clrscr();
-      dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+  // refresh destination dir
+  updateScreen(context, 2);
+  dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
 
-      if (devices[0]==devices[1])
-        {
-          // refresh also source dir if it's the same drive
-          dirs[context] = readDir(dirs[context],devices[context],context);
-        }
-
-      updateScreen(context, 2);
+  if (devices[0]==devices[1])
+    {
+      // refresh also source dir if it's the same drive
+      dirs[context] = readDir(dirs[context],devices[context],context);
     }
 }
 
@@ -538,7 +542,7 @@ deleteSelected(const BYTE context)
 }
 
 void
-doCopy(const BYTE context)
+doCopyMulti(const BYTE context)
 {
   BYTE cnt = 0xf0;
 	DirElement * current;
@@ -550,10 +554,7 @@ doCopy(const BYTE context)
 	const BYTE destdev = devices[context^1];
 
 	if (srcdir==NULL || destdir==NULL)
-    {
-      cputs("no directory");
-      return;
-    }
+    return;
 
 	sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
   for(current = srcdir->firstelement; current; current=current->next)
@@ -616,9 +617,6 @@ doDeleteMulti(const BYTE context)
 {
 	DirElement * current;
 	int idx = 0;
-	//int selidx = 0;
-	//int x=0;
-	//int sx=0;
 	Directory * cwd = GETCWD;
 
 	if (dirs[context]==NULL)
@@ -626,7 +624,8 @@ doDeleteMulti(const BYTE context)
 
   for(current = dirs[context]->firstelement; current; current=current->next)
     {
-      ++idx;
+      if (current->flags)
+        ++idx;
     }
 
   if (idx == 0)
@@ -635,7 +634,10 @@ doDeleteMulti(const BYTE context)
   sprintf(linebuffer, "Delete %i files from device %d", idx, devices[context]);
   newscreen(linebuffer);
   if (! really())
-    return;
+    {
+      updateScreen(context, 2);
+      return;
+    }
 
   idx = 3;
   for(current = dirs[context]->firstelement; current; current=current->next)
@@ -670,13 +672,19 @@ doDeleteMulti(const BYTE context)
         }
     }
 
+  updateScreen(context, 2);
   // refresh directories
+  debugs("D9");
   cwd = readDir(cwd, devices[context], context);
   dirs[context]=cwd;
   cwd->selected=cwd->firstelement;
+  debugs("D10");
+  showDir(context, cwd, context);
   if (devices[0] == devices[1])
     {
-      dirs[context^1] = cwd;
+      const BYTE other_context = context^1;
+      dirs[other_context] = cwd;
+      showDir(context, cwd, other_context);
     }
 }
 
@@ -706,6 +714,7 @@ doFormat(const BYTE context)
   if (flag)
     {
       dirs[context] = readDir(dirs[context], devices[context], context);
+      showDir(context, dirs[context], context);
     }
 }
 
@@ -715,29 +724,30 @@ doRename(const BYTE context)
 	int n;
 	Directory * cwd = GETCWD;
 
-	if (cwd->selected!=NULL)
+	if (cwd->selected == NULL)
+    return;
+
+  sprintf(linebuffer,"Rename file %s on device %d",cwd->selected->dirent.name,devices[context]);
+  newscreen(linebuffer);
+  cputs("\n\rNew name (enter to skip): ");
+  n=scanf ("%s",answer);
+  if (n==1)
     {
-      sprintf(linebuffer,"Rename file %s on device %d",cwd->selected->dirent.name,devices[context]);
-      newscreen(linebuffer);
-      cputs("\n\rNew name (enter to skip): ");
-      n=scanf ("%s",answer);
-      if (n==1)
+      cputs("\n\rWorking...");
+      sprintf(linebuffer,"r:%s=%s",answer,cwd->selected->dirent.name);
+      if(cmd(devices[context],linebuffer)==OK)
         {
-          cputs("\n\rWorking...");
-          sprintf(linebuffer,"r:%s=%s",answer,cwd->selected->dirent.name);
-          if(cmd(devices[context],linebuffer)==OK)
-            {
-              clrscr();
-              dirs[context] = readDir(dirs[context],devices[context],context);
-            }
-          else
-            {
-              cputs("ERROR\n\r\n\r");
-              waitKey(0);
-            }
+          updateScreen(context, 2);
+          dirs[context] = readDir(dirs[context],devices[context],context);
+          return;
         }
-      updateScreen(context, 2);
+      else
+        {
+          cputs("ERROR\n\r\n\r");
+          waitKey(0);
+        }
     }
+  updateScreen(context, 2);
 }
 
 void
@@ -756,8 +766,9 @@ doMakedir(const BYTE context)
       sprintf(linebuffer,"md:%s",answer);
       if(cmd(devices[context],linebuffer)==OK)
         {
-          clrscr();
+          updateScreen(context, 2);
           dirs[context] = readDir(dirs[context],devices[context],context);
+          return;
         }
       else
         {
@@ -814,7 +825,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
       if (kbhit())
         {
           char c = cgetc();
-          if (c == 27 || c == 95)
+          if (c == CH_ESC || c == CH_LARROW)
             {
               ret = ABORT;
               break;
@@ -842,7 +853,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
       if (kbhit())
         {
           char c = cgetc();
-          if (c == 27 || c == 95)
+          if (c == CH_ESC || c == CH_LARROW)
             {
               ret = ABORT;
               ERRMSG(COLOR_YELLOW,"ABORT");
@@ -999,32 +1010,32 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
   const BYTE max_track = maxTrack(dt);
   BYTE i = devicetype[deviceTo];
   BYTE track = maxTrack(i);
+
+	sprintf(linebuffer, "Copy disk from device %d to %d? (Y/N)", deviceFrom, deviceTo);
+  newscreen(linebuffer);
+
   if (max_track != track)
     {
-      sprintf(linebuffer, "can't copy from %s (%i) to %s (%i)", drivetype[dt], max_track, drivetype[i], track);
-      newscreen(linebuffer);
+      cprintf("\n\rcan't copy from %s (%i tracks)\n\rto %s (%i tracks)", drivetype[dt], max_track, drivetype[i], track);
       cgetc();
       return ERROR;
     }
 
   if (max_track == 0)
     {
-      sprintf(linebuffer, "can't copy drive type %s", drivetype[dt]);
-      newscreen(linebuffer);
+      cprintf("\n\rcan't copy drive type %s", drivetype[dt]);
       cgetc();
       return ERROR;
     }
 
-	sprintf(linebuffer, "Copy disk from device %d to %d? (Y/N)", deviceFrom, deviceTo);
-  newscreen(linebuffer);
   while(1)
     {
       i = cgetc();
       if (i == 'y')
         break;
       if (i == 'n' ||
-          i == 27 ||
-          i == 95)
+          i == CH_ESC ||
+          i == CH_LARROW)
         return 1;
     }
 
@@ -1105,7 +1116,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
           if (kbhit())
             {
               i = cgetc();
-              if (i == 27 || i == 95)
+              if (i == CH_ESC || i == CH_LARROW)
                 {
                   goto done;
                 }

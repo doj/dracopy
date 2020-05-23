@@ -53,9 +53,9 @@ typedef struct {
   unsigned int free;
 } Directory;
 
-void freeDir(Directory * * dir);
-void removeFromDir(DirElement * current);
-Directory * readDir(Directory * dir, BYTE device, BYTE context);
-unsigned char myCbmReadDir (unsigned char device, struct cbm_dirent* l_dirent);
+void freeDir(Directory* *dir);
+void removeFromDir(DirElement *current);
+Directory* readDir(Directory *dir, const BYTE device, const BYTE context);
+unsigned char myCbmReadDir(const BYTE device, struct cbm_dirent* l_dirent);
 
 #endif /* DIR_H_ */

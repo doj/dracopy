@@ -35,12 +35,10 @@ typedef unsigned char BYTE;
 #define ERROR -1
 #define ABORT +1
 
-#if defined(__C128__)
-	#define BUFFERSIZE 4*1024
-#elif defined(__PET__)
+#if defined(__PET__)
   #define BUFFERSIZE 1024
 #else
-  #define BUFFERSIZE 8*1024
+  #define BUFFERSIZE 4*1024
 #endif
 
 #ifdef NOCOLOR
@@ -115,5 +113,9 @@ extern BYTE DIR2H;
 #endif
 
 #define DIRTYPE 6
+
+#define CH_LARROW 95
+#define CH_UARROW 0x5e
+#define CH_POUND  0x5c
 
 #endif

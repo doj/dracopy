@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #ifdef NOCOLOR
 const BYTE textc = COLOR_WHITE;
@@ -44,7 +45,7 @@ initDirWindowHeight()
 char DOSstatus[40];
 
 /// string descriptions of enum drive_e
-static const char* drivetype[LAST_DRIVE_E] = {"\0", "1540", "1541", "1551", "1570", "1571", "1581", "sd2iec", "cmd", "vice"};
+const char* drivetype[LAST_DRIVE_E] = {"\0", "1540", "1541", "1551", "1570", "1571", "1581", "sd2iec", "cmd", "vice"};
 /// enum drive_e value for each device 0-11.
 BYTE devicetype[12];
 
@@ -82,32 +83,48 @@ getDeviceType(BYTE context)
   return "!nf";
 }
 
-unsigned char
-dosCommand(unsigned char lfn, unsigned char drive, unsigned char sec_addr, char *cmd)
+BYTE
+dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cmd)
 {
+  int res;
+  debugs("D1b1");
 	if (cbm_open(lfn, drive, sec_addr, cmd) != 0)
-    return 0;
+    return _oserror;
 
 	if (lfn != 15)
-    cbm_open(15, drive, 15, "");
+    {
+      debugs("D1b2");
+      if (cbm_open(15, drive, 15, "") != 0)
+        return _oserror;
+    }
 
-	memset(DOSstatus, 0, sizeof(DOSstatus));
-	cbm_read(15, DOSstatus, sizeof DOSstatus);
+	DOSstatus[0] = 0;
+  debugs("D1b4");
+	res = cbm_read(15, DOSstatus, sizeof(DOSstatus));
+  debugs("D1b5");
 
 	if(lfn != 15)
-    cbm_close(15);
+    {
+      debugs("D1b6");
+      cbm_close(15);
+    }
+  debugs("D1b7");
 	cbm_close(lfn);
 
-	DOSstatus[strcspn(DOSstatus, "\n")] = 0;
+  if (res < 1)
+    return _oserror;
+
+  debugs("D1b8");
 #if 0
   gotoxy(0,24);
   cputs(DOSstatus);
 #endif
+  debugs("D1b9");
 	return (DOSstatus[0] - 48) * 10 + DOSstatus[1] - 48;
 }
 
 int
-cmd(unsigned char device, unsigned char * cmd)
+cmd(unsigned char device, const char *cmd)
 {
   return dosCommand(15, device, 15, cmd);
 }
@@ -138,14 +155,13 @@ execute(char * prg, BYTE device)
 void
 updateScreen(const BYTE context, BYTE num_dirs)
 {
-	//clrscr();
 	updateMenu();
-  clrDir(context);
+  //clrDir(context);
 	showDir(context, dirs[context], context);
   if (num_dirs > 1)
     {
       const BYTE other_context = context^1;
-      clrDir(other_context);
+      //clrDir(other_context);
       showDir(context, dirs[other_context], other_context);
     }
 }
@@ -203,25 +219,32 @@ about(const char *progname)
 void
 clrDir(BYTE context)
 {
-	clearArea(DIRX+1, DIRY, DIRW, DIRH+1);
+	clearArea(DIRX+1, DIRY+1, DIRW, DIRH);
 }
 
 void
 refreshDir(const BYTE context)
 {
 	Directory * cwd = NULL;
-	clrDir(context);
+	//clrDir(context);
+  textcolor(COLOR_WHITE);
 	cwd = readDir(cwd, devices[context], context);
+  debugs("D3");
 	dirs[context]=cwd;
 	cwd->selected=cwd->firstelement;
+  debugs("D4");
 	showDir(context, cwd, context);
+  debugs("D5");
 	if (devices[0]==devices[1])
     {
       // refresh also other dir if it's the same drive
       const BYTE other_context = context^1;
-      clrDir(other_context);
+      //clrDir(other_context);
+      debugs("D6");
       dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+      debugs("D7");
       showDir(context, cwd, other_context);
+      debugs("D8");
     }
 }
 
@@ -268,9 +291,9 @@ printElementPriv(const BYTE context, const Directory *dir, const DirElement *cur
       gotoxy(xpos,ypos);
       textcolor(COLOR_WHITE);
       cputc('>');
-      textcolor(textc);
     }
 
+  textcolor(textc);
   revers(0);
 }
 
@@ -287,7 +310,7 @@ printDir(const BYTE context, const Directory *dir, const BYTE xpos, const BYTE y
 
 	if (dir==NULL)
     {
-      //cputs("no directory");
+      clrDir(context);
       return;
     }
 
@@ -381,7 +404,7 @@ drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext)
 
   if (dir)
     {
-      sprintf(linebuffer2, "%s>%u blocks free", dir->device_type, dir->free);
+      sprintf(linebuffer2, "%s>%u blocks free<", dir->device_type, dir->free);
     }
   else
     {

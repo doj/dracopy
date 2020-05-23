@@ -46,7 +46,7 @@ See the TODO section below for some functions that may have issues.
 | ↑ | go to root directory
 | space | select current file
 | * | toggle selection
-| t | move cursor to top row of first page in current window
+| HOME, t | move cursor to top row of first page in current window
 | n | go to the next page in current window
 | p | go to the previous page in current window
 | b | go to bottom (last) page in current window

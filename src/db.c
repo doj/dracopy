@@ -105,17 +105,17 @@ mainLoop(void)
       	{
         case '1':
         case CH_F1:
+          textcolor(COLOR_WHITE);
 					dirs[context]=readDir(dirs[context],devices[context],context);
-					clrDir(context);
 					showDir(context, dirs[context], context);
 					break;
 
         case '2':
         case CH_F2:
-					if (++devices[context] >= 12)
+					if (++devices[context] > 11)
             devices[context]=8;
 					freeDir(&dirs[context]);
-					updateScreen(context, 1);
+					showDir(context, dirs[context], context);
 					break;
 
         case '3':
@@ -131,6 +131,7 @@ mainLoop(void)
 					break;
 
 		    case 't':
+        case CH_HOME:
 					cwd=GETCWD;
 					cwd->selected=cwd->firstelement;
 					cwd->pos=0;
@@ -212,7 +213,7 @@ mainLoop(void)
           break;
 
           // --- start / enter directory
-		    case 13:
+		    case CH_ENTER:
 					cwd=GETCWD;
 					if (cwd->selected && cwd->selected->dirent.type==CBM_T_PRG)
             {
@@ -229,17 +230,17 @@ mainLoop(void)
 					break;
 
           // --- leave directory
-        case 20:  // backspace
+        case CH_DEL:
     		case CH_CURS_LEFT:
           {
             char buf[2];
-            buf[0] = 95; // arrow left
+            buf[0] = CH_LARROW;
             buf[1] = 0;
             changeDir(context, devices[context], buf);
           }
 					break;
 
-        case 0x5e: // up arrow
+        case CH_UARROW:
           changeDir(context, devices[context], NULL);
           break;
         }

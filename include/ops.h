@@ -9,7 +9,7 @@
 #include "defines.h"
 #include "dir.h"
 
-int cmd(unsigned char lfn, unsigned char * cmd);
+int cmd(unsigned char lfn, const char *cmd);
 void execute(char * prg, BYTE device);
 void updateScreen(const BYTE context, BYTE num_dirs);
 void updateMenu(void);
@@ -21,7 +21,7 @@ void refreshDir(const BYTE context);
 void printDir(const BYTE context, const Directory *dir, const BYTE xpos, const BYTE ypos);
 void printElement(const BYTE context, const Directory *dir, const BYTE xpos, const BYTE ypos);
 const char* fileTypeToStr(BYTE ft);
-unsigned char dosCommand(unsigned char lfn, unsigned char drive, unsigned char sec_addr, char *cmd);
+BYTE dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cmd);
 void changeDir(const BYTE context, const BYTE device, const char *dirname);
 void changeDeviceID(BYTE device);
 void drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext);
