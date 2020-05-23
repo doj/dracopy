@@ -25,7 +25,6 @@ BYTE dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const cha
 void changeDir(const BYTE context, const BYTE device, const char *dirname);
 void changeDeviceID(BYTE device);
 void drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext);
-void debugs(const char *s);
 const char* getDeviceType(BYTE context);
 void initDirWindowHeight();
 
@@ -33,5 +32,8 @@ enum drive_e {NONE=0, D1540, D1541, D1551, D1570, D1571, D1581, SD2IEC, CMD, VIC
 
 extern BYTE devicetype[];
 extern const char* drivetype[];
+
+void debugs(const char *s);
+void debugu(const unsigned u);
 
 #endif

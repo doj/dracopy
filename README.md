@@ -19,7 +19,7 @@ Directories are supported on CMD compatible devices only.
 | Platforms | Executables |
 | --------- | ----------- |
 | C64       | dc64, db64
-| C128      | dc128, db128 (40 Columns), [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.gif), db1280 (80 Columns)
+| C128      | dc128, db128 (40 Columns), [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280 (80 Columns)
 | Plus 4    | dcp4, dbp4
 | CBM 610   | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
 | PET 8096  | dcpet8, dbpet8  (Note: use keys 1-8 instead of fkeys)
@@ -109,6 +109,12 @@ Version Information
 | 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader
 | 1.0e | 2018        | combined DraBrowse and DraCopy, single window | unknown
 | 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy in DraCopy, currently d64 is supported. | doj
+
+Platform Notes
+---------------
+The Commodore 128 has less memory available than the C64.
+This results from the memory layout of the [cc65](https://cc65.github.io/) compiler.
+If you use disk with many directory entries, you could run out of memory on the C128.
 
 Copyright Notice
 -----------------

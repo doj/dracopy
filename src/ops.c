@@ -116,7 +116,7 @@ dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cm
 
   debugs("D1b8");
 #if 0
-  gotoxy(0,24);
+  gotoxy(0,BOTTOM);
   cputs(DOSstatus);
 #endif
   debugs("D1b9");
@@ -137,9 +137,9 @@ execute(char * prg, BYTE device)
 	gotoxy(0,2);
 	cprintf("load\"%s\",%d\n\r\n\r\n\r\n\r\n\r",prg,device);
 	cputs("run\n\r");
-  gotoxy(14,23);
+  gotoxy(14,BOTTOM-1);
   cputs("this program was loaded by");
-  gotoxy(14,24);
+  gotoxy(14,BOTTOM);
   cputs("DraCopy " DRA_VER);
 
   // put two CR in keyboard buffer
@@ -155,13 +155,14 @@ execute(char * prg, BYTE device)
 void
 updateScreen(const BYTE context, BYTE num_dirs)
 {
+#ifdef CHAR80
+  clrscr();
+#endif
 	updateMenu();
-  //clrDir(context);
 	showDir(context, dirs[context], context);
   if (num_dirs > 1)
     {
       const BYTE other_context = context^1;
-      //clrDir(other_context);
       showDir(context, dirs[other_context], other_context);
     }
 }
@@ -226,7 +227,6 @@ void
 refreshDir(const BYTE context)
 {
 	Directory * cwd = NULL;
-	//clrDir(context);
   textcolor(COLOR_WHITE);
 	cwd = readDir(cwd, devices[context], context);
   debugs("D3");
@@ -239,7 +239,6 @@ refreshDir(const BYTE context)
     {
       // refresh also other dir if it's the same drive
       const BYTE other_context = context^1;
-      //clrDir(other_context);
       debugs("D6");
       dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
       debugs("D7");
@@ -499,8 +498,18 @@ changeDeviceID(BYTE device)
 void
 debugs(const char *s)
 {
-  gotoxy(30,24);
+  return;
+  gotoxy(30,BOTTOM);
   cclear(10);
-  gotoxy(30,24);
+  gotoxy(30,BOTTOM);
   cputs(s);
+}
+
+void
+debugu(const unsigned u)
+{
+  gotoxy(30,BOTTOM);
+  cclear(10);
+  gotoxy(30,BOTTOM);
+  cprintf("%04x", u);
 }
