@@ -163,7 +163,9 @@ mainLoop(void)
         case CH_F1:
           textcolor(COLOR_WHITE);
 					dirs[context]=readDir(dirs[context],devices[context],context);
+          debugs("DF1 1");
 					showDir(context, dirs[context], context);
+          debugs("DF1 2");
 					break;
 
         case '2':
@@ -176,8 +178,11 @@ mainLoop(void)
                 devices[context] = 8;
             }
 					while(devices[context]==devices[context^1]);
+          debugs("DF2 1");
 					freeDir(&dirs[context]);
+          debugs("DF2 2");
 					showDir(context, dirs[context], context);
+          debugs("DF2 3");
 					break;
 
         case '3':
