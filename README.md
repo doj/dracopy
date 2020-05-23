@@ -84,6 +84,7 @@ for the source code.
 TODO
 -----
 the following features or bugs should be fixed:
+- when in a low memory situation, free directory entries before file copy
 - reading device ID sometimes crashes
 - use 'n' 'p' to go to next/prev page in window
 - copy some more features from 10.e
@@ -97,6 +98,7 @@ the following features or bugs should be fixed:
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
 - support 1571 disk copy with sd2iec
 - support 1581 disk copy with sd2iec
+- maybe a file copy buffe size of 4*254 is better?
 
 Version Information
 --------------------

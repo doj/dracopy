@@ -286,7 +286,7 @@ myCbmReadDir(const BYTE device, struct cbm_dirent* l_dirent)
         // reading the disk name line
         l_dirent->type = _CBM_T_HEADER;
         l_dirent->size = byte | (byte2 << 8);
-        l_dirent->access = 0; // TODO: read the 0x1A thing
+        l_dirent->access = 0;
 
         while (cbm_k_basin() != 0) {
           if (cbm_k_readst () != 0) { /* ### Included to prevent */
@@ -352,17 +352,16 @@ void freeDir(Directory * * dir)
  */
 void removeFromDir(DirElement * current)
 {
- 	if (current!=NULL)
-    {
-      if (current->previous!=NULL)
-        {
-          current->previous->next = current->next;
-        }
+ 	if (current == NULL)
+    return;
 
-      if (current->next!=NULL)
-        {
-          current->next->previous = current->previous;
-        }
-	    free(current);
+  if (current->previous)
+    {
+      current->previous->next = current->next;
     }
+  if (current->next)
+    {
+      current->next->previous = current->previous;
+    }
+  free(current);
 }

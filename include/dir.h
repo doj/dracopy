@@ -48,8 +48,9 @@ typedef struct {
   struct direlement * firstelement;
   struct direlement * selected;
   const char *device_type;
-  unsigned char flags;
+  /// current cursor position
   unsigned int pos;
+  /// number of free blocks
   unsigned int free;
 } Directory;
 

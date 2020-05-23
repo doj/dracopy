@@ -156,9 +156,17 @@ mainLoop(void)
 
 	while(1)
     {
-#if 0
-      debugu(_heapmemavail());
+#if 1
+      {
+        const size_t s = _heapmemavail();
+        if (s < 0x1000)
+          {
+            gotoxy(29,BOTTOM);
+            cprintf("lowmem:%04x",s);
+          }
+      }
 #endif
+
     	switch (cgetc())
       	{
         case '1':
@@ -201,13 +209,13 @@ mainLoop(void)
 
         case '5':
         case CH_F5:
-					doCopyMulti(context);
-          debugs("D12");
-					updateScreen(context, 2);
-					// refresh destination dir
           {
             const BYTE other_context = context^1;
-            debugs("D14");
+            freeDir(&dirs[other_context]);
+            doCopyMulti(context);
+            debugs("D12");
+            updateScreen(context, 2);
+            // refresh destination dir
             dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
             debugs("D14b");
             showDir(context, dirs[other_context], other_context);
@@ -233,7 +241,8 @@ mainLoop(void)
         case CH_F8:
           {
             const BYTE other_context = context^1;
-            int ret = doDiskCopy(devices[context], devices[other_context]);
+            freeDir(&dirs[other_context]);
+            doDiskCopy(devices[context], devices[other_context]);
             updateScreen(context, 2);
             dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
           }
@@ -456,6 +465,8 @@ doCopySelected(const BYTE context)
   if (cwd->selected == NULL)
     return;
 
+  freeDir(&dirs[other_context]);
+
   sprintf(linebuffer ,"Filecopy from device %d to device %d", devices[context], devices[other_context]);
   newscreen(linebuffer);
   ret = copy(cwd->selected->dirent.name,
@@ -473,12 +484,7 @@ doCopySelected(const BYTE context)
   // refresh destination dir
   updateScreen(context, 2);
   dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
-
-  if (devices[0]==devices[1])
-    {
-      // refresh also source dir if it's the same drive
-      dirs[context] = readDir(dirs[context],devices[context],context);
-    }
+  showDir(context, dirs[other_context], other_context);
 }
 
 void
@@ -554,18 +560,11 @@ doCopyMulti(const BYTE context)
 {
   BYTE cnt = 0xf0;
 	DirElement * current;
-
-	Directory *srcdir = dirs[context];
-	Directory *destdir = dirs[context^1];
-
 	const BYTE srcdev = devices[context];
 	const BYTE destdev = devices[context^1];
 
-	if (srcdir==NULL || destdir==NULL)
-    return;
-
 	sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
-  for(current = srcdir->firstelement; current; current=current->next)
+  for(current = GETCWD->firstelement; current; current=current->next)
     {
       if (++cnt >= BOTTOM)
         {
