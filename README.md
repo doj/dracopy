@@ -32,7 +32,7 @@ See the TODO section below for some functions that may have issues.
 
 | Key | Function |
 | --- | -------- |
-| F1, 1 | (re) read directory in current window
+| F1, 1 | read directory in current window
 | F2, 2 | select the next device for the current window
 | F3, 3 | view current file as hex dump
 | F4, 4 | view current file as ASCII text
@@ -40,10 +40,10 @@ See the TODO section below for some functions that may have issues.
 | F6, 6 | delete all selected file in current window
 | F7, 7 | execute selected program
 | F8, 8 | copy disk from current window to the other device
-| <-, ESC, 0 | switch window
+| ←, ESC, 0 | switch window
 | Return, right | enter directory
 | DEL, left | go to parent directory
-| up arrow | go to root directory
+| ↑ | go to root directory
 | space | select current file
 | * | toggle selection
 | t | move cursor to top row of first page in current window
@@ -57,7 +57,7 @@ See the TODO section below for some functions that may have issues.
 | @ | send DOS command to device in current window
 | . | show about information
 | q | quit program to BASIC
-| pound | change device ID of current device
+| £ | change device ID of current device
 | w | enlarge or shrink current window
 
 source code
@@ -87,11 +87,11 @@ the following features or bugs should be fixed:
 - reading device ID sometimes crashes
 - use 'n' 'p' to go to next/prev page in window
 - copy some more features from 10.e
- + better dir handling (vice)
- + make image (i)
-- change device num (pound)
-- send DOS command (@)
-- copy on same device with C0 DOS command
+  + better dir handling (vice)
+  + make image 'i'
+- change device num 'pound'
+- send DOS command '@'
+- copy on same device with C0 DOS command 'a'
 - reset disk drive (DOS command UI and UJ, see https://www.pagetable.com/?p=1038)
 - enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
