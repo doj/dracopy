@@ -46,14 +46,17 @@ getDeviceType(BYTE context)
 {
   const BYTE device = devices[context];
   BYTE idx;
+  debugs("D1a");
   if (device > sizeof(devicetype))
     {
       return "!d";
     }
+  debugs("D1b");
   if (cmd(device, "ui") != 73)
     {
       return "!dos";
     }
+  debugs("D1c");
   for(idx = 1; idx < LAST_DRIVE_E; ++idx)
     {
       if(strstr(DOSstatus, drivetype[idx]))
@@ -62,11 +65,13 @@ getDeviceType(BYTE context)
           return drivetype[idx];
         }
     }
+  debugs("D1d");
   if(strstr(DOSstatus, "tdisk"))
     {
       devicetype[device] = D1551;
       return drivetype[D1551];
     }
+  debugs("D1e");
   return "!nf";
 }
 
@@ -87,6 +92,10 @@ dosCommand(unsigned char lfn, unsigned char drive, unsigned char sec_addr, char 
 	cbm_close(lfn);
 
 	DOSstatus[strcspn(DOSstatus, "\n")] = 0;
+#if 0
+  gotoxy(0,24);
+  cputs(DOSstatus);
+#endif
 	return (DOSstatus[0] - 48) * 10 + DOSstatus[1] - 48;
 }
 

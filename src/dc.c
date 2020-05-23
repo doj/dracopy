@@ -47,13 +47,12 @@ BYTE really(void);
 void doFormat(const BYTE context);
 void doRename(const BYTE context);
 void doMakedir(const BYTE context);
-void doDelete(void);
 void doToggleAll(const BYTE context);
 void doCopy(const BYTE context);
 void doCopySelected(const BYTE context);
 void doDeleteMulti(const BYTE context);
 int doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo);
-int copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE type);
+int copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE destdevice, BYTE type);
 void deleteSelected(const BYTE context);
 
 extern BYTE devices[];
@@ -233,11 +232,8 @@ mainLoop(void)
           {
             Directory *oldcwd = GETCWD;
             context = context ^ 1;
-            debugs("DOJa");
             drawDirFrame(context, oldcwd, context^1);
-            debugs("DOJb");
             drawDirFrame(context, GETCWD, context);
-            debugs("DOJc");
           }
 					break;
 
@@ -455,72 +451,72 @@ deleteSelected(const BYTE context)
   DirElement * lastSel;
   Directory * cwd = GETCWD;
 
-	if (cwd->selected!=NULL)
+	if (cwd->selected == NULL)
+    return;
+
+  sprintf(linebuffer, " Delete file/directory on device %d", devices[context]);
+  newscreen(linebuffer);
+  lastSel = cwd->selected;
+  cprintf("%s.%s\n\r", cwd->selected->dirent.name, fileTypeToStr(cwd->selected->dirent.type));
+  if (really())
     {
-      sprintf(linebuffer,"Delete file/directory on device %d",devices[context]);
-      newscreen(linebuffer);
-      if (really())
+      if (cwd->selected->dirent.type==DIRTYPE)
         {
-          lastSel = cwd->selected;
-          cprintf("%s.%s",cwd->selected->dirent.name,fileTypeToStr(cwd->selected->dirent.type));
-          if (cwd->selected->dirent.type==DIRTYPE)
+          sprintf(linebuffer,"rd:%s",cwd->selected->dirent.name);
+        }
+      else
+        {
+          sprintf(linebuffer,"s:%s",cwd->selected->dirent.name);
+        }
+      if (cmd(devices[context],linebuffer)==1)
+        {
+          removeFromDir(cwd->selected);
+          cputc(' ');
+          revers(1);
+          cputs("DELETED\n\r");
+          revers(0);
+
+          // select next / prior entry
+          if (cwd->selected->next!=NULL)
             {
-              sprintf(linebuffer,"rd:%s",cwd->selected->dirent.name);
+              cwd->selected=cwd->selected->next;
+              //cwd->pos++;
+            }
+          else if (cwd->selected->previous!=NULL)
+            {
+              cwd->selected=cwd->selected->previous;
+              cwd->pos--;
             }
           else
             {
-              sprintf(linebuffer,"s:%s",cwd->selected->dirent.name);
+              cwd->selected=NULL;
+              cwd->pos=0;
             }
-          if (cmd(devices[context],linebuffer)==OK)
-            {
-              removeFromDir(cwd->selected);
-              cputc(' ');
-              revers(1);
-              cputs("DELETED\n\r");
-              revers(0);
 
-              // select next / prior entry
-              if (cwd->selected->next!=NULL)
-                {
-                  cwd->selected=cwd->selected->next;
-                  //cwd->pos++;
-                }
-              else if (cwd->selected->previous!=NULL)
-                {
-                  cwd->selected=cwd->selected->previous;
-                  cwd->pos--;
-                }
-              else
-                {
-                  cwd->selected=NULL;
-                  cwd->pos=0;
-                }
-
-              // update first element if needed
-              if (cwd->firstelement==lastSel)
-                {
-                  cwd->firstelement=cwd->firstelement->next;
-                }
-            }
-          else
+          // update first element if needed
+          if (cwd->firstelement==lastSel)
             {
-              cputc(' ');
-              revers(1);
-              textcolor(COLOR_SIGNAL);
-              cputs("ERROR\n\r");
-              textcolor(textc);
-              revers(0);
-              waitKey(0);
+              cwd->firstelement=cwd->firstelement->next;
             }
         }
-      updateScreen(context, 2);
+      else
+        {
+          cputc(' ');
+          revers(1);
+          textcolor(COLOR_SIGNAL);
+          cputs("ERROR\n\r");
+          textcolor(textc);
+          revers(0);
+          waitKey(0);
+        }
     }
+  updateScreen(context, 2);
 }
 
 void
 doCopy(const BYTE context)
 {
-  BYTE cnt = 0;
+  BYTE cnt = 0xf0;
 	DirElement * current;
 
 	Directory *srcdir = dirs[context];
@@ -529,38 +525,31 @@ doCopy(const BYTE context)
 	const BYTE srcdev = devices[context];
 	const BYTE destdev = devices[context^1];
 
-	sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
 	if (srcdir==NULL || destdir==NULL)
     {
       cputs("no directory");
       return;
     }
-	else
+
+	sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
+  for(current = srcdir->firstelement; current; current=current->next)
     {
-      current = srcdir->firstelement;
-      while (current!=NULL)
+      if (++cnt >= 24)
         {
-          if (cnt == 0)
+          cnt = 0;
+          newscreen(linebuffer);
+        }
+      if (current->flags==1)
+        {
+          int ret = copy(current->dirent.name, srcdev, current->dirent.name, destdev, current->dirent.type);
+          if (ret == OK)
             {
-              newscreen(linebuffer);
+              // deselect
+              current->flags=0;
             }
-          if (current->flags==1)
+          else if (ret == ABORT)
             {
-              int ret = copy(current->dirent.name, srcdev, current->dirent.name, destdev, current->dirent.type);
-              if (ret == OK)
-                {
-                  // deselect
-                  current->flags=0;
-                }
-              else if (ret == ABORT)
-                {
-                  return;
-                }
-            }
-          current=current->next;
-          if (++cnt >= 24)
-            {
-              cnt = 0;
+              return;
             }
         }
     }
@@ -603,80 +592,74 @@ doDeleteMulti(const BYTE context)
 {
 	DirElement * current;
 	int idx = 0;
-	int selidx = 0;
-	int x=0;
-	int sx=0;
+	//int selidx = 0;
+	//int x=0;
+	//int sx=0;
 	Directory * cwd = GETCWD;
 
 	if (dirs[context]==NULL)
+    return;
+
+  for(current = dirs[context]->firstelement; current; current=current->next)
     {
-      return;
+      ++idx;
     }
-	else
+
+  if (idx == 0)
+    return;
+
+  sprintf(linebuffer, "Delete %i files from device %d", idx, devices[context]);
+  newscreen(linebuffer);
+  if (! really())
+    return;
+
+  idx = 3;
+  for(current = dirs[context]->firstelement; current; current=current->next)
     {
-      sprintf(linebuffer,"Delete files from device %d",devices[context]);
-      newscreen(linebuffer);
-      current = dirs[context]->firstelement;
-      while (current!=NULL)
-        {
-          if (current->flags==1)
-            {
-              cprintf("%s.%s\n\r", current->dirent.name, fileTypeToStr(current->dirent.type));
-            }
-          current=current->next;
-        }
-      cputs("\n\r");
-      if (really())
-        {
-          current = dirs[context]->firstelement;
-          while (current!=NULL)
-            {
-              if (current->flags==1)
-                {
-                  cprintf("%s.%s", current->dirent.name, fileTypeToStr(current->dirent.type));
-                  sprintf(linebuffer,"s:%s\n",current->dirent.name);
-                  if (cmd(devices[context],linebuffer)==OK)
-                    {
-                      cputc(' ');
-                      revers(1);
-                      cputs("DELETED\n\r");
-                      revers(0);
-                    }
-                  else
-                    {
-                      cputc(' ');
-                      revers(1);
-                      textcolor(COLOR_VIOLET);
-                      puts("ERROR\n\r");
-                      textcolor(textc);
-                      revers(0);
-                      break;
-                    }
-                }
-              current=current->next;
-            }
+      if (! current->flags)
+        continue;
 
-          //waitKey(0);
+      gotoxy(0,idx);
+      cprintf("%s.%s ", current->dirent.name, fileTypeToStr(current->dirent.type));
 
-          // refresh directories
-          clrscr();
-          cwd = readDir(cwd, devices[context], context );
-          dirs[context]=cwd;
-          cwd->selected=cwd->firstelement;
-          if (devices[0]==devices[1])
-            {
-              // refresh also other dir if it's the same drive
-              const BYTE other_context = 1 - context;
-              clrDir(other_context);
-              dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
-            }
+      sprintf(linebuffer,"s:%s",current->dirent.name);
+      if (cmd(devices[context],linebuffer)==1)
+        {
+          revers(1);
+          cputs("DELETED");
+          revers(0);
         }
+      else
+        {
+          revers(1);
+          textcolor(COLOR_VIOLET);
+          puts("ERROR");
+          textcolor(textc);
+          revers(0);
+          break;
+        }
+
+      if (++idx > 24)
+        {
+          newscreen(linebuffer);
+          idx = 1;
+        }
+    }
+
+  // refresh directories
+  cwd = readDir(cwd, devices[context], context);
+  dirs[context]=cwd;
+  cwd->selected=cwd->firstelement;
+  if (devices[0] == devices[1])
+    {
+      dirs[context^1] = cwd;
     }
 }
 
 void
 doFormat(const BYTE context)
 {
+  BYTE flag = 0;
 	sprintf(linebuffer,"Format device %d",devices[context]);
 	newscreen(linebuffer);
 	if (really())
@@ -685,21 +668,21 @@ doFormat(const BYTE context)
       scanf ("%s",answer);
       if (strlen(answer) == 0)
         goto done;
+      flag = 1;
       cputs("\n\rWorking...");
-      sprintf(linebuffer,"n:%s\n",answer);
-      if(cmd(devices[context],linebuffer)==OK)
+      sprintf(linebuffer,"n:%s",answer);
+      if(cmd(devices[context],linebuffer) != OK)
         {
-          clrscr();
-          dirs[context] = readDir(dirs[context],devices[context],context);
-        }
-      else
-        {
-          cputs("ERROR\n\r\n\r");
+          cputs("ERROR\n\r");
           waitKey(0);
         }
     }
  done:
 	updateScreen(context, 2);
+  if (flag)
+    {
+      dirs[context] = readDir(dirs[context], devices[context], context);
+    }
 }
 
 void
@@ -717,7 +700,7 @@ doRename(const BYTE context)
       if (n==1)
         {
           cputs("\n\rWorking...");
-          sprintf(linebuffer,"r:%s=%s\n",answer,cwd->selected->dirent.name);
+          sprintf(linebuffer,"r:%s=%s",answer,cwd->selected->dirent.name);
           if(cmd(devices[context],linebuffer)==OK)
             {
               clrscr();
@@ -746,7 +729,7 @@ doMakedir(const BYTE context)
 	if (n==1)
     {
       cputs("\n\rWorking...");
-      sprintf(linebuffer,"md:%s\n",answer);
+      sprintf(linebuffer,"md:%s",answer);
       if(cmd(devices[context],linebuffer)==OK)
         {
           clrscr();
@@ -762,46 +745,44 @@ doMakedir(const BYTE context)
 }
 
 int
-copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE type)
+copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE destdevice, BYTE type)
 {
 	int length=0;
-	unsigned char * linebuffer;
-	char deststring[30];
-  char type_ch;
+	BYTE *buf;
   int ret = OK;
   unsigned long total_length = 0;
 
   switch(type)
     {
     case _CBM_T_SEQ:
-      type_ch = 's';
+      type = 's';
       break;
     case _CBM_T_PRG:
-      type_ch = 'p';
+      type = 'p';
       break;
     case _CBM_T_USR:
-      type_ch = 'u';
+      type = 'u';
       break;
     default:
       return ERROR;
     }
 
-	if( cbm_open (6,srcdevice,CBM_READ,srcfile) != 0)
+	if (cbm_open(6,srcdevice,CBM_READ,srcfile) != 0)
     {
       cputs("Can't open input file!\n");
       return ERROR;
     }
 
 	// create destination string with filetype like "FILE,P"
-	sprintf(deststring, "%s,%c", destfile, type_ch);
-	if( cbm_open (7,destdevice,CBM_WRITE,deststring) != 0)
+	sprintf(linebuffer, "%s,%c", destfile, type);
+	if (cbm_open(7, destdevice, CBM_WRITE, linebuffer) != 0)
     {
       cputs("Can't open output file\n");
       cbm_close (6);
       return ERROR;
     }
 
-	linebuffer = (unsigned char *) malloc(BUFFERSIZE);
+	buf = (unsigned char *) malloc(BUFFERSIZE);
 
 	cprintf("%-16s:",srcfile);
 	while(1)
@@ -817,7 +798,7 @@ copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE type
         }
 
 	  	cputs("R");
-      length = cbm_read (6, linebuffer, BUFFERSIZE);
+      length = cbm_read (6, buf, BUFFERSIZE);
       if (length < 0)
         {
 #define ERRMSG(color,msg) \
@@ -848,7 +829,7 @@ copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE type
       if (length > 0)
         {
           cputs("W");
-          if (cbm_write(7, linebuffer, length) != length)
+          if (cbm_write(7, buf, length) != length)
             {
               ERRMSG(COLOR_YELLOW,"WRITE ERROR");
               break;
@@ -865,7 +846,7 @@ copy(char * srcfile, BYTE srcdevice, char * destfile, BYTE destdevice, BYTE type
 
     }
 
-	free(linebuffer);
+	free(buf);
 	cbm_close (6);
 	cbm_close (7);
 	return ret;

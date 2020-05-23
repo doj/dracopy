@@ -35,14 +35,12 @@ typedef unsigned char BYTE;
 #define ERROR -1
 #define ABORT +1
 
-#if defined(__C64__)
-	#define BUFFERSIZE 16*1024
-#elif defined(__C128__)
+#if defined(__C128__)
 	#define BUFFERSIZE 4*1024
 #elif defined(__PET__)
   #define BUFFERSIZE 1024
 #else
-  #define BUFFERSIZE 10*1024
+  #define BUFFERSIZE 8*1024
 #endif
 
 #ifdef NOCOLOR

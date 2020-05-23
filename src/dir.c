@@ -150,7 +150,10 @@ Directory * readDir(Directory  * dir, BYTE device, BYTE context)
 	revers(0);
 
   // todo: see if we can get the DOS status without re-opening the lfn
+  // TODO: this seems to sometimes crash
+  debugs("D1");
   dir->device_type = getDeviceType(context);
+  debugs("D2");
 
 	return dir;
 }
