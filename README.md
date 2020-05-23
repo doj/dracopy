@@ -19,7 +19,7 @@ Directories are supported on CMD compatible devices only.
 | Platforms | Executables |
 | --------- | ----------- |
 | C64       | dc64, db64
-| C128      | dc128, db128 (40 Columns), [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.gif), db1280 (80 Columns)
+| C128      | dc128, db128 (40 Columns), [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280 (80 Columns)
 | Plus 4    | dcp4, dbp4
 | CBM 610   | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
 | PET 8096  | dcpet8, dbpet8  (Note: use keys 1-8 instead of fkeys)
