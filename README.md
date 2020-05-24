@@ -1,4 +1,4 @@
-DraCopy and DraBrowsw
+DraCopy and DraBrowse
 ======================
 
 DraCopy - a simple copy program.
@@ -71,9 +71,10 @@ The original program was written by Sascha Bader and is available at
 http://www.mobilefx.de/html/dracopy.html
 it currently has version 1.0d for download, but the source code is not available.
 
-The 1.0e version was updated by an unknown developer.
+The 1.0e version was updated by rbm.
 
-The master branch is currently used to develop the 1.0doj version.
+The master branch in this repository is currently used to develop
+the 1.0doj version which was created from the 1.0c version.
 
 The code was tested to build on a unix system with GNU make.
 
@@ -85,9 +86,11 @@ TODO
 -----
 the following features or bugs should be fixed:
 - use 'n' 'p' to go to next/prev page in window
-- copy some more features from 10.e
+- copy some more features from 1.0e
   + better dir handling (vice)
   + make image 'i'
+  + directory sort
+  + copy seq and rel
 - change device num 'pound'
 - send DOS command '@'
 - copy on same device with C0 DOS command 'a'
@@ -98,17 +101,17 @@ the following features or bugs should be fixed:
 - support 1581 disk copy with sd2iec
 - maybe a file copy buffe size of 4*254 is better?
 
-Version Information
---------------------
+Version Information and Download
+---------------------------------
 
-| Ver  | Date        | Feature | Author |
-| ---- | ------------| --------| ------ |
-| 1.0  | 23 Jan 2009 | Initial Version | Sascha Bader
-| 1.0b | 23 May 2009 | Minor Bugfixes | Sascha Bader
-| 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader
-| 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader
-| 1.0e | 2018        | combined DraBrowse and DraCopy, single window | unknown
-| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy in DraCopy, currently d64 is supported. | doj
+| Ver  | Date        | Feature | Author | Download |
+| ---- | ------------| --------| ------ | -------- |
+| 1.0  | 23 Jan 2009 | Initial Version | Sascha Bader |
+| 1.0b | 23 May 2009 | Minor Bugfixes | Sascha Bader |
+| 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader | https://csdb.dk/release/?id=89910
+| 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader | https://csdb.dk/release/?id=98664
+| 1.0e | 2018        | combined DraBrowse and DraCopy, single window, lots of other improvements | rbm | https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser
+| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy | doj | [dracopy-1.0doj.zip](ftp://ftp.cubic.org/pub/other/dracopy-1.0doj.zip)
 
 Platform Notes
 ---------------
