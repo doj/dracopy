@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <ctype.h>
 
 #ifdef NOCOLOR
 const BYTE textc = COLOR_WHITE;
@@ -409,24 +410,24 @@ changeDir(const BYTE context, const BYTE device, const char *dirname)
   if (dirname)
     {
       BYTE mount = 0;
-      BYTE l = strlen(dirname);
+      register BYTE l = strlen(dirname);
       if (l > 4 && dirname[l-4] == '.')
         {
-          if (dirname[l-1] == '4' &&
-              dirname[l-2] == '6' &&
-              (dirname[l-3] == 'd' || dirname[l-3] == 'D'))
+          if ((dirname[l-3] == 'd' || dirname[l-3] == 'D') &&
+              (dirname[l-2] == '6') &&
+              (dirname[l-1] == '4'))
             {
               mount = 1;
             }
-          else if (dirname[l-1] == '1' &&
+          else if ((dirname[l-3] == 'd' || dirname[l-3] == 'D') &&
                    (dirname[l-2] == '7' || dirname[l-2] == '8') &&
-                   (dirname[l-3] == 'd' || dirname[l-3] == 'D'))
+                   (dirname[l-1] == '1'))
             {
               mount = 1;
             }
         }
       if (mount ||
-          (l == 1 && dirname[0]==95)) // check for left arrow
+          (l == 1 && dirname[0]==CH_LARROW))
         {
           sprintf(linebuffer, "cd:%s", dirname);
         }
@@ -449,7 +450,11 @@ changeDeviceID(BYTE device)
   int i;
   newscreen(" change device ID");
   cprintf("\n\rchange device ID %i to (0-255): ", device);
-  scanf("%i", &i);
+  sprintf(linebuffer, "%i", device);
+  i = textInput(31, 2, linebuffer, 3);
+  if (i <= 0)
+    return;
+  i = atoi(linebuffer);
 
   if (devicetype[device] == SD2IEC)
     {
@@ -492,4 +497,110 @@ debugu(const unsigned u)
   cclear(10);
   gotoxy(30,BOTTOM);
   cprintf("%04x", u);
+}
+
+/**
+ * input/modify a string.
+ * based on version 1.0e, then modified.
+ * @param[in] xpos screen x where input starts.
+ * @param[in] ypos screen y where input starts.
+ * @param[in,out] str string that is edited, it can have content and must have at least @p size + 1 bytes. Maximum size if 255 bytes.
+ * @param[in] size maximum length of @p str in bytes.
+ * @return -1 if input was aborted.
+ * @return >= 0 length of edited string @p str.
+ */
+int
+textInput(const BYTE xpos, const BYTE ypos, char *str, const BYTE size)
+{
+	register BYTE idx = strlen(str);
+	register BYTE c;
+
+	cursor(1);
+	cputsxy(xpos, ypos, str);
+
+	while(1)
+    {
+      c = cgetc();
+      switch (c)
+        {
+      case CH_ESC:
+        cursor(0);
+        return -1;
+
+      case CH_ENTER:
+        idx = strlen(str);
+        str[idx] = 0;
+        cursor(0);
+        return idx;
+
+      case CH_DEL:
+        if (idx)
+          {
+            --idx;
+            cputcxy(xpos + idx, ypos, ' ');
+            for(c = idx; 1; ++c)
+              {
+                const BYTE b = str[c+1];
+                str[c] = b;
+                cputcxy(xpos + c, ypos, b ? b : ' ');
+                if (b == 0)
+                  break;
+              }
+            gotoxy(xpos + idx, ypos);
+          }
+        break;
+
+        case CH_INS:
+          c = strlen(str);
+          if (c < size &&
+              c > 0 &&
+              idx < c)
+            {
+              ++c;
+              while(c >= idx)
+                {
+                  str[c+1] = str[c];
+                  if (c == 0)
+                    break;
+                  --c;
+                }
+              str[idx] = ' ';
+              cputsxy(xpos, ypos, str);
+              gotoxy(xpos + idx, ypos);
+            }
+          break;
+
+      case CH_CURS_LEFT:
+        if (idx)
+          {
+            --idx;
+            gotoxy(xpos + idx, ypos);
+          }
+        break;
+
+      case CH_CURS_RIGHT:
+        if (idx < strlen(str) &&
+            idx < size)
+          {
+            ++idx;
+            gotoxy(xpos + idx, ypos);
+          }
+        break;
+
+      default:
+        if (isprint(c) &&
+            idx < size)
+          {
+            const BYTE flag = (str[idx] == 0);
+            str[idx] = c;
+            cputc(c);
+            ++idx;
+            if (flag)
+              str[idx+1] = 0;
+            break;
+          }
+        break;
+      }
+    }
+  return 0;
 }

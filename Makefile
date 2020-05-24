@@ -13,7 +13,7 @@ COMMON_SRC=src/screen.c src/cat.c src/dir.c src/base.c src/ops.c
 DC_SRC=src/dc.c $(COMMON_SRC)
 
 dc64:	$(DC_SRC)
-	cl65 $(CFLAGS) -t c64 $^ -o $@.prg
+	cl65 $(CFLAGS) -t c64 -m $@.map $^ -o $@.prg
 	-pucrunch -c64 $@.prg $@
 
 dc128:	$(DC_SRC)
@@ -60,7 +60,7 @@ dbpet8:	$(DB_SRC)
 	cl65 $(CFLAGS) -t pet -DCHAR80 -DNOCOLOR $^ -o $@
 
 clean:
-	$(RM) -rf d src/*.o src/*.s *.prg *.seq *.d64 *.d71 *.d81 \
+	$(RM) -rf d src/*.o src/*.s *.prg *.map *.seq *.d64 *.d71 *.d81 \
 	dc64 dc128 dc1280 dcpet8 dcp4 dc610 \
 	db64 db128 db1280 dbpet8 dbp4 db610 \
 	dracopy-1.0doj.zip

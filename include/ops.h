@@ -27,6 +27,7 @@ void changeDeviceID(BYTE device);
 void drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext);
 const char* getDeviceType(BYTE context);
 void initDirWindowHeight();
+int textInput(const BYTE xpos, const BYTE ypos, char *str, const BYTE size);
 
 enum drive_e {NONE=0, D1540, D1541, D1551, D1570, D1571, D1581, SD2IEC, CMD, VICE, LAST_DRIVE_E};
 

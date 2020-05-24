@@ -64,8 +64,8 @@ source code
 ------------
 This repository contains the source code of the Commodore 64 copy program dracopy.
 I have found two versions of the source code:
-- 1.0c on https://csdb.dk/release/?id=89910
-- 1.0e on https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser
+- 1.0c on https://csdb.dk/release/?id=89910 , [github branch](https://github.com/doj/dracopy/tree/1.0c-import)
+- 1.0e on https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser , [github branch](https://github.com/doj/dracopy/tree/1.0e-import)
 
 The original program was written by Sascha Bader and is available at
 http://www.mobilefx.de/html/dracopy.html
@@ -74,9 +74,13 @@ it currently has version 1.0d for download, but the source code is not available
 The 1.0e version was updated by rbm.
 
 The master branch in this repository is currently used to develop
-the 1.0doj version which was created from the 1.0c version.
+the 1.0doj version which was branched from the 1.0c version. It is
+re-implementing some features from the independently branched 1.0e
+version.
 
-The code was tested to build on a unix system with GNU make.
+The code was tested to build on a unix system (Linux and OsX) with GNU
+make and the [cc65](https://cc65.github.io/) C compiler for Commodore
+8 bit computers.
 
 You can use pucrunch to compress the compiled dracopy program.
 See http://a1bert.kapsi.fi/Dev/pucrunch/ or https://github.com/mist64/pucrunch
@@ -85,12 +89,23 @@ for the source code.
 TODO
 -----
 the following features or bugs should be fixed:
+- sd2iec [documentation](https://www.sd2iec.de/gitweb/?p=sd2iec.git;a=blob;f=README;hb=HEAD)
+  + chdir doesn't work
+  + rmdir https://wpguru.co.uk/2014/08/how-to-use-sd2iec-a-quick-command-reference/
+- reduce memory use
+  + replace scanf() with textInput()
+  + see if printf() can be replaced with regular string operations
+  + check which variables should be "register" https://cc65.github.io/doc/cc65.html#s8
+  + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize
+  + use cputsxy()
 - use 'n' 'p' to go to next/prev page in window
 - copy some more features from 1.0e
   + better dir handling (vice)
   + make image 'i'
   + directory sort
   + copy seq and rel
+  + merge both copy into a single command
+  + merge both delete into a single command
 - change device num 'pound'
 - send DOS command '@'
 - copy on same device with C0 DOS command 'a'
@@ -117,7 +132,7 @@ Platform Notes
 ---------------
 The Commodore 128 has less memory available than the C64.
 This results from the memory layout of the [cc65](https://cc65.github.io/) compiler.
-If you use disk with many directory entries, you could run out of memory on the C128.
+If you use disks with many directory entries, you could run out of memory on the C128.
 
 Copyright Notice
 -----------------

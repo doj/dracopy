@@ -158,7 +158,7 @@ mainLoop(void)
     {
       {
         const size_t s = _heapmemavail();
-        if (s < 0x1000)
+        //if (s < 0x1000)
           {
             gotoxy(29,BOTTOM);
             cprintf("lowmem:%04x",s);
@@ -691,7 +691,7 @@ doFormat(const BYTE context)
 	if (really())
     {
       cputs("\n\rEnter new name: ");
-      scanf ("%s",answer);
+      scanf ("%s",answer); // TODO: replace with textInput
       if (strlen(answer) == 0)
         goto done;
       flag = 1;
@@ -724,7 +724,7 @@ doRename(const BYTE context)
   sprintf(linebuffer,"Rename file %s on device %d",cwd->selected->dirent.name,devices[context]);
   newscreen(linebuffer);
   cputs("\n\rNew name (enter to skip): ");
-  n=scanf ("%s",answer);
+  n=scanf ("%s",answer); // TODO: replace with textInput
   if (n==1)
     {
       cputs("\n\rWorking...");
@@ -753,7 +753,7 @@ doMakedir(const BYTE context)
 	sprintf(linebuffer,"Make directory on device %d",cwd->selected->dirent.name,devices[context]);
 	newscreen(linebuffer);
 	cputs("\n\rName (enter to skip): ");
-	n=scanf ("%s",answer);
+	n=scanf ("%s",answer); // TODO: replace with textInput
 	if (n==1)
     {
       cputs("\n\rWorking...");
@@ -1008,10 +1008,17 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
   cputc(st);
 }
 
+/**
+ * disk sector copy from device @p deviceFrom to @p deviceTo.
+ * based on version 1.0e, then heavily modified.
+ * @return OK if copy was successful.
+ * @return ERROR if copy failed or devices are incompatible.
+ * @return ABORT if copy was aborted.
+ */
 int
 doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 {
-  int ret;
+  int ret = OK;
   const BYTE dt = devicetype[deviceFrom];
   const BYTE max_track = maxTrack(dt);
   BYTE i = devicetype[deviceTo];
@@ -1042,7 +1049,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
       if (i == 'n' ||
           i == CH_ESC ||
           i == CH_LARROW)
-        return 1;
+        return ABORT;
     }
 
   cputs("0000000001111111111222222222233333333334");
@@ -1158,12 +1165,12 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
                   && track >= 35
                   && sector == 0)
                 {
-                  ret = 0;
+                  ret = OK;
                   goto success;
                 }
               if (dt == D1571 && track == 35 && sector == 0)
                 {
-                  ret = 0;
+                  ret = OK;
                   goto success;
                 }
               sprintf(diskCopyBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
@@ -1231,11 +1238,11 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
   gotoxy(0,BOTTOM);
   textcolor(COLOR_LIGHTBLUE);
   cputs("disk copy success          ");
-  ret = 0;
+  ret = OK;
   goto done;
 
  error:
-  ret = -1;
+  ret = ERROR;
   gotoxy(0,BOTTOM);
   textcolor(COLOR_LIGHTRED);
   cputs(diskCopyBuf);
