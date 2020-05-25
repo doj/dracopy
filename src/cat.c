@@ -35,6 +35,7 @@
 #include "cat.h"
 #include "base.h"
 #include "defines.h"
+#include "ops.h"
 
 #define x2(x) (buffer[x] < 10 ? "0" : ""), buffer[x]
 
@@ -50,51 +51,59 @@ int cathex(BYTE device, char * filename)
 	if( cbm_open (6,device,CBM_READ,filename) != 0)
 	{
 		cputs("Can't open input file!\n");
+    return -1;
 	}
-	else
-	{
-		offset=0;
-	 	clrscr();
-		do
+
+  clrscr();
+  do
 		{
 			if (cnt==0)
-			{
-			 	clrscr();
-			}
+        {
+          clrscr();
+        }
 			len = cbm_read (6, buffer, sizeof(buffer));
 			cputhex16(offset);
 			cputc(' ');
-			for (c=0;c<len;c++)
-			{
-				cputhex8(buffer[c]);
-				//cprintf("%02x",buffer[c]);
-			}
-			cputs(" : ");
-			for (c=0;c<len;c++)
-			{
-				pchar=buffer[c];
-				if (pchar==10 || pchar ==13)
-				{
-					pchar='.';
-				}
-				cputc(filterchar(pchar));
-			}
+			for (c=0; c<len; ++c)
+        {
+          cputhex8(buffer[c]);
+          cputc(' ');
+        }
+			for (; c<len; ++c)
+        {
+          cputs("   ");
+        }
+			for (c=0; c<len; ++c)
+        {
+          textcolor(textc);
+          pchar=buffer[c];
+          if (pchar==10 || pchar ==13)
+            {
+              textcolor(COLOR_GRAY1);
+              pchar='.';
+            }
+          cputc(filterchar(pchar));
+        }
+      textcolor(textc);
 
 			cputc(13);
 			cputc(10);
 			cnt++;
 			offset+=sizeof(buffer);
-			if (cnt==24 || (len!=sizeof(buffer)))
-			{
-				cnt=0;
-				gotoxy(0,24);
-				c=waitKey(1);
-			}
-	    }
-	    while(len==sizeof(buffer) && c!=3 && c!='q');
-		cbm_close (6);
-	}
+			if (cnt==BOTTOM || (len!=sizeof(buffer)))
+        {
+          cnt=0;
+          gotoxy(0,BOTTOM);
+          c=waitKey(1);
+          if (c == 'q' ||
+              c == CH_LARROW ||
+              c == CH_STOP)
+            break;
+        }
+    }
+  while(len == sizeof(buffer));
 
+  cbm_close (6);
 	return 0;
 }
 
@@ -110,70 +119,60 @@ int catasc(BYTE device, char * filename)
 	if( cbm_open (6,device,CBM_READ,filename) != 0)
 	{
 		cputs("Can't open input file!\n");
+    return -1;
 	}
-	else
-	{
-		offset=0;
-	 	clrscr();
-		do
+
+  clrscr();
+  do
 		{
 			len = cbm_read (6, buffer, sizeof(buffer));
 			for (c=0;c<len;c++)
-			{
-				pchar=buffer[c];
-				if (pchar==13 || pchar==10 )
-				{
-					cputc(13);
-					cputc(10);
-				}
-				else if (pchar==9) // tab
-				{
-					cputs("    ");
-				}
-				else
-				{
-					if (! (	pchar==13 ||
-                  pchar==10 ||
-                  (pchar >= 0x20 && pchar <= 0x7f) ||
-                  (pchar >= 0xA0) ) )
-					{
-						pchar = '.';
-					}
-					if ( pchar>=65 && pchar<=90)
-					{
-						pchar = pchar+32;
-					}
-					else if (pchar>=97 && pchar <=122 )
-					{
-						pchar = pchar-32;
-					}
-
-					cputc(pchar);
-				}
-			}
+        {
+          textcolor(textc);
+          pchar=buffer[c];
+          if (pchar==13 || pchar==10 )
+            {
+              cputc(13);
+              cputc(10);
+            }
+          else
+            {
+              cputc(filterchar(pchar));
+            }
+          textcolor(textc);
+        }
 
 			offset+=sizeof(buffer);
-			if (wherey()>23 || (len!=sizeof(buffer)))
-			{
-				gotoxy(0,24);
-				c=waitKey(1);
-			 	clrscr();
-			}
-	    }
-	    while(len==sizeof(buffer) && c!=3 && c!='q');
-		cbm_close (6);
-	}
+			if (wherey() >= BOTTOM || (len!=sizeof(buffer)))
+        {
+          gotoxy(0,BOTTOM);
+          c=waitKey(1);
+          if (c == 'q' ||
+              c == CH_LARROW ||
+              c == CH_STOP)
+            break;
+          clrscr();
+        }
+    }
+  while(len == sizeof(buffer));
 
+  cbm_close (6);
 	return 0;
 }
 
 BYTE filterchar(BYTE pchar)
 {
-	if (! (	pchar==13 ||
-          pchar==10 ||
-          (pchar >= 0x20 && pchar <= 0x7f) ||
-          (pchar >= 0xA0) ) )
-	{
+  if (pchar==9) // tab
+    {
+      textcolor(COLOR_GRAY1);
+      cputc(0xba);
+    }
+	else if (! ( (pchar==13) ||
+               (pchar==10) ||
+               (pchar >= 0x20 && pchar <= 0x7f) ||
+               (pchar >= 0xA0) ) )
+  {
+    textcolor(COLOR_GRAY1);
 		pchar = '.';
 	}
 	if ( pchar>=65 && pchar<=90)

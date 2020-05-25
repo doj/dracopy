@@ -720,7 +720,6 @@ doFormat(const BYTE context)
           flag = 0;
         }
     }
- done:
   if (flag)
     {
       dirs[context] = readDir(dirs[context], devices[context], context);

@@ -23,7 +23,6 @@ const BYTE textc = COLOR_WHITE;
 const BYTE textc = COLOR_LIGHTGREEN;
 #endif
 
-extern const BYTE textc;
 Directory* dirs[] = {NULL,NULL};
 BYTE devices[] = {8,9};
 char linebuffer[SCREENW+1];
