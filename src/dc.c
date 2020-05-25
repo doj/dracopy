@@ -696,31 +696,36 @@ doDeleteMulti(const BYTE context)
 void
 doFormat(const BYTE context)
 {
-  BYTE flag = 0;
+  int flag = 0;
 	sprintf(linebuffer,"Format device %d",devices[context]);
 	newscreen(linebuffer);
 	if (really())
     {
       cputs("\n\rEnter new name: ");
-      scanf ("%s",answer); // TODO: replace with textInput
-      if (strlen(answer) == 0)
-        goto done;
-      flag = 1;
-      cputs("\n\rWorking...");
-      sprintf(linebuffer,"n:%s",answer);
-      if(cmd(devices[context],linebuffer) != OK)
+      flag = textInput(15,3,answer+2,16+3);
+      if (flag > 0)
         {
-          cputs("ERROR\n\r");
-          waitKey(0);
+          answer[0] = 'n';
+          answer[1] = ':';
+          flag = 1;
+          cputs("\n\rWorking...");
+          if(cmd(devices[context], answer) != OK)
+            {
+              cputs("ERROR\n\r");
+              waitKey(0);
+            }
+        }
+      else
+        {
+          flag = 0;
         }
     }
  done:
-	updateScreen(context, 2);
   if (flag)
     {
       dirs[context] = readDir(dirs[context], devices[context], context);
-      showDir(context, dirs[context], context);
     }
+	updateScreen(context, 2);
 }
 
 void
@@ -734,17 +739,16 @@ doRename(const BYTE context)
 
   sprintf(linebuffer,"Rename file %s on device %d",cwd->selected->dirent.name,devices[context]);
   newscreen(linebuffer);
-  cputs("\n\rNew name (enter to skip): ");
-  n=scanf ("%s",answer); // TODO: replace with textInput
-  if (n==1)
+  cputs("\n\rNew name: ");
+  strcpy(answer, cwd->selected->dirent.name);
+  n = textInput(10,2,answer,16+3);
+  if (n > 0 && strcmp(answer,cwd->selected->dirent.name))
     {
       cputs("\n\rWorking...");
       sprintf(linebuffer,"r:%s=%s",answer,cwd->selected->dirent.name);
       if(cmd(devices[context],linebuffer)==OK)
         {
-          updateScreen(context, 2);
           dirs[context] = readDir(dirs[context],devices[context],context);
-          return;
         }
       else
         {
@@ -763,17 +767,18 @@ doMakedir(const BYTE context)
 
 	sprintf(linebuffer,"Make directory on device %d",cwd->selected->dirent.name,devices[context]);
 	newscreen(linebuffer);
-	cputs("\n\rName (enter to skip): ");
-	n=scanf ("%s",answer); // TODO: replace with textInput
-	if (n==1)
+	cputs("\n\rNew Dir: ");
+  answer[3] = 0;
+  n = textInput(9,2,answer+3,16+3);
+	if (n > 0)
     {
       cputs("\n\rWorking...");
-      sprintf(linebuffer,"md:%s",answer);
-      if(cmd(devices[context],linebuffer)==OK)
+      answer[0] = 'm';
+      answer[1] = 'd';
+      answer[2] = ':';
+      if(cmd(devices[context], answer) == OK)
         {
-          updateScreen(context, 2);
           dirs[context] = readDir(dirs[context],devices[context],context);
-          return;
         }
       else
         {

@@ -91,8 +91,8 @@ TODO
 the following features or bugs should be fixed:
 - sd2iec [documentation](https://www.sd2iec.de/gitweb/?p=sd2iec.git;a=blob;f=README;hb=HEAD)
   + rmdir https://wpguru.co.uk/2014/08/how-to-use-sd2iec-a-quick-command-reference/
+    however regular scratch works on directories as well.
 - reduce memory use
-  + replace scanf() with textInput()
   + see if printf() can be replaced with regular string operations
   + check which variables should be "register" https://cc65.github.io/doc/cc65.html#s8
   + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize

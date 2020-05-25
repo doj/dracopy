@@ -537,6 +537,7 @@ textInput(const BYTE xpos, const BYTE ypos, char *str, const BYTE size)
       c = cgetc();
       switch (c)
         {
+      case CH_LARROW:
       case CH_ESC:
         cursor(0);
         return -1;
