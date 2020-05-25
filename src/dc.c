@@ -66,6 +66,32 @@ char menustatus[MENUW];
 static BYTE windowState = 0;
 
 void
+nextWindowState(const BYTE context)
+{
+  switch(++windowState)
+    {
+    default:
+    case 0:
+      windowState = 0;
+      initDirWindowHeight();
+      break;
+    case 1:
+      DIR1H += DIR2H - 2;
+      DIR2H = 2;
+      break;
+    case 2:
+      {
+        const BYTE tmp = DIR1H;
+        DIR1H = DIR2H;
+        DIR2H = tmp;
+      }
+      break;
+    }
+  showDir(context, dirs[0], 0);
+  showDir(context, dirs[1], 1);
+}
+
+void
 updateMenu(void)
 {
 	BYTE menuy=MENUY;
@@ -118,15 +144,37 @@ mainLoop(void)
   dirs[0] = dirs[1] = NULL;
 	updateScreen(context, 2);
 
-  textcolor(COLOR_WHITE);
-	devices[context] = 8;
-	dirs[context] = readDir(NULL, devices[context], context);
-  showDir(context, dirs[context], context);
+  {
+    BYTE i = 7;
+    textcolor(COLOR_WHITE);
+    while(++i < 12)
+      {
+        devices[context] = i;
+        dirs[context] = readDir(NULL, devices[context], context);
+        if (dirs[context])
+          {
+            showDir(context, dirs[context], context);
+            break;
+          }
+      }
 
-  textcolor(textc);
-	devices[1] = 9;
-	dirs[1] = readDir(NULL, devices[1], 1);
-  showDir(context, dirs[1], 1);
+    textcolor(textc);
+    while(++i < 12)
+      {
+        devices[1] = i;
+        dirs[1] = readDir(NULL, devices[1], 1);
+        if (dirs[1])
+          {
+            showDir(context, dirs[1], 1);
+            break;
+          }
+      }
+
+    // if no drive was found for the lower window,
+    // enlarge the upper window.
+    if (dirs[1] == NULL)
+      nextWindowState(context);
+  }
 
 	while(1)
     {
@@ -394,27 +442,7 @@ mainLoop(void)
           break;
 
         case 'w':
-          switch(++windowState)
-            {
-            default:
-            case 0:
-              windowState = 0;
-              initDirWindowHeight();
-              break;
-            case 1:
-              DIR1H += DIR2H - 2;
-              DIR2H = 2;
-              break;
-            case 2:
-              {
-                const BYTE tmp = DIR1H;
-                DIR1H = DIR2H;
-                DIR2H = tmp;
-              }
-              break;
-            }
-          showDir(context, dirs[0], 0);
-          showDir(context, dirs[1], 1);
+          nextWindowState(context);
           break;
         }
     }
