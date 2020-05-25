@@ -74,59 +74,33 @@ updateMenu(void)
 	textcolor(textc);
 	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,menustatus);
 
-	gotoxy(MENUXT,++menuy);
-	cputs("F1 READ DIR");
-	gotoxy(MENUXT,++menuy);
-	cputs("F2 DEVICE");
-	gotoxy(MENUXT,++menuy);
-	cputs("F3 VIEW HEX");
-	gotoxy(MENUXT,++menuy);
-	cputs("F4 VIEW ASC");
-	gotoxy(MENUXT,++menuy);
-	cputs("F5 COPY MUL");
-	gotoxy(MENUXT,++menuy);
-	cputs("F6 DEL MUL");
-	gotoxy(MENUXT,++menuy);
-	cputs("F7 RUN");
-	gotoxy(MENUXT,++menuy);
-	cputs("F8 DISKCOPY");
-	gotoxy(MENUXT,++menuy);
-	cputs("SP TAG");
-	gotoxy(MENUXT,++menuy);
+	cputsxy(MENUXT,++menuy,"F1 READ DIR");
+	cputsxy(MENUXT,++menuy,"F2 DEVICE");
+	cputsxy(MENUXT,++menuy,"F3 VIEW HEX");
+	cputsxy(MENUXT,++menuy,"F4 VIEW ASC");
+	cputsxy(MENUXT,++menuy,"F5 COPY MUL");
+	cputsxy(MENUXT,++menuy,"F6 DEL MUL");
+	cputsxy(MENUXT,++menuy,"F7 RUN");
+	cputsxy(MENUXT,++menuy,"F8 DISKCOPY");
+	cputsxy(MENUXT,++menuy,"SP TAG");
 #ifdef __PLUS4__
-	cputs("ESC SWITCH");
+	cputsxy(MENUXT,++menuy,"EC SWITCH");
 #else
-	cputc(' ');
-	cputc(CH_LARROW);
-	cputs(" SWITCH W");
+	cputcxy(MENUXT+1,++menuy,CH_LARROW); cputs(" SWITCH W");
 #endif
-	gotoxy(MENUXT,++menuy);
-	cputs("CR CHG DIR");
-	gotoxy(MENUXT,++menuy);
-	cputs("BS DIR UP");
-	gotoxy(MENUXT,++menuy);
-	cputs(" T TOP");
-	gotoxy(MENUXT,++menuy);
-	cputs(" B BOTTOM");
-	gotoxy(MENUXT,++menuy);
-	cputs(" * INV SEL");
-	gotoxy(MENUXT,++menuy);
-	cputs(" C COPY F");
-	gotoxy(MENUXT,++menuy);
-	cputs(" D DEL F/D");
-	gotoxy(MENUXT,++menuy);
-	cputs(" R RENAME");
-	gotoxy(MENUXT,++menuy);
-	cputs(" M MAKE DIR");
-	gotoxy(MENUXT,++menuy);
-	cputs(" F FORMAT");
-	gotoxy(MENUXT,++menuy);
-	cputs(" . ABOUT");
-	gotoxy(MENUXT+1,++menuy);
-	cputc(CH_POUND);
-	cputs(" DEV ID");
-	gotoxy(MENUXT,++menuy);
-	cputs(" @ DOS CMD");
+	cputsxy(MENUXT,++menuy,"CR CHG DIR");
+	cputsxy(MENUXT,++menuy,"BS DIR UP");
+	cputsxy(MENUXT,++menuy," T TOP");
+	cputsxy(MENUXT,++menuy," B BOTTOM");
+	cputsxy(MENUXT,++menuy," * INV SEL");
+	cputsxy(MENUXT,++menuy," C COPY F");
+	cputsxy(MENUXT,++menuy," D DEL F/D");
+	cputsxy(MENUXT,++menuy," R RENAME");
+	cputsxy(MENUXT,++menuy," M MAKE DIR");
+	cputsxy(MENUXT,++menuy," F FORMAT");
+	cputsxy(MENUXT,++menuy," . ABOUT");
+	cputcxy(MENUXT+1,++menuy,CH_POUND); cputs(" DEV ID");
+	cputsxy(MENUXT,++menuy," @ DOS CMD");
 }
 
 void
@@ -157,8 +131,17 @@ mainLoop(void)
 	while(1)
     {
       {
+        // TODO: find out where a file is left open, then remove this workaround block
+        BYTE i;
+        for(i = 0; i < 16; ++i)
+          {
+            cbm_close(i);
+            cbm_closedir(i);
+          }
+      }
+      {
         const size_t s = _heapmemavail();
-        //if (s < 0x1000)
+        if (s < 0x1000)
           {
             gotoxy(29,BOTTOM);
             cprintf("lowmem:%04x",s);
@@ -836,8 +819,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
             }
         }
 
-      gotoxy(xpos, ypos);
-	  	cputs("R");
+	  	cputsxy(xpos, ypos, "R");
       length = cbm_read (6, buf, BUFFERSIZE);
       if (length < 0)
         {
@@ -868,8 +850,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
 
       if (length > 0)
         {
-          gotoxy(xpos, ypos);
-          cputs("W");
+          cputsxy(xpos, ypos, "W");
           if (cbm_write(7, buf, length) != length)
             {
               ERRMSG(COLOR_YELLOW,"WRITE ERROR");
@@ -1004,8 +985,7 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
         }
       s >>= 1;
     }
-  gotoxy(t, 3+s);
-  cputc(st);
+  cputcxy(t, 3+s, st);
 }
 
 /**
@@ -1053,8 +1033,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
     }
 
   cputs("0000000001111111111222222222233333333334");
-  gotoxy(0,2);
-  cputs("1234567890123456789012345678901234567890");
+  cputsxy(0,2, "1234567890123456789012345678901234567890");
   for(track = 0; track < 40; ++track)
     {
       BYTE max_s = 40;
@@ -1103,25 +1082,21 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
       if (IS_1541(dt)
           && track >= 40)
         {
-          gotoxy(39,2);
           textcolor(textc);
-          cputc('1'+track-40);
+          cputcxy(39,2, '1'+track-40);
         }
       // check if 1571 writes on back side
       if (dt == D1571 && track == 35)
         {
           textcolor(textc);
-          gotoxy(0,1);
-          cputs("33334444444444555555555566666666667     ");
-          gotoxy(0,1);
-          cputs("67890123456789012345678901234567890     ");
+          cputsxy(0,1,"33334444444444555555555566666666667     ");
+          cputsxy(0,2,"67890123456789012345678901234567890     ");
         }
       // check if 1581 writes on back side
       if (dt == D1581 && track == 40)
         {
           textcolor(textc);
-          gotoxy(0,1);
-          cputs("4444444445555555555666666666677777777778");
+          cputsxy(0,1,"4444444445555555555666666666677777777778");
         }
 
       for(sector = 0; sector < max_sector; ++sector)
@@ -1141,9 +1116,8 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
             {
               sprintf(diskCopyBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
 #define SECTOR_ERROR                                    \
-              gotoxy(0,BOTTOM);                             \
               textcolor(COLOR_LIGHTRED);                \
-              cputs(diskCopyBuf);                       \
+              cputsxy(0,BOTTOM,diskCopyBuf);                \
               printSecStatus(dt, track|0x80, sector, 'E');
               SECTOR_ERROR;
               continue;
@@ -1198,8 +1172,8 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 
       if (IS_1541(dt))
         {
-          gotoxy(0,BOTTOM);
           textcolor(COLOR_LIGHTBLUE);
+          gotoxy(0,BOTTOM);
           switch(track)
             {
             case 5: cputs("this will take a while"); break;
@@ -1214,8 +1188,8 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
         }
       else if (dt == D1571)
         {
-          gotoxy(0,BOTTOM);
           textcolor(COLOR_LIGHTBLUE);
+          gotoxy(0,BOTTOM);
           switch(track)
             {
             case 35: cputs("copy the back side"); break;
@@ -1224,8 +1198,8 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
         }
       else if (dt == D1581)
         {
-          gotoxy(0,BOTTOM);
           textcolor(COLOR_LIGHTBLUE);
+          gotoxy(0,BOTTOM);
           switch(track)
             {
             case 40: cputs("copy the back side"); break;
@@ -1235,17 +1209,15 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
     }
 
  success:
-  gotoxy(0,BOTTOM);
   textcolor(COLOR_LIGHTBLUE);
-  cputs("disk copy success          ");
+  cputsxy(0,BOTTOM,"disk copy success          ");
   ret = OK;
   goto done;
 
  error:
   ret = ERROR;
-  gotoxy(0,BOTTOM);
   textcolor(COLOR_LIGHTRED);
-  cputs(diskCopyBuf);
+  cputsxy(0,BOTTOM,diskCopyBuf);
   cgetc();
 
  done:

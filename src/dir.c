@@ -56,15 +56,13 @@ readDir(Directory *dir, const BYTE device, const BYTE context)
   const BYTE y = DIRY;
   BYTE x = 0;
 
-  const char *device_type;
-
-  device_type = getDeviceType(context);
+  const char *device_type = getDeviceType(context);
 
   freeDir(&dir);
 
+  cbm_closedir(device);
 	if (cbm_opendir(device, device) != 0)
     {
-      cputs("could not open directory");
       cbm_closedir(device);
       return NULL;
     }
@@ -74,7 +72,6 @@ readDir(Directory *dir, const BYTE device, const BYTE context)
       DirElement * current = (DirElement *) calloc(1, sizeof(DirElement));
       if (! current)
         break;
-      //memset(&(current->dirent), 0x44, sizeof(current->dirent)); // TODO: is this required?
 
       if (myCbmReadDir(device, &(current->dirent)) != 0)
         {

@@ -89,15 +89,14 @@ for the source code.
 TODO
 -----
 the following features or bugs should be fixed:
+- when starting read all devices until 2 are found
 - sd2iec [documentation](https://www.sd2iec.de/gitweb/?p=sd2iec.git;a=blob;f=README;hb=HEAD)
-  + chdir doesn't work
   + rmdir https://wpguru.co.uk/2014/08/how-to-use-sd2iec-a-quick-command-reference/
 - reduce memory use
   + replace scanf() with textInput()
   + see if printf() can be replaced with regular string operations
   + check which variables should be "register" https://cc65.github.io/doc/cc65.html#s8
   + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize
-  + use cputsxy()
 - use 'n' 'p' to go to next/prev page in window
 - copy some more features from 1.0e
   + better dir handling (vice)

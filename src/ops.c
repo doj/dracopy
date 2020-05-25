@@ -15,6 +15,8 @@
 #include <errno.h>
 #include <ctype.h>
 
+const char *value2hex = "0123456789abcdef";
+
 #ifdef NOCOLOR
 const BYTE textc = COLOR_WHITE;
 #else
@@ -59,9 +61,14 @@ getDeviceType(BYTE context)
     {
       return "!d";
     }
-  if (cmd(device, "ui") != 73)
+  idx = cmd(device, "ui");
+  if (idx != 73)
     {
-      return "!dos";
+      linebuffer2[0] = 'Q';
+      linebuffer2[1] = value2hex[idx >> 4];
+      linebuffer2[2] = value2hex[idx & 15];
+      linebuffer2[3] = 0;
+      return linebuffer2;
     }
   for(idx = 1; idx < LAST_DRIVE_E; ++idx)
     {
@@ -84,12 +91,17 @@ dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cm
 {
   int res;
 	if (cbm_open(lfn, drive, sec_addr, cmd) != 0)
-    return _oserror;
+    {
+      return _oserror;
+    }
 
 	if (lfn != 15)
     {
       if (cbm_open(15, drive, 15, "") != 0)
-        return _oserror;
+        {
+          cbm_close(lfn);
+          return _oserror;
+        }
     }
 
 	DOSstatus[0] = 0;
@@ -102,7 +114,9 @@ dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cm
 	cbm_close(lfn);
 
   if (res < 1)
-    return _oserror;
+    {
+      return _oserror;
+    }
 
 #if 0
   gotoxy(0,BOTTOM);
@@ -220,6 +234,7 @@ refreshDir(const BYTE context)
 	dirs[context]=cwd;
 	cwd->selected=cwd->firstelement;
 	showDir(context, cwd, context);
+#if 0
 	if (devices[0]==devices[1])
     {
       // refresh also other dir if it's the same drive
@@ -227,9 +242,8 @@ refreshDir(const BYTE context)
       dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
       showDir(context, cwd, other_context);
     }
+#endif
 }
-
-const char *value2hex = "0123456789abcdef";
 
 const char *reg_types[] = { "SEQ","PRG","URS","REL","VRP" };
 const char *oth_types[] = { "DEL","CBM","DIR","LNK","OTH","HDR"};
@@ -385,7 +399,7 @@ drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext)
 
   if (dir)
     {
-      sprintf(linebuffer2, "%s>%u blocks free<", dir->device_type, dir->free);
+      sprintf(linebuffer2, "%s>%u bl free<", dir->device_type, dir->free);
     }
   else
     {
