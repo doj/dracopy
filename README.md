@@ -50,10 +50,9 @@ See the TODO section below for some functions that may have issues.
 | n | go to the next page in current window
 | p | go to the previous page in current window
 | b | go to bottom (last) page in current window
-| c | copy current file
+| c | copy current file on the same device
 | d | delete current file
 | r | rename current file
-| a | copy current file on the same device
 | f | format device in current window
 | @ | send DOS command to device in current window
 | . | show about information
@@ -103,15 +102,12 @@ the following features can be implemented or bugs should be fixed:
   + better dir handling (vice)
   + make image 'i'
   + copy seq and rel
-  + merge both copy into a single command
-  + merge both delete into a single command
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
 - diskcopy
   + enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038
   + support 1571 disk copy with sd2iec
   + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
-- maybe a file copy buffer size of 4*254 is better?
 - help screen 'h'
 
 Version Information and Download

@@ -46,12 +46,10 @@
 BYTE really(void);
 void doRenameOrCopy(const BYTE context, const BYTE mode);
 void doToggleAll(const BYTE context);
-void doCopyMulti(const BYTE context);
-void doCopySelected(const BYTE context);
-void doDeleteMulti(const BYTE context);
+void doCopy(const BYTE context);
+void doDelete(const BYTE context);
 int doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo);
 int copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE destdevice, BYTE type);
-void deleteSelected(const BYTE context);
 
 extern BYTE devices[];
 extern char linebuffer[];
@@ -103,8 +101,8 @@ updateMenu(void)
 	cputsxy(MENUXT,++menuy,"F2 DEVICE");
 	cputsxy(MENUXT,++menuy,"F3 VIEW HEX");
 	cputsxy(MENUXT,++menuy,"F4 VIEW ASC");
-	cputsxy(MENUXT,++menuy,"F5 COPY MUL");
-	cputsxy(MENUXT,++menuy,"F6 DEL MUL");
+	cputsxy(MENUXT,++menuy,"F5 COPY");
+	cputsxy(MENUXT,++menuy,"F6 DELETE");
 	cputsxy(MENUXT,++menuy,"F7 RUN");
 	cputsxy(MENUXT,++menuy,"F8 DISKCOPY");
 	cputsxy(MENUXT,++menuy,"SP TAG");
@@ -118,8 +116,6 @@ updateMenu(void)
 	cputsxy(MENUXT,++menuy," T TOP");
 	cputsxy(MENUXT,++menuy," B BOTTOM");
 	cputsxy(MENUXT,++menuy," * INV SEL");
-	cputsxy(MENUXT,++menuy," C COPY F");
-	cputsxy(MENUXT,++menuy," D DEL F/D");
 	cputsxy(MENUXT,++menuy," R RENAME");
 	cputsxy(MENUXT,++menuy," M MAKE DIR");
 	cputsxy(MENUXT,++menuy," F FORMAT");
@@ -238,7 +234,7 @@ mainLoop(void)
           {
             const BYTE other_context = context^1;
             freeDir(&dirs[other_context]);
-            doCopyMulti(context);
+            doCopy(context);
             updateScreen(context, 2);
             // refresh destination dir
             dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
@@ -248,7 +244,7 @@ mainLoop(void)
 
         case '6':
         case CH_F6:
-					doDeleteMulti(context);
+					doDelete(context);
 					break;
 
         case '7':
@@ -336,14 +332,6 @@ mainLoop(void)
 					showDir(context, cwd, context);
           break;
 
-        case 'd':
-					deleteSelected(context);
-          break;
-
-        case 'c':
-					doCopySelected(context);
-          break;
-
         case 'f':
           strcpy(linebuffer, "n:");
           doDOScommand(context, sorted, 1);
@@ -374,7 +362,7 @@ mainLoop(void)
           updateScreen(context, 2);
           break;
 
-        case 'a':
+        case 'c':
 					doRenameOrCopy(context, 1);
           break;
 
@@ -468,115 +456,17 @@ mainLoop(void)
 }
 
 void
-doCopySelected(const BYTE context)
+doCopy(const BYTE context)
 {
-  const BYTE other_context = 1 - context;
-  int ret;
-  Directory * cwd = GETCWD;
-
-  if (cwd->selected == NULL)
-    return;
-
-  freeDir(&dirs[other_context]);
-
-  sprintf(linebuffer ,"Filecopy from device %d to device %d", devices[context], devices[other_context]);
-  newscreen(linebuffer);
-  ret = copy(cwd->selected->dirent.name,
-             devices[context],
-             cwd->selected->dirent.name,
-             devices[other_context],
-             cwd->selected->dirent.type);
-  if (ret == ERROR)
-    {
-      cputc(CH_ENTER);
-      cputc(10);
-      waitKey(0);
-    }
-
-  // refresh destination dir
-  updateScreen(context, 2);
-  dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
-  showDir(context, dirs[other_context], other_context);
-}
-
-void
-deleteSelected(const BYTE context)
-{
-  DirElement * lastSel;
-  Directory * cwd = GETCWD;
-
-	if (cwd->selected == NULL)
-    return;
-
-  sprintf(linebuffer, " Delete file/directory on device %d", devices[context]);
-  newscreen(linebuffer);
-  lastSel = cwd->selected;
-  cprintf("%s.%s\n\r", cwd->selected->dirent.name, fileTypeToStr(cwd->selected->dirent.type));
-  if (really())
-    {
-      if (cwd->selected->dirent.type==DIRTYPE)
-        {
-          sprintf(linebuffer,"rd:%s",cwd->selected->dirent.name);
-        }
-      else
-        {
-          sprintf(linebuffer,"s:%s",cwd->selected->dirent.name);
-        }
-      if (cmd(devices[context],linebuffer)==1)
-        {
-          removeFromDir(cwd->selected);
-          cputc(' ');
-          revers(1);
-          cputs("DELETED\n\r");
-          revers(0);
-
-          // select next / prior entry
-          if (cwd->selected->next!=NULL)
-            {
-              cwd->selected=cwd->selected->next;
-              //cwd->pos++;
-            }
-          else if (cwd->selected->prev!=NULL)
-            {
-              cwd->selected=cwd->selected->prev;
-              cwd->pos--;
-            }
-          else
-            {
-              cwd->selected=NULL;
-              cwd->pos=0;
-            }
-
-          // update first element if needed
-          if (cwd->firstelement==lastSel)
-            {
-              cwd->firstelement=cwd->firstelement->next;
-            }
-        }
-      else
-        {
-          cputc(' ');
-          revers(1);
-          textcolor(COLOR_SIGNAL);
-          cputs("ERROR\n\r");
-          textcolor(textc);
-          revers(0);
-          waitKey(0);
-        }
-    }
-  updateScreen(context, 2);
-}
-
-void
-doCopyMulti(const BYTE context)
-{
+  BYTE flag = 0;
   BYTE cnt = 0xf0;
 	DirElement * current;
 	const BYTE srcdev = devices[context];
 	const BYTE destdev = devices[context^1];
+	Directory * cwd = GETCWD;
 
 	sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
-  for(current = GETCWD->firstelement; current; current=current->next)
+  for(current = cwd->firstelement; current; current=current->next)
     {
       if (++cnt >= BOTTOM)
         {
@@ -585,7 +475,9 @@ doCopyMulti(const BYTE context)
         }
       if (current->flags==1)
         {
-          int ret = copy(current->dirent.name, srcdev, current->dirent.name, destdev, current->dirent.type);
+          int ret;
+          flag = 1;
+          ret = copy(current->dirent.name, srcdev, current->dirent.name, destdev, current->dirent.type);
           if (ret == OK)
             {
               // deselect
@@ -594,6 +486,21 @@ doCopyMulti(const BYTE context)
           else if (ret == ABORT)
             {
               return;
+            }
+        }
+    }
+
+  if (! flag)
+    {
+      current = cwd->selected;
+      if (current)
+        {
+          int ret = copy(current->dirent.name, srcdev, current->dirent.name, destdev, current->dirent.type);
+          if (ret == ERROR)
+            {
+              cputc(CH_ENTER);
+              cputc(10);
+              waitKey(0);
             }
         }
     }
@@ -632,11 +539,12 @@ really(void)
 }
 
 void
-doDeleteMulti(const BYTE context)
+doDelete(const BYTE context)
 {
 	DirElement * current;
 	int idx = 0;
 	Directory * cwd = GETCWD;
+  int ret;
 
 	if (dirs[context]==NULL)
     return;
@@ -648,7 +556,10 @@ doDeleteMulti(const BYTE context)
     }
 
   if (idx == 0)
-    return;
+    {
+      cwd->selected->flags = 1;
+      idx = 1;
+    }
 
   sprintf(linebuffer, "Delete %i files from device %d", idx, devices[context]);
   newscreen(linebuffer);
@@ -667,22 +578,25 @@ doDeleteMulti(const BYTE context)
       gotoxy(0,idx);
       cprintf("%s.%s ", current->dirent.name, fileTypeToStr(current->dirent.type));
 
-      sprintf(linebuffer,"s:%s",current->dirent.name);
-      if (cmd(devices[context],linebuffer)==1)
+      sprintf(linebuffer,
+              "%s:%s",
+              (current->dirent.type==DIRTYPE) ? "rd" : "s",
+              current->dirent.name);
+      ret = cmd(devices[context],linebuffer);
+      cputc(' ');
+      revers(1);
+      if (ret == 1)
         {
-          revers(1);
           cputs("DELETED");
-          revers(0);
         }
       else
         {
-          revers(1);
           textcolor(COLOR_VIOLET);
-          puts("ERROR");
-          textcolor(textc);
-          revers(0);
+          cputs("ERROR");
           break;
         }
+      textcolor(textc);
+      revers(0);
 
       if (++idx > BOTTOM)
         {
@@ -848,7 +762,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
 
       if (length < BUFFERSIZE)
         {
-          cprintf(" %lu bytes", total_length);
+          cprintf(" %lu bytes, %u blocks", total_length, (total_length/254u)+1u);
           ERRMSG(textc,"OK");
           break;
         }

@@ -35,7 +35,7 @@ typedef unsigned char BYTE;
 #define ERROR -1
 #define ABORT +1
 
-#define BUFFERSIZE 1024
+#define BUFFERSIZE (4*254)
 
 #ifdef NOCOLOR
   #define COLOR_SIGNAL COLOR_WHITE
