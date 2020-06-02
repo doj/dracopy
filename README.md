@@ -97,7 +97,6 @@ the following features can be implemented or bugs should be fixed:
   + see if printf() can be replaced with regular string operations
   + check which variables should be "register" https://cc65.github.io/doc/cc65.html#s8
   + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize
-- use 'n' 'p' to go to next/prev page in window
 - copy some more features from 1.0e
   + better dir handling (vice)
   + make image 'i'

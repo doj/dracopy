@@ -28,6 +28,7 @@
  * this code is now maintained on https://github.com/doj/dracopy
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -122,6 +123,7 @@ updateMenu(void)
 	cputsxy(MENUXT,++menuy," . ABOUT");
 	cputcxy(MENUXT+1,++menuy,CH_POUND); cputs(" DEV ID");
 	cputsxy(MENUXT,++menuy," @ DOS CMD");
+	cputsxy(MENUXT,++menuy," W WIN SIZE");
 }
 
 void
@@ -308,11 +310,28 @@ mainLoop(void)
 					break;
 
         case 'n':
-          // todo next page
+          cwd = GETCWD;
+          current = cwd->selected;
+          for(pos = 0; pos < (context ? DIR2H : DIR1H) && current->next; ++pos)
+            {
+              current = current->next;
+            }
+          cwd->pos += pos;
+          cwd->selected = current;
+					printDir(context, cwd, DIRX+1, DIRY);
           break;
 
         case 'p':
-          // todo prev page
+          cwd = GETCWD;
+          current = cwd->selected;
+          for(pos = 0; pos < (context ? DIR2H : DIR1H) && current->prev; ++pos)
+            {
+              current = current->prev;
+            }
+          assert(cwd->pos >= pos);
+          cwd->pos -= pos;
+          cwd->selected = current;
+					printDir(context, cwd, DIRX+1, DIRY);
           break;
 
 		    case 'q':
@@ -762,7 +781,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
 
       if (length < BUFFERSIZE)
         {
-          cprintf(" %lu bytes, %u blocks", total_length, (total_length/254u)+1u);
+          cprintf(" %lu bytes", total_length);
           ERRMSG(textc,"OK");
           break;
         }
