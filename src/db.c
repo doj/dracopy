@@ -66,6 +66,7 @@ updateMenu(void)
 	cputsxy(MENUXT,++menuy,"  B BOTTOM");
 	cputsxy(MENUXT,++menuy,"  . ABOUT");
 	cputsxy(MENUXT,++menuy,"  Q QUIT");
+	cputsxy(MENUXT,++menuy,"  @ DOScmd");
 	++menuy;
 	gotoxy(MENUXT,++menuy);
 	cprintf(" Device:%02d",devices[0]);
@@ -159,6 +160,11 @@ mainLoop(void)
 
         case '.':
 					about("DraBrowse");
+          updateScreen(context, 1);
+          break;
+
+        case '@':
+          doDOScommand(context, sorted);
           updateScreen(context, 1);
           break;
 

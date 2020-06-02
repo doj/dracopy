@@ -616,3 +616,23 @@ textInput(const BYTE xpos, const BYTE ypos, char *str, const BYTE size)
     }
   return 0;
 }
+
+
+void
+doDOScommand(const BYTE context, const BYTE sorted)
+{
+  int i;
+  const BYTE device = devices[context];
+  newscreen(" DOS command");
+  cprintf("\n\rDOS command device %i:", device);
+  linebuffer[0] = 0;
+  i = textInput(0, 3, linebuffer, 39);
+  if (i > 0)
+    {
+      i = cmd(device, linebuffer);
+      gotoxy(0,5);
+      cprintf("result: %i\n\r", i);
+      waitKey(0);
+      dirs[context] = readDir(dirs[context], device, context, sorted);
+    }
+}

@@ -368,7 +368,8 @@ mainLoop(void)
           break;
 
         case '@':
-          // TODO: DOS command
+          doDOScommand(context, sorted);
+          updateScreen(context, 2);
           break;
 
         case CH_POUND:
