@@ -164,7 +164,7 @@ mainLoop(void)
           break;
 
         case '@':
-          doDOScommand(context, sorted);
+          doDOScommand(context, sorted, 0);
           updateScreen(context, 1);
           break;
 

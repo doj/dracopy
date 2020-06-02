@@ -44,9 +44,7 @@
 
 /* declarations */
 BYTE really(void);
-void doFormat(const BYTE context);
-void doRename(const BYTE context);
-void doMakedir(const BYTE context);
+void doRenameOrCopy(const BYTE context, const BYTE mode);
 void doToggleAll(const BYTE context);
 void doCopyMulti(const BYTE context);
 void doCopySelected(const BYTE context);
@@ -347,15 +345,19 @@ mainLoop(void)
           break;
 
         case 'f':
-					doFormat(context);
+          strcpy(linebuffer, "n:");
+          doDOScommand(context, sorted, 1);
+          updateScreen(context, 2);
           break;
 
         case 'r':
-					doRename(context);
+					doRenameOrCopy(context, 0);
           break;
 
         case 'm':
-					doMakedir(context);
+          strcpy(linebuffer, "md:");
+          doDOScommand(context, sorted, 1);
+          updateScreen(context, 2);
           break;
 
         case '*':
@@ -368,8 +370,12 @@ mainLoop(void)
           break;
 
         case '@':
-          doDOScommand(context, sorted);
+          doDOScommand(context, sorted, 0);
           updateScreen(context, 2);
+          break;
+
+        case 'a':
+					doRenameOrCopy(context, 1);
           break;
 
         case CH_POUND:
@@ -700,41 +706,7 @@ doDeleteMulti(const BYTE context)
 }
 
 void
-doFormat(const BYTE context)
-{
-  int flag = 0;
-	sprintf(linebuffer,"Format device %d",devices[context]);
-	newscreen(linebuffer);
-	if (really())
-    {
-      cputs("\n\rEnter new name: ");
-      flag = textInput(15,3,answer+2,16+3);
-      if (flag > 0)
-        {
-          answer[0] = 'n';
-          answer[1] = ':';
-          flag = 1;
-          cputs("\n\rWorking...");
-          if(cmd(devices[context], answer) != OK)
-            {
-              cputs("ERROR\n\r");
-              waitKey(0);
-            }
-        }
-      else
-        {
-          flag = 0;
-        }
-    }
-  if (flag)
-    {
-      dirs[context] = readDir(dirs[context], devices[context], context, sorted);
-    }
-	updateScreen(context, 2);
-}
-
-void
-doRename(const BYTE context)
+doRenameOrCopy(const BYTE context, const BYTE mode)
 {
 	int n;
 	Directory * cwd = GETCWD;
@@ -742,7 +714,10 @@ doRename(const BYTE context)
 	if (cwd->selected == NULL)
     return;
 
-  sprintf(linebuffer,"Rename file %s on device %d",cwd->selected->dirent.name,devices[context]);
+  sprintf(linebuffer,
+          "%s file %s on device %d",
+          mode ? "Copy" : "Rename",
+          cwd->selected->dirent.name,devices[context]);
   newscreen(linebuffer);
   cputs("\n\rNew name: ");
   strcpy(answer, cwd->selected->dirent.name);
@@ -750,7 +725,11 @@ doRename(const BYTE context)
   if (n > 0 && strcmp(answer,cwd->selected->dirent.name))
     {
       cputs("\n\rWorking...");
-      sprintf(linebuffer,"r:%s=%s",answer,cwd->selected->dirent.name);
+      sprintf(linebuffer,
+              "%c:%s=%s",
+              mode ? 'c' : 'r',
+              answer,
+              cwd->selected->dirent.name);
       if(cmd(devices[context],linebuffer)==OK)
         {
           dirs[context] = readDir(dirs[context], devices[context], context, sorted);
@@ -762,36 +741,6 @@ doRename(const BYTE context)
         }
     }
   updateScreen(context, 2);
-}
-
-void
-doMakedir(const BYTE context)
-{
-	int n;
-	Directory * cwd = GETCWD;
-
-	sprintf(linebuffer,"Make directory on device %d",cwd->selected->dirent.name,devices[context]);
-	newscreen(linebuffer);
-	cputs("\n\rNew Dir: ");
-  answer[3] = 0;
-  n = textInput(9,2,answer+3,16+3);
-	if (n > 0)
-    {
-      cputs("\n\rWorking...");
-      answer[0] = 'm';
-      answer[1] = 'd';
-      answer[2] = ':';
-      if(cmd(devices[context], answer) == OK)
-        {
-          dirs[context] = readDir(dirs[context], devices[context], context, sorted);
-        }
-      else
-        {
-          cputs("ERROR\n\r\n\r");
-          waitKey(0);
-        }
-    }
-	updateScreen(context, 2);
 }
 
 int

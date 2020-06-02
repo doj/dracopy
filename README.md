@@ -53,6 +53,7 @@ See the TODO section below for some functions that may have issues.
 | c | copy current file
 | d | delete current file
 | r | rename current file
+| a | copy current file on the same device
 | f | format device in current window
 | @ | send DOS command to device in current window
 | . | show about information
@@ -104,10 +105,6 @@ the following features can be implemented or bugs should be fixed:
   + copy seq and rel
   + merge both copy into a single command
   + merge both delete into a single command
-- send DOS command '@'
-  + change device num 'pound'
-  + copy on same device with C0 DOS command 'a'
-  + redo format
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
 - diskcopy
   + enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038

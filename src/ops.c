@@ -619,14 +619,14 @@ textInput(const BYTE xpos, const BYTE ypos, char *str, const BYTE size)
 
 
 void
-doDOScommand(const BYTE context, const BYTE sorted)
+doDOScommand(const BYTE context, const BYTE sorted, const BYTE use_linebuffer)
 {
   int i;
   const BYTE device = devices[context];
   newscreen(" DOS command");
-  cprintf("\n\rDOS command device %i:", device);
-  linebuffer[0] = 0;
-  i = textInput(0, 3, linebuffer, 39);
+  cprintf("\n\rsend DOS command to device %i:", device);
+  linebuffer[use_linebuffer ? SCREENW : 0] = 0;
+  i = textInput(0, 3, linebuffer, SCREENW);
   if (i > 0)
     {
       i = cmd(device, linebuffer);
