@@ -64,6 +64,7 @@ extern const BYTE textc;
 /* definitions */
 char menustatus[MENUW];
 static BYTE windowState = 0;
+static BYTE sorted = 0;
 
 void
 nextWindowState(const BYTE context)
@@ -150,7 +151,7 @@ mainLoop(void)
     while(++i < 12)
       {
         devices[context] = i;
-        dirs[context] = readDir(NULL, devices[context], context);
+        dirs[context] = readDir(NULL, devices[context], context, sorted);
         if (dirs[context])
           {
             showDir(context, dirs[context], context);
@@ -162,7 +163,7 @@ mainLoop(void)
     while(++i < 12)
       {
         devices[1] = i;
-        dirs[1] = readDir(NULL, devices[1], 1);
+        dirs[1] = readDir(NULL, devices[1], 1, sorted);
         if (dirs[1])
           {
             showDir(context, dirs[1], 1);
@@ -198,10 +199,13 @@ mainLoop(void)
 
     	switch (cgetc())
       	{
+        case 's':
+          sorted = ! sorted;
+          // fallthrough
         case '1':
         case CH_F1:
           textcolor(COLOR_WHITE);
-					dirs[context]=readDir(dirs[context],devices[context],context);
+					dirs[context] = readDir(dirs[context], devices[context], context, sorted);
 					showDir(context, dirs[context], context);
 					break;
 
@@ -239,7 +243,7 @@ mainLoop(void)
             doCopyMulti(context);
             updateScreen(context, 2);
             // refresh destination dir
-            dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+            dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
             showDir(context, dirs[other_context], other_context);
           }
 					break;
@@ -264,7 +268,8 @@ mainLoop(void)
             freeDir(&dirs[other_context]);
             doDiskCopy(devices[context], devices[other_context]);
             updateScreen(context, 2);
-            dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+            refreshDir(other_context, sorted);
+            //dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
           }
 					break;
 
@@ -396,9 +401,9 @@ mainLoop(void)
 
     		case CH_CURS_UP:
 					cwd=GETCWD;
-					if (cwd->selected!=NULL && cwd->selected->previous!=NULL)
+					if (cwd->selected!=NULL && cwd->selected->prev!=NULL)
             {
-              cwd->selected=cwd->selected->previous;
+              cwd->selected=cwd->selected->prev;
               pos=cwd->pos;
               lastpage=pos/DIRH;
               nextpage=(pos-1)/DIRH;
@@ -422,7 +427,7 @@ mainLoop(void)
 					cwd=GETCWD;
 					if (cwd->selected)
             {
-              changeDir(context, devices[context], cwd->selected->dirent.name);
+              changeDir(context, devices[context], cwd->selected->dirent.name, sorted);
             }
 					break;
 
@@ -433,12 +438,12 @@ mainLoop(void)
             char buf[2];
             buf[0] = CH_LARROW; // arrow left
             buf[1] = 0;
-            changeDir(context, devices[context], buf);
+            changeDir(context, devices[context], buf, sorted);
           }
 					break;
 
         case CH_UARROW:
-          changeDir(context, devices[context], NULL);
+          changeDir(context, devices[context], NULL, sorted);
           break;
 
         case 'w':
@@ -483,7 +488,7 @@ doCopySelected(const BYTE context)
 
   // refresh destination dir
   updateScreen(context, 2);
-  dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+  dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
   showDir(context, dirs[other_context], other_context);
 }
 
@@ -524,9 +529,9 @@ deleteSelected(const BYTE context)
               cwd->selected=cwd->selected->next;
               //cwd->pos++;
             }
-          else if (cwd->selected->previous!=NULL)
+          else if (cwd->selected->prev!=NULL)
             {
-              cwd->selected=cwd->selected->previous;
+              cwd->selected=cwd->selected->prev;
               cwd->pos--;
             }
           else
@@ -681,7 +686,7 @@ doDeleteMulti(const BYTE context)
 
   updateScreen(context, 2);
   // refresh directories
-  cwd = readDir(cwd, devices[context], context);
+  cwd = readDir(cwd, devices[context], context, sorted);
   dirs[context]=cwd;
   cwd->selected=cwd->firstelement;
   showDir(context, cwd, context);
@@ -722,7 +727,7 @@ doFormat(const BYTE context)
     }
   if (flag)
     {
-      dirs[context] = readDir(dirs[context], devices[context], context);
+      dirs[context] = readDir(dirs[context], devices[context], context, sorted);
     }
 	updateScreen(context, 2);
 }
@@ -747,7 +752,7 @@ doRename(const BYTE context)
       sprintf(linebuffer,"r:%s=%s",answer,cwd->selected->dirent.name);
       if(cmd(devices[context],linebuffer)==OK)
         {
-          dirs[context] = readDir(dirs[context],devices[context],context);
+          dirs[context] = readDir(dirs[context], devices[context], context, sorted);
         }
       else
         {
@@ -777,7 +782,7 @@ doMakedir(const BYTE context)
       answer[2] = ':';
       if(cmd(devices[context], answer) == OK)
         {
-          dirs[context] = readDir(dirs[context],devices[context],context);
+          dirs[context] = readDir(dirs[context], devices[context], context, sorted);
         }
       else
         {
@@ -959,7 +964,7 @@ BYTE
 maxTrack(BYTE dt)
 {
   if (IS_1541(dt))
-    return 42;
+    return 35;//42;
   else if (dt == D1571)
     return 70;
   else if (dt == D1581)

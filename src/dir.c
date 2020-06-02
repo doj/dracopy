@@ -26,6 +26,7 @@
  *
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,10 +46,11 @@ static const char progressRev[4] = { 0,    0,    1,    1 };
  * @param[in,out] dir pointer to Directory object, if dir!=NULL it will be freed.
  * @param device CBM device number
  * @param context window ID, must be 0 or 1.
+ * @param sorted if true, return directory entries sorted.
  * @return new allocated Directory object.
  */
 Directory*
-readDir(Directory *dir, const BYTE device, const BYTE context)
+readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted)
 {
 	DirElement * previous = NULL;
 
@@ -69,13 +71,13 @@ readDir(Directory *dir, const BYTE device, const BYTE context)
 
 	while(1)
     {
-      DirElement * current = (DirElement *) calloc(1, sizeof(DirElement));
-      if (! current)
+      DirElement * de = (DirElement *) calloc(1, sizeof(DirElement));
+      if (! de)
         break;
 
-      if (myCbmReadDir(device, &(current->dirent)) != 0)
+      if (myCbmReadDir(device, &(de->dirent)) != 0)
         {
-          free(current);
+          free(de);
           break;
         }
 
@@ -104,39 +106,77 @@ readDir(Directory *dir, const BYTE device, const BYTE context)
           dir = (Directory *) calloc(1, sizeof(Directory));
           if (! dir)
             break;
-          if (current->dirent.type == _CBM_T_HEADER)
+          if (de->dirent.type == _CBM_T_HEADER)
             {
-              memcpy(dir->name, current->dirent.name, 16);
+              memcpy(dir->name, de->dirent.name, 16);
               dir->name[16] = ',';
-              dir->name[17] = current->dirent.size & 255;
-              dir->name[18] = current->dirent.size >> 8;
+              dir->name[17] = de->dirent.size & 255;
+              dir->name[18] = de->dirent.size >> 8;
               dir->name[19] = 0;
             }
           else
             {
               strcpy(dir->name, "unknown type");
             }
-          free(current);
+          free(de);
         }
-      else if (current->dirent.type==CBM_T_FREE)
+      else if (de->dirent.type==CBM_T_FREE)
         {
           // blocks free entry
-          dir->free=current->dirent.size;
-          free(current);
+          dir->free=de->dirent.size;
+          free(de);
         }
       else if (dir->firstelement==NULL)
         {
           // first element
-          dir->firstelement = current;
-          dir->selected = current;
-          previous=current;
+          dir->firstelement = de;
+          previous=de;
         }
       else
         {
           // all other elements
-          current->previous=previous;
-          previous->next=current;
-          previous=current;
+          if (sorted)
+            {
+              // iterate the sorted list
+              DirElement *e;
+              for(e = dir->firstelement; e->next; e = e->next)
+                {
+                  // if the new name is greater than the current list item,
+                  // it needs to be inserted in the previous position.
+                  if (strncmp(e->dirent.name, de->dirent.name, 16) > 0)
+                    {
+                      // if the previous position is NULL, insert at the front of the list
+                      if (! e->prev)
+                        {
+                          de->next = e;
+                          e->prev = de;
+                          dir->firstelement = de;
+                        }
+                      else
+                        {
+                          // insert somewhere in the middle
+                          DirElement *p = e->prev;
+                          assert(p->next == e);
+                          p->next = de;
+                          de->next = e;
+
+                          de->prev = p;
+                          e->prev = de;
+                        }
+                      goto inserted;
+                    }
+                }
+              assert(e->next == NULL);
+              e->next = de;
+              de->prev = e;
+            inserted:;
+            }
+          else
+            {
+              de->prev = previous;
+              previous->next = de;
+              previous = de;
+            }
         }
     }
 
@@ -144,6 +184,7 @@ readDir(Directory *dir, const BYTE device, const BYTE context)
 	revers(0);
 
   dir->device_type = device_type;
+  dir->selected = dir->firstelement;
 	return dir;
 }
 
@@ -348,13 +389,13 @@ void removeFromDir(DirElement * current)
  	if (current == NULL)
     return;
 
-  if (current->previous)
+  if (current->prev)
     {
-      current->previous->next = current->next;
+      current->prev->next = current->next;
     }
   if (current->next)
     {
-      current->next->previous = current->previous;
+      current->next->prev = current->prev;
     }
   free(current);
 }

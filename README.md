@@ -45,7 +45,7 @@ See the TODO section below for some functions that may have issues.
 | DEL, left | go to parent directory
 | ↑ | go to root directory
 | space | select current file
-| * | toggle selection
+| * | invert selection
 | HOME, t | move cursor to top row of first page in current window
 | n | go to the next page in current window
 | p | go to the previous page in current window
@@ -59,6 +59,7 @@ See the TODO section below for some functions that may have issues.
 | q | quit program to BASIC
 | £ | change device ID of current device
 | w | enlarge or shrink current window
+| s | show directory entries sorted
 
 source code
 ------------
@@ -88,7 +89,7 @@ for the source code.
 
 TODO
 -----
-the following features or bugs should be fixed:
+the following features can be implemented or bugs should be fixed:
 - sd2iec [documentation](https://www.sd2iec.de/gitweb/?p=sd2iec.git;a=blob;f=README;hb=HEAD)
   + rmdir https://wpguru.co.uk/2014/08/how-to-use-sd2iec-a-quick-command-reference/
     however regular scratch works on directories as well.
@@ -100,19 +101,21 @@ the following features or bugs should be fixed:
 - copy some more features from 1.0e
   + better dir handling (vice)
   + make image 'i'
-  + directory sort
   + copy seq and rel
   + merge both copy into a single command
   + merge both delete into a single command
-- change device num 'pound'
 - send DOS command '@'
-- copy on same device with C0 DOS command 'a'
-- reset disk drive (DOS command UI and UJ, see https://www.pagetable.com/?p=1038)
-- enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038
+  + change device num 'pound'
+  + copy on same device with C0 DOS command 'a'
+  + redo format
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
-- support 1571 disk copy with sd2iec
-- support 1581 disk copy with sd2iec
-- maybe a file copy buffe size of 4*254 is better?
+- diskcopy
+  + enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038
+  + support 1571 disk copy with sd2iec
+  + support 1581 disk copy with sd2iec
+  + support tracks 36-42 for 1541 disk copy
+- maybe a file copy buffer size of 4*254 is better?
+- help screen 'h'
 
 Version Information and Download
 ---------------------------------

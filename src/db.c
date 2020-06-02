@@ -44,6 +44,8 @@ extern char linebuffer[];
 extern Directory* dirs[];
 extern const BYTE textc;
 
+static BYTE sorted = 0;
+
 void
 updateMenu(void)
 {
@@ -84,7 +86,7 @@ mainLoop(void)
   DIR2H = 23;
 	devices[0]=8;
 	devices[1]=9;
-	dirs[0]=readDir(dirs[0],devices[0],(BYTE)0);
+	dirs[0]=readDir(dirs[0], devices[0], (BYTE)0, sorted);
 	dirs[1]=NULL;
 
 	updateScreen(context, 1);
@@ -93,10 +95,13 @@ mainLoop(void)
       c = cgetc();
     	switch (c)
       	{
+        case 's':
+          sorted = ! sorted;
+          // fallthrough
         case '1':
         case CH_F1:
           textcolor(COLOR_WHITE);
-					dirs[context]=readDir(dirs[context],devices[context],context);
+					dirs[context]=readDir(dirs[context], devices[context], context, sorted);
 					showDir(context, dirs[context], context);
 					break;
 
@@ -182,9 +187,9 @@ mainLoop(void)
 
     		case CH_CURS_UP:
 					cwd=GETCWD;
-					if (cwd->selected!=NULL && cwd->selected->previous!=NULL)
+					if (cwd->selected!=NULL && cwd->selected->prev!=NULL)
             {
-              cwd->selected=cwd->selected->previous;
+              cwd->selected=cwd->selected->prev;
               pos=cwd->pos;
               lastpage=pos/DIRH;
               nextpage=(pos-1)/DIRH;
@@ -215,7 +220,7 @@ mainLoop(void)
 					cwd=GETCWD;
 					if (cwd->selected)
             {
-              changeDir(context, devices[context], cwd->selected->dirent.name);
+              changeDir(context, devices[context], cwd->selected->dirent.name, sorted);
             }
 					break;
 
@@ -226,12 +231,12 @@ mainLoop(void)
             char buf[2];
             buf[0] = CH_LARROW;
             buf[1] = 0;
-            changeDir(context, devices[context], buf);
+            changeDir(context, devices[context], buf, sorted);
           }
 					break;
 
         case CH_UARROW:
-          changeDir(context, devices[context], NULL);
+          changeDir(context, devices[context], NULL, sorted);
           break;
         }
     }

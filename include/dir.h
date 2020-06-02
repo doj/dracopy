@@ -34,7 +34,7 @@
 typedef struct direlement {
 	struct cbm_dirent dirent;
 	struct direlement * next;
-	struct direlement * previous;
+	struct direlement * prev;
 	unsigned char flags;
 } DirElement;
 
@@ -56,7 +56,7 @@ typedef struct {
 
 void freeDir(Directory* *dir);
 void removeFromDir(DirElement *current);
-Directory* readDir(Directory *dir, const BYTE device, const BYTE context);
+Directory* readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted);
 unsigned char myCbmReadDir(const BYTE device, struct cbm_dirent* l_dirent);
 
 #endif /* DIR_H_ */

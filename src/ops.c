@@ -156,9 +156,7 @@ execute(char * prg, BYTE device)
 void
 updateScreen(const BYTE context, BYTE num_dirs)
 {
-#ifdef CHAR80
   clrscr();
-#endif
 	updateMenu();
 	showDir(context, dirs[context], context);
   if (num_dirs > 1)
@@ -225,11 +223,11 @@ clrDir(BYTE context)
 }
 
 void
-refreshDir(const BYTE context)
+refreshDir(const BYTE context, const BYTE sorted)
 {
-	Directory * cwd = NULL;
+	Directory * cwd = dirs[context];
   textcolor(COLOR_WHITE);
-	cwd = readDir(cwd, devices[context], context);
+	cwd = readDir(cwd, devices[context], context, sorted);
 	dirs[context]=cwd;
 	cwd->selected=cwd->firstelement;
 	showDir(context, cwd, context);
@@ -238,7 +236,7 @@ refreshDir(const BYTE context)
     {
       // refresh also other dir if it's the same drive
       const BYTE other_context = context^1;
-      dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context);
+      dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
       showDir(context, cwd, other_context);
     }
 #endif
@@ -418,7 +416,7 @@ showDir(BYTE context, const Directory * dir, const BYTE mycontext)
 }
 
 void
-changeDir(const BYTE context, const BYTE device, const char *dirname)
+changeDir(const BYTE context, const BYTE device, const char *dirname, const BYTE sorted)
 {
   if (dirname)
     {
@@ -454,7 +452,7 @@ changeDir(const BYTE context, const BYTE device, const char *dirname)
       strcpy(linebuffer, "cd//");
     }
   cmd(device, linebuffer);
-  refreshDir(context);
+  refreshDir(context, sorted);
 }
 
 void
