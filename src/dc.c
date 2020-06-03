@@ -125,6 +125,7 @@ updateMenu(void)
 	cputsxy(MENUXT,++menuy," . ABOUT");
 	cputcxy(MENUXT+1,++menuy,CH_POUND); cputs(" DEV ID");
 	cputsxy(MENUXT,++menuy," @ DOS CMD");
+	cputsxy(MENUXT,++menuy," S SORT DIR");
 #if !defined(CHAR80)
 	cputsxy(MENUXT,++menuy," W WIN SIZE");
 #endif

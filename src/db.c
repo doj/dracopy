@@ -56,20 +56,21 @@ updateMenu(void)
 	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,NULL);
 
 	++menuy;
-	cputsxy(MENUXT,++menuy," F1 DIR");
-	cputsxy(MENUXT,++menuy," F2 DEVICE");
-	cputsxy(MENUXT,++menuy," F3 HEX");
-	cputsxy(MENUXT,++menuy," F4 ASC");
-	cputsxy(MENUXT,++menuy," CR RUN/CD");
-	cputsxy(MENUXT,++menuy," BS DIR UP");
-	cputsxy(MENUXT,++menuy,"  T TOP");
-	cputsxy(MENUXT,++menuy,"  B BOTTOM");
-	cputsxy(MENUXT,++menuy,"  . ABOUT");
-	cputsxy(MENUXT,++menuy,"  Q QUIT");
-	cputsxy(MENUXT,++menuy,"  @ DOScmd");
+	cputsxy(MENUXT+1,++menuy,"F1 DIR");
+	cputsxy(MENUXT+1,++menuy,"F2 DEVICE");
+	cputsxy(MENUXT+1,++menuy,"F3 HEX");
+	cputsxy(MENUXT+1,++menuy,"F4 ASC");
+	cputsxy(MENUXT+1,++menuy,"CR RUN/CD");
+	cputsxy(MENUXT+1,++menuy,"BS DIR UP");
+	cputsxy(MENUXT+1,++menuy," T TOP");
+	cputsxy(MENUXT+1,++menuy," B BOTTOM");
+	cputsxy(MENUXT+1,++menuy," . ABOUT");
+	cputsxy(MENUXT+1,++menuy," Q QUIT");
+	cputsxy(MENUXT+1,++menuy," @ DOScmd");
+	cputsxy(MENUXT+1,++menuy," S SORT");
 	++menuy;
-	gotoxy(MENUXT,++menuy);
-	cprintf(" Device:%02d",devices[0]);
+	gotoxy(MENUXT+1,++menuy);
+	cprintf("Device:%02d",devices[0]);
 }
 
 void
