@@ -11,10 +11,10 @@ DraBrowse  - a simple file browser.
 
 Created 2009 by Sascha Bader.
 
-Since both programs make use of kernal routines they shall
-be able to work with most file oriented IEC devices.
+Both programs use the kernal routines and are
+able to work with most file oriented IEC devices.
 
-Directories are supported on CMD compatible devices only.
+Directories are supported on CMD compatible devices and [sd2iec](https://www.c64-wiki.com/wiki/SD2IEC).
 
 | Platforms | Executables |
 | --------- | ----------- |
@@ -22,7 +22,7 @@ Directories are supported on CMD compatible devices only.
 | C128      | dc128, db128 (40 Columns), [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280 (80 Columns)
 | Plus 4    | dcp4, dbp4
 | CBM 610   | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
-| PET 8096  | dcpet8, dbpet8  (Note: use keys 1-8 instead of fkeys)
+| PET 8096  | dcpet8, dbpet8
 
 Keys
 -----
@@ -51,7 +51,6 @@ See the TODO section below for some functions that may have issues.
 | p | go to the previous page in current window
 | b | go to bottom (last) page in current window
 | c | copy current file on the same device
-| d | delete current file
 | r | rename current file
 | f | format device in current window
 | @ | send DOS command to device in current window

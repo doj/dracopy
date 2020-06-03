@@ -66,6 +66,7 @@ static BYTE sorted = 0;
 void
 nextWindowState(const BYTE context)
 {
+#if !defined(CHAR80)
   switch(++windowState)
     {
     default:
@@ -87,6 +88,7 @@ nextWindowState(const BYTE context)
     }
   showDir(context, dirs[0], 0);
   showDir(context, dirs[1], 1);
+#endif
 }
 
 void
@@ -123,7 +125,9 @@ updateMenu(void)
 	cputsxy(MENUXT,++menuy," . ABOUT");
 	cputcxy(MENUXT+1,++menuy,CH_POUND); cputs(" DEV ID");
 	cputsxy(MENUXT,++menuy," @ DOS CMD");
+#if !defined(CHAR80)
 	cputsxy(MENUXT,++menuy," W WIN SIZE");
+#endif
 }
 
 void
@@ -680,10 +684,16 @@ int
 copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE destdevice, BYTE type)
 {
 	int length=0;
-	BYTE *buf;
   int ret = OK;
   unsigned long total_length = 0;
   BYTE xpos, ypos;
+
+	BYTE *buf = (BYTE*) malloc(BUFFERSIZE);
+  if (! buf)
+    {
+      cputs("Can't alloc\n\r");
+      return ERROR;
+    }
 
   switch(type)
     {
@@ -697,13 +707,17 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
       type = 'u';
       break;
     default:
-      return ERROR;
+      cputs("unsupported file type\n\r");
+      ret = ERROR;
+      goto done;
     }
 
-	if (cbm_open(6,srcdevice,CBM_READ,srcfile) != 0)
+	sprintf(linebuffer, "%s,%c", srcfile, type);
+	if (cbm_open(6, srcdevice, CBM_READ, linebuffer) != 0)
     {
       cputs("Can't open input file!\n\r");
-      return ERROR;
+      ret = ERROR;
+      goto done;
     }
 
 	// create destination string with filetype like "FILE,P"
@@ -711,17 +725,8 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
 	if (cbm_open(7, destdevice, CBM_WRITE, linebuffer) != 0)
     {
       cputs("Can't open output file\n\r");
-      cbm_close (6);
-      return ERROR;
-    }
-
-	buf = (unsigned char *) malloc(BUFFERSIZE);
-  if (! buf)
-    {
-      cputs("Can't alloc\n\r");
-      cbm_close(6);
-      cbm_close(7);
-      return ERROR;
+      ret = ERROR;
+      goto done;
     }
 
 	cprintf("%-16s:",srcfile);
@@ -788,9 +793,10 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
 
     }
 
+ done:
 	free(buf);
-	cbm_close (6);
-	cbm_close (7);
+	cbm_close(6);
+	cbm_close(7);
 	return ret;
 }
 
