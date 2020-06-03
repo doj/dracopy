@@ -4,10 +4,10 @@
 CFLAGS=-I include -O -Or -Os -r
 
 D64=dracopy10doj.d64
-TARGETS=dc64 db64 dc128 db128 dc1280 db1280 dcp4 dbp4 dbpet8 db610 dc610
+TARGETS=dc64 db64 dc128 db128 dc1280 db1280 dcp4 dbp4 db610 dc610 dbpet8 dcpet8
 
 all:	$(TARGETS)
-	sh d64.sh 'dracopy 1.0doj,dj' $(D64) $^
+	sh d64.sh 'dracopy 1.0doj,dj' $(D64) dc64 db64 dc128 db128 dc1280 db1280 dcp4 dbp4
 
 COMMON_SRC=src/screen.c src/cat.c src/dir.c src/base.c src/ops.c
 DC_SRC=src/dc.c $(COMMON_SRC)
@@ -81,6 +81,11 @@ $(D64_9):
 	sh d64.sh 'number nine,n9' $@ README.md *.seq
 	$(RM) *.seq
 
+D64PET=pet.d64
+$(D64PET):
+	sh d64.sh 'pet,aa' $@ dbpet8 dcpet8 README.md
+	$(RM) *.seq
+
 D71=10.d71
 $(D71):	dc128 dc1280
 	for i in `perl -e 'for(1..140){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
@@ -131,5 +136,5 @@ xplus4:	all $(D64_9)
 	$(XPLUS4) -autostart dcp4.prg -drive8type 1551 -8 $(D64) -drive9type 1551 -9 $(D64_9)
 
 XPET?=xpet
-xpet:	all $(D64_9)
-	$(XPET) -autostart dbpet8.prg -8 $(D64) -9 $(D64_9)
+xpet:	all $(D64_9) $(D64PET)
+	$(XPET) -autostart dcpet8 -8 $(D64PET) -9 $(D64_9)
