@@ -39,7 +39,7 @@ See the TODO section below for some functions that may have issues.
 | F5, 5 | copy all selected files from current window
 | F6, 6 | delete all selected file in current window
 | F7, 7 | execute selected program
-| F8, 8 | copy disk from current window to the other device
+| F8, 8 | [copy disk](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-diskcopy.png) from current window to the other device
 | ←, ESC, 0 | switch window
 | Return, right | enter directory
 | DEL, left | go to parent directory
@@ -57,7 +57,7 @@ See the TODO section below for some functions that may have issues.
 | . | show about information
 | q | quit program to BASIC
 | £ | change device ID of current device
-| w | enlarge or shrink current window
+| w | [enlarge or shrink](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-windowsize.png) current window
 | s | show directory entries sorted
 
 source code
