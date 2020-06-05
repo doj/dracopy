@@ -14,6 +14,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
+#ifdef MACHINE_PET
+#include <peekpoke.h>
+#endif
 
 const char *value2hex = "0123456789abcdef";
 
@@ -169,6 +172,45 @@ updateScreen(const BYTE context, BYTE num_dirs)
 int
 main(void)
 {
+#ifdef MACHINE_PET
+  // check for memory at 0x9000 and add to heap
+  // https://cc65.github.io/doc/pet.html
+  if (PEEK(0x9000) == POKE(0x9000, PEEK(0x9000)+1))
+    {
+      if (PEEK(0xAfff) == POKE(0xAfff, PEEK(0xAfff)+1))
+        {
+          _heapadd ((void *) 0x9000, 0x2000);
+          printf("9 8KB\r\n");
+        }
+      else if (PEEK(0x9fff) == POKE(0x9fff, PEEK(0x9fff)+1))
+        {
+          _heapadd ((void *) 0x9000, 0x1000);
+          printf("9 4KB\r\n");
+        }
+      else
+        {
+          printf("9 fail\r\n");
+        }
+    }
+  else if (PEEK(0xA000) == POKE(0xA000, PEEK(0xA000)+1))
+    {
+      if (PEEK(0xAfff) == POKE(0xAfff, PEEK(0xAfff)+1))
+        {
+          _heapadd ((void *) 0xA000, 0x1000);
+          printf("A 4KB\r\n");
+        }
+      else
+        {
+          printf("A fail\r\n");
+        }
+    }
+  else
+    {
+      printf("no RAM\r\n");
+    }
+  //return 0;
+#endif
+
   initScreen(COLOR_BLACK, COLOR_BLACK, textc);
   mainLoop();
   exitScreen();

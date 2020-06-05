@@ -31,9 +31,8 @@ dcp4:	$(DC_SRC)
 dc610:	$(DC_SRC)
 	cl65 $(CFLAGS) -t cbm610 -DCHAR80 -DNOCOLOR $^ -o $@
 
-# code too big
 dcpet8:	$(DC_SRC)
-	cl65 $(CFLAGS) -t pet -DCHAR80 -DNOCOLOR $^ -o $@
+	cl65 $(CFLAGS) -t pet -DCHAR80 -DNOCOLOR -DMACHINE_PET $^ -o $@
 
 DB_SRC=src/db.c $(COMMON_SRC)
 
@@ -57,7 +56,7 @@ db610:	$(DB_SRC)
 	cl65 $(CFLAGS) -t cbm610 -DCHAR80 -DNOCOLOR $^ -o $@
 
 dbpet8:	$(DB_SRC)
-	cl65 $(CFLAGS) -t pet -DCHAR80 -DNOCOLOR $^ -o $@
+	cl65 $(CFLAGS) -t pet -DCHAR80 -DNOCOLOR -DMACHINE_PET $^ -o $@
 
 clean:
 	$(RM) -rf d src/*.o src/*.s *.prg *.map *.seq *.d64 *.d71 *.d81 $(TARGETS) dracopy-1.0doj.zip
@@ -134,4 +133,4 @@ xplus4:	all $(D64_9)
 
 XPET?=xpet
 xpet:	all $(D64_9) $(D64PET)
-	$(XPET) -autostart dcpet8 -8 $(D64PET) -9 $(D64_9)
+	$(XPET) -model 8296 -ramsize 32 -petram9 -petramA -autostart dcpet8 -8 $(D64PET) -9 $(D64_9)
