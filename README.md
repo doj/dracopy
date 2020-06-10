@@ -114,7 +114,7 @@ the following features can be implemented or bugs should be fixed:
 - better support vice without true drive emulation
 - support IEEE-488 drives like SFD-1001
 - check drabrowse and 80 columns mode again, do both windows work correctly?
-- c64 80col RUN does not work
+- better program load for dc6480
 
 Version Information and Download
 ---------------------------------
@@ -126,7 +126,7 @@ Version Information and Download
 | 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader | https://csdb.dk/release/?id=89910
 | 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader | https://csdb.dk/release/?id=98664
 | 1.0e | 2018        | combined DraBrowse and DraCopy, single window, lots of other improvements | rbm | https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser
-| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
+| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy, 80 column mode for C64 | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
 
 Platform Notes
 ---------------

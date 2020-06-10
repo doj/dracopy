@@ -136,11 +136,22 @@ cmd(unsigned char device, const char *cmd)
 void
 execute(char * prg, BYTE device)
 {
+#if defined(MACHINE_C64) && defined(CHAR80)
+  BYTE len = sprintf(KBCHARS, "lO\"%s\",%d", prg, device);
+	*((unsigned char *)KBCHARS + len) = 13;  ++len;
+	*((unsigned char *)KBCHARS + len) = 'r'; ++len;
+	*((unsigned char *)KBCHARS + len) = 'U'; ++len;
+	*((unsigned char *)KBCHARS + len) = 13;  ++len;
+  *((unsigned char *)KBNUM) = len;
+#else
   // prepare the screen with the basic command to load the next program
 	exitScreen();
-	gotoxy(0,2);
-	cprintf("load\"%s\",%d\n\r\n\r\n\r\n\r\n\r",prg,device);
-	cputs("run\n\r");
+
+  gotoxy(0,2);
+	cprintf("load\"%s\",%d,1", prg, device);
+  gotoxy(0,7);
+	cputs("run");
+
   gotoxy(14,BOTTOM-1);
   cputs("this program was loaded by");
   gotoxy(14,BOTTOM);
@@ -153,6 +164,7 @@ execute(char * prg, BYTE device)
 
   // exit DraCopy, which will execute the BASIC LOAD above
 	gotoxy(0,0);
+#endif
   exit(0);
 }
 
