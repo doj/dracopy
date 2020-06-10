@@ -97,7 +97,6 @@ the following features can be implemented or bugs should be fixed:
   + check which variables should be "register" https://cc65.github.io/doc/cc65.html#s8
   + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize
 - copy features from 1.0e
-  + better dir handling (vice)
   + make image 'i'
   + copy seq and rel
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
