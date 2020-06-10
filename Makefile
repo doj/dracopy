@@ -4,16 +4,20 @@
 CFLAGS=-I include -O -Or -Os -r
 
 D64=dracopy10doj.d64
-TARGETS=dc64 db64 dc128 db128 dc1280 db1280 dcp4 dbp4 db610 dc610 dbpet8 dcpet8
+TARGETS=dc64 db64 dc128 db128 dc1280 db1280 dcp4 dbp4 db610 dc610 dbpet8 dcpet8 dc6480
 
 all:	$(TARGETS)
-	sh d64.sh 'dracopy 1.0doj,dj' $(D64) dc64 db64 dc128 db128 dc1280 db1280 dcp4 dbp4
+	sh d64.sh 'dracopy 1.0doj,dj' $(D64) dc64 db64 dc128 db128 dc1280 db1280 dcp4 dbp4 dc6480
 
 COMMON_SRC=src/screen.c src/cat.c src/dir.c src/base.c src/ops.c
 DC_SRC=src/dc.c $(COMMON_SRC)
 
 dc64:	$(DC_SRC)
 	cl65 $(CFLAGS) -t c64 -m $@.map $^ -o $@.prg
+	-pucrunch -c64 $@.prg $@
+
+dc6480:	$(DC_SRC)
+	cl65 $(CFLAGS) -DCHAR80 -DMACHINE_C64 -t c64 -m $@.map $^ c64-soft80.o -o $@.prg
 	-pucrunch -c64 $@.prg $@
 
 dc128:	$(DC_SRC)
@@ -112,7 +116,7 @@ x64:	all $(D64_9) $(D71) $(D81) $(D81_2)
 #	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1571 -10 $(D71) -drive11type 1581 -11 $(D81)
 #	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 0 -drive11type 0
 #	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 0 -drive10type 0 -drive11type 0
-	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81)
+	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) # +truedrive
 
 x64_71:	all $(D71) $(D71_2)
 	$(X64) -autostart dc64.prg -drive8type 1571 -8 $(D71) -drive9type 1571 -9 $(D71_2)

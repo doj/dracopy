@@ -165,7 +165,7 @@ updateScreen(const BYTE context, BYTE num_dirs)
   if (num_dirs > 1)
     {
       const BYTE other_context = context^1;
-      showDir(context, dirs[other_context], other_context);
+      showDir(other_context, dirs[other_context], context);
     }
 }
 
@@ -209,6 +209,10 @@ main(void)
       printf("no RAM\r\n");
     }
   //return 0;
+#endif
+
+#if defined(MACHINE_C64) && defined(CHAR80)
+  _heapadd((void *) 0x0400, 0x0400);
 #endif
 
   initScreen(COLOR_BLACK, COLOR_BLACK, textc);
@@ -265,21 +269,21 @@ clrDir(BYTE context)
 }
 
 void
-refreshDir(const BYTE context, const BYTE sorted)
+refreshDir(const BYTE context, const BYTE sorted, const BYTE mycontext)
 {
 	Directory * cwd = dirs[context];
   textcolor(COLOR_WHITE);
 	cwd = readDir(cwd, devices[context], context, sorted);
 	dirs[context]=cwd;
 	cwd->selected=cwd->firstelement;
-	showDir(context, cwd, context);
+	showDir(context, cwd, mycontext);
 #if 0
 	if (devices[0]==devices[1])
     {
       // refresh also other dir if it's the same drive
       const BYTE other_context = context^1;
       dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
-      showDir(context, cwd, other_context);
+      showDir(other_context, cwd, mycontext);
     }
 #endif
 }
@@ -425,7 +429,7 @@ printElement(const BYTE context, const Directory *dir, const BYTE xpos, const BY
 void
 drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext)
 {
-  sprintf(linebuffer, " %02i:%s", (int)devices[mycontext], dir ? dir->name : "");
+  sprintf(linebuffer, " %02i:%s", (int)devices[context], dir ? dir->name : "");
 	if(mycontext==context)
     {
       linebuffer[0] = '>';
@@ -444,7 +448,6 @@ drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext)
     {
       linebuffer2[0] = 0;
     }
-  context = mycontext; // set context so that DIRX and friends below work.
 	drawFrame(linebuffer, DIRX, DIRY, DIRW+2, DIRH+2, linebuffer2);
 	textcolor(textc);
 }
@@ -453,7 +456,6 @@ void
 showDir(BYTE context, const Directory * dir, const BYTE mycontext)
 {
   drawDirFrame(context, dir, mycontext);
-  context = mycontext;
 	printDir(context, dir, DIRX+1, DIRY);
 }
 
@@ -494,7 +496,7 @@ changeDir(const BYTE context, const BYTE device, const char *dirname, const BYTE
       strcpy(linebuffer, "cd//");
     }
   cmd(device, linebuffer);
-  refreshDir(context, sorted);
+  refreshDir(context, sorted, context);
 }
 
 void
@@ -537,18 +539,18 @@ changeDeviceID(BYTE device)
 void
 debugs(const char *s)
 {
-  gotoxy(30,BOTTOM);
-  cclear(10);
-  gotoxy(30,BOTTOM);
+  gotoxy(MENUXT,BOTTOM);
+  cclear(SCREENW-MENUXT);
+  gotoxy(MENUXT,BOTTOM);
   cputs(s);
 }
 
 void
 debugu(const unsigned u)
 {
-  gotoxy(30,BOTTOM);
-  cclear(10);
-  gotoxy(30,BOTTOM);
+  gotoxy(MENUXT,BOTTOM);
+  cclear(SCREENW-MENUXT);
+  gotoxy(MENUXT,BOTTOM);
   cprintf("%04x", u);
 }
 

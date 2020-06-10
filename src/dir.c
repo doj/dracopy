@@ -73,12 +73,12 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
     {
       DirElement * de = (DirElement *) calloc(1, sizeof(DirElement));
       if (! de)
-        break;
+        goto stop;
 
       if (myCbmReadDir(device, &(de->dirent)) != 0)
         {
           free(de);
-          break;
+          goto stop;
         }
 
       // print progress bar
@@ -105,7 +105,7 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
           // initialize directory
           dir = (Directory *) calloc(1, sizeof(Directory));
           if (! dir)
-            break;
+            goto stop;
           if (de->dirent.type == _CBM_T_HEADER)
             {
               memcpy(dir->name, de->dirent.name, 16);
@@ -180,11 +180,15 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
         }
     }
 
+ stop:
 	cbm_closedir(device);
 	revers(0);
 
-  dir->device_type = device_type;
-  dir->selected = dir->firstelement;
+  if (dir)
+    {
+      dir->device_type = device_type;
+      dir->selected = dir->firstelement;
+    }
 	return dir;
 }
 

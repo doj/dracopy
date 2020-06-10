@@ -17,7 +17,7 @@ void about(const char *progname);
 void showDir(BYTE context, const Directory * cwd, const BYTE mycontext);
 void mainLoop(void);
 void clrDir(BYTE context);
-void refreshDir(const BYTE context, const BYTE sorted);
+void refreshDir(const BYTE context, const BYTE sorted, const BYTE mycontext);
 void printDir(const BYTE context, const Directory *dir, const BYTE xpos, const BYTE ypos);
 void printElement(const BYTE context, const Directory *dir, const BYTE xpos, const BYTE ypos);
 const char* fileTypeToStr(BYTE ft);

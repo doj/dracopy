@@ -67,27 +67,31 @@ void
 nextWindowState(const BYTE context)
 {
 #if !defined(CHAR80)
+  if (context == 1 &&
+      windowState == 0)
+    {
+      windowState = 1;
+    }
+
+  initDirWindowHeight();
   switch(++windowState)
     {
     default:
     case 0:
       windowState = 0;
-      initDirWindowHeight();
       break;
     case 1:
       DIR1H += DIR2H - 2;
       DIR2H = 2;
       break;
     case 2:
-      {
-        const BYTE tmp = DIR1H;
-        DIR1H = DIR2H;
-        DIR2H = tmp;
-      }
+      DIR2H += DIR1H - 2;
+      DIR1H = 2;
       break;
     }
-  showDir(context, dirs[0], 0);
-  showDir(context, dirs[1], 1);
+
+  showDir(0, dirs[0], context);
+  showDir(1, dirs[1], context);
 #endif
 }
 
@@ -122,11 +126,13 @@ updateMenu(void)
 	cputsxy(MENUXT,++menuy," R RENAME");
 	cputsxy(MENUXT,++menuy," M MAKE DIR");
 	cputsxy(MENUXT,++menuy," F FORMAT");
-	cputsxy(MENUXT,++menuy," . ABOUT");
 	cputcxy(MENUXT+1,++menuy,CH_POUND); cputs(" DEV ID");
 	cputsxy(MENUXT,++menuy," @ DOS CMD");
 	cputsxy(MENUXT,++menuy," S SORT DIR");
-#if !defined(CHAR80)
+	cputsxy(MENUXT,++menuy," . ABOUT");
+#if defined(CHAR80)
+	cputsxy(MENUXT,++menuy," Q QUIT");
+#else
 	cputsxy(MENUXT,++menuy," W WIN SIZE");
 #endif
 }
@@ -156,10 +162,11 @@ mainLoop(void)
         if (dirs[context])
           {
             showDir(context, dirs[context], context);
-            break;
+            goto found_upper_drive;
           }
       }
 
+  found_upper_drive:
     textcolor(textc);
     while(++i < 12)
       {
@@ -167,17 +174,17 @@ mainLoop(void)
         dirs[1] = readDir(NULL, devices[1], 1, sorted);
         if (dirs[1])
           {
-            showDir(context, dirs[1], 1);
-            break;
+            showDir(1, dirs[1], context);
+            goto found_lower_drive;
           }
       }
 
     // if no drive was found for the lower window,
     // enlarge the upper window.
-    if (dirs[1] == NULL)
-      nextWindowState(context);
+    nextWindowState(context);
   }
 
+ found_lower_drive:
 	while(1)
     {
       {
@@ -193,8 +200,10 @@ mainLoop(void)
         const size_t s = _heapmemavail();
         if (s < 0x1000)
           {
-            gotoxy(29,BOTTOM);
+            gotoxy(MENUXT,BOTTOM);
+            textcolor(COLOR_WHITE);
             cprintf("lowmem:%04x",s);
+            textcolor(textc);
           }
       }
 
@@ -245,7 +254,7 @@ mainLoop(void)
             updateScreen(context, 2);
             // refresh destination dir
             dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
-            showDir(context, dirs[other_context], other_context);
+            showDir(other_context, dirs[other_context], context);
           }
 					break;
 
@@ -269,8 +278,7 @@ mainLoop(void)
             freeDir(&dirs[other_context]);
             doDiskCopy(devices[context], devices[other_context]);
             updateScreen(context, 2);
-            refreshDir(other_context, sorted);
-            //dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
+            refreshDir(other_context, sorted, context);
           }
 					break;
 
@@ -279,10 +287,10 @@ mainLoop(void)
         case CH_ESC:
 		    case CH_LARROW:  // arrow left
           {
-            Directory *oldcwd = GETCWD;
+            const BYTE prev_context = context;
             context = context ^ 1;
-            drawDirFrame(context, oldcwd, context^1);
-            drawDirFrame(context, GETCWD, context);
+            drawDirFrame(context, dirs[context], context);
+            drawDirFrame(prev_context, dirs[prev_context], context);
           }
 					break;
 
@@ -639,7 +647,7 @@ doDelete(const BYTE context)
     {
       const BYTE other_context = context^1;
       dirs[other_context] = cwd;
-      showDir(context, cwd, other_context);
+      showDir(other_context, cwd, context);
     }
 }
 

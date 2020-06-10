@@ -16,13 +16,13 @@ able to work with most file oriented IEC devices.
 
 Directories are supported on CMD compatible devices and [sd2iec](https://www.c64-wiki.com/wiki/SD2IEC).
 
-| Platforms | Executables |
-| --------- | ----------- |
-| C64       | dc64, db64
-| C128      | dc128, db128 (40 Columns), [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280 (80 Columns)
+| Platforms | 40 columns | 80 columns |
+| --------- | ---------- | ---------- |
+| C64       | dc64, db64 | dc6480
+| C128      | dc128, db128 | [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280
 | Plus 4    | dcp4, dbp4
-| CBM 610   | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
-| PET 8096  | dcpet8, dbpet8
+| CBM 610   | | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
+| PET 8096  | | dcpet8, dbpet8
 
 Keys
 -----
@@ -96,7 +96,7 @@ the following features can be implemented or bugs should be fixed:
   + see if printf() can be replaced with regular string operations
   + check which variables should be "register" https://cc65.github.io/doc/cc65.html#s8
   + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize
-- copy some more features from 1.0e
+- copy features from 1.0e
   + better dir handling (vice)
   + make image 'i'
   + copy seq and rel
@@ -106,9 +106,15 @@ the following features can be implemented or bugs should be fixed:
   + support 1571 disk copy with sd2iec
   + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
+  + support 80 columns mode and 1571, 1581
 - help screen 'h'
 - device id: does it work with 1541? does it work with sd2iec?
 - pet: disk access doesn't work
+- support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
+- better support vice without true drive emulation
+- support IEEE-488 drives like SFD-1001
+- check drabrowse and 80 columns mode again, do both windows work correctly?
+- c64 80col RUN does not work
 
 Version Information and Download
 ---------------------------------
