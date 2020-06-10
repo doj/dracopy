@@ -203,163 +203,180 @@ myCbmReadDir(const BYTE device, struct cbm_dirent* l_dirent)
 
   if (cbm_k_chkin (device) != 0)
     {
-      cbm_k_clrch ();
+      cbm_k_clrch();
       return 1;
     }
 
-  if (cbm_k_readst () == 0) {
-    l_dirent->access = 0;
+  if (cbm_k_readst() != 0)
+    {
+      return 7;
+    }
 
-    // skip next basic line: 0x01, 0x01
-    cbm_k_basin ();
-    cbm_k_basin ();
+  l_dirent->access = 0;
 
-    // read file size
-    l_dirent->size = cbm_k_basin();
-    l_dirent->size |= (cbm_k_basin()) << 8;
+  // skip next basic line: 0x01, 0x01
+  cbm_k_basin();
+  cbm_k_basin();
 
-    i = 0;
-    byte = cbm_k_basin();
+  // read file size
+  l_dirent->size = cbm_k_basin();
+  l_dirent->size |= (cbm_k_basin()) << 8;
 
-    // handle "B" BLOCKS FREE
-    if (byte == 'b') {
+  i = 0;
+  byte = cbm_k_basin();
+
+  // handle "B" BLOCKS FREE
+  if (byte == 'b')
+    {
       l_dirent->type = CBM_T_FREE;
       l_dirent->name[i++] = byte;
-      while ((byte = cbm_k_basin ()) != '\"'  )
+      while ((byte = cbm_k_basin()) != '\"'  )
         {
-          if (cbm_k_readst () != 0)
-            {     /* ### Included to prevent */
-              cbm_k_clrch ();             /* ### Endless loop */
+          if (cbm_k_readst() != 0)
+            {
+              cbm_k_clrch();
               l_dirent->name[i] = '\0';
-
-              return 0;                   /* ### Should be probably removed */
+              return 0;
             }
-          if (i < sizeof (l_dirent->name) - 1) {
-            l_dirent->name[i] = byte;
-            ++i;
-          }
+          if (i < sizeof (l_dirent->name) - 1)
+            {
+              l_dirent->name[i] = byte;
+              ++i;
+            }
         }
       l_dirent->name[i] = '\0';
       return 0;
     }
 
-    // read file name
-    if (byte != '\"')
-      {
-        while (cbm_k_basin() != '\"') {
-          if (cbm_k_readst () != 0) {   /* ### Included to prevent */
-            cbm_k_clrch ();           /* ### Endless loop */
-            return 3;                 /* ### Should be probably removed */
-          }                             /* ### */
+  // read file name
+  if (byte != '\"')
+    {
+      while (cbm_k_basin() != '\"')
+        {
+          if (cbm_k_readst() != 0)
+            {
+              cbm_k_clrch();
+              return 3;
+            }
         }
-      }
+    }
 
-    while ((byte = cbm_k_basin ()) != '\"'  )
-      {
-        if (cbm_k_readst () != 0) {     /* ### Included to prevent */
-          cbm_k_clrch ();             /* ### Endless loop */
-          return 4;                   /* ### Should be probably removed */
+  while ((byte = cbm_k_basin()) != '\"'  )
+    {
+      if (cbm_k_readst() != 0)
+        {
+          cbm_k_clrch();
+          return 4;
         }
 
-        /* ### */
-
-        if (i < sizeof (l_dirent->name) - 1) {
+      if (i < sizeof (l_dirent->name) - 1)
+        {
           l_dirent->name[i] = byte;
           ++i;
         }
-      }
-    l_dirent->name[i] = '\0';
+    }
+  l_dirent->name[i] = '\0';
 
-    // read file type
-    while ((byte=cbm_k_basin ()) == ' ') {
-      if (cbm_k_readst ()) {          /* ### Included to prevent */
-        cbm_k_clrch ();             /* ### Endless loop */
-        return 5;                   /* ### Should be probably removed */
-      }                               /* ### */
+  // read file type
+  while ((byte=cbm_k_basin()) == ' ')
+    {
+      if (cbm_k_readst())
+        {
+          cbm_k_clrch();
+          return 5;
+        }
     }
 
-    byte2 = cbm_k_basin();
-    byte3 = cbm_k_basin();
+  byte2 = cbm_k_basin();
+  byte3 = cbm_k_basin();
 
 #define X(a,b,c) byte==a && byte2==b && byte3==c
 
-    if (X('p','r','g'))
-      {
-        l_dirent->type = CBM_T_PRG;
-      }
-    else if (X('s','e','q'))
-      {
-        l_dirent->type = CBM_T_SEQ;
-      }
-    else if (X('u','s','r'))
-      {
-        l_dirent->type = CBM_T_USR;
-      }
-    else if (X('d','e','l'))
-      {
-        l_dirent->type = CBM_T_DEL;
-      }
-    else if (X('r','e','l'))
-      {
-        l_dirent->type = CBM_T_REL;
-      }
-    else if (X('c','b','m'))
-      {
-        l_dirent->type = CBM_T_CBM;
-      }
-    else if (X('d','i','r'))
-      {
-        l_dirent->type = CBM_T_DIR;
-      }
-    else if (X('v','r','p'))
-      {
-        l_dirent->type = CBM_T_VRP;
-      }
-    else if (X('l','n','k'))
-      {
-        l_dirent->type = CBM_T_LNK;
-      }
-    else if (byte3 = ' ')
-      {
-        // reading the disk name line
-        l_dirent->type = _CBM_T_HEADER;
-        l_dirent->size = byte | (byte2 << 8);
-        l_dirent->access = 0;
+  if (X('p','r','g'))
+    {
+      l_dirent->type = CBM_T_PRG;
+    }
+  else if (X('s','e','q'))
+    {
+      l_dirent->type = CBM_T_SEQ;
+    }
+  else if (X('u','s','r'))
+    {
+      l_dirent->type = CBM_T_USR;
+    }
+  else if (X('d','e','l'))
+    {
+      l_dirent->type = CBM_T_DEL;
+    }
+  else if (X('r','e','l'))
+    {
+      l_dirent->type = CBM_T_REL;
+    }
+  else if (X('c','b','m'))
+    {
+      l_dirent->type = CBM_T_CBM;
+    }
+  else if (X('d','i','r'))
+    {
+      l_dirent->type = CBM_T_DIR;
+    }
+  else if (X('v','r','p'))
+    {
+      l_dirent->type = CBM_T_VRP;
+    }
+  else if (X('l','n','k'))
+    {
+      l_dirent->type = CBM_T_LNK;
+    }
+  else if (byte == '2' && byte2 == 'a')
+    {
+      // a directory line with an empty ID
+      l_dirent->size = ' ' | (' '<<8);
+      l_dirent->type = _CBM_T_HEADER;
+      cbm_k_clrch();
+      return 0;
+    }
+  else if (byte3 == ' ')
+    {
+      // reading the disk name line
+      l_dirent->size = byte | (byte2 << 8);
+      l_dirent->type = _CBM_T_HEADER;
 
-        while (cbm_k_basin() != 0) {
-          if (cbm_k_readst () != 0) { /* ### Included to prevent */
-            cbm_k_clrch ();         /* ### Endless loop */
-            return 8;               /* ### Should be probably removed */
-          }                           /* ### */
+      while (cbm_k_basin() != 0)
+        {
+          if (cbm_k_readst() != 0)
+            {
+              cbm_k_clrch();
+              return 8;
+            }
         }
 
-        cbm_k_clrch ();
-        return 0;                         /* Line read successfuly */
-      }
-    else
-      {
-        l_dirent->type = CBM_T_OTHER;
-      }
-
-    // read access
-    byte = cbm_k_basin ();
-
-    l_dirent->access = (byte == 0x3C) ? CBM_A_RO : CBM_A_RW;
-
-    if (byte != 0) {
-      while (cbm_k_basin() != 0) {
-        if (cbm_k_readst () != 0) { /* ### Included to prevent */
-          cbm_k_clrch ();         /* ### Endless loop */
-          return 6;               /* ### Should be probably removed */
-        }                           /* ### */
-      }
+      cbm_k_clrch();
+      return 0;
+    }
+  else
+    {
+      l_dirent->type = CBM_T_OTHER;
     }
 
-    cbm_k_clrch ();
-    return 0;                         /* Line read successfuly */
-  }
+  // read access
+  byte = cbm_k_basin();
+  l_dirent->access = (byte == 0x3C) ? CBM_A_RO : CBM_A_RW;
 
-  return 7;
+  if (byte != 0)
+    {
+      while (cbm_k_basin() != 0)
+        {
+          if (cbm_k_readst() != 0)
+            {
+              cbm_k_clrch();
+              return 6;
+            }
+        }
+    }
+
+  cbm_k_clrch();
+  return 0;
 }
 
 /*
