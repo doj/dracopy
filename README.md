@@ -18,7 +18,7 @@ Directories are supported on CMD compatible devices and [sd2iec](https://www.c64
 
 | Platforms | 40 columns | 80 columns |
 | --------- | ---------- | ---------- |
-| C64       | dc64, db64 | dc6480
+| C64       | dc64, db64 | [dc6480](https://raw.githubusercontent.com/doj/dracopy/master/images/dc6480.png)
 | C128      | dc128, db128 | [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280
 | Plus 4    | dcp4, dbp4
 | CBM 610   | | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
