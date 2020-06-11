@@ -105,13 +105,12 @@ the following features can be implemented or bugs should be fixed:
   + support 1571 disk copy with sd2iec
   + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
-  + support 80 columns mode and 1571, 1581
 - help screen 'h'
 - device id: does it work with 1541? does it work with sd2iec?
 - pet: disk access doesn't work
 - support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
 - better support vice without true drive emulation
-- support IEEE-488 drives like SFD-1001
+- support IEEE-488 drives like SFD-1001, https://www.pagetable.com/?p=1303 http://www.zimmers.net/anonftp/pub/cbm/schematics/cartridges/c64/ieee-488/index.html https://www.lemon64.com/forum/viewtopic.php?t=65199&sid=720fd316d9a3227e0820c1465f4e042b
 - check drabrowse and 80 columns mode again, do both windows work correctly?
 - better program load for dc6480
 

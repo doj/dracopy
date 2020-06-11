@@ -901,18 +901,22 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
       if (t >= 40)
         t = 39;
     }
+#if !defined(CHAR80)
   else if (dt == D1571 && t >= 35)
     {
       t -= 35;
       textcolor(COLOR_WHITE);
     }
+#endif
   else if (dt == D1581)
     {
+#if !defined(CHAR80)
       if (t >= 40)
         {
           textcolor(COLOR_WHITE);
           t -= 40;
         }
+#endif
       if ((s&1) == 0)
         {
           if (st == 'R') st = 'r';
@@ -968,17 +972,34 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
     }
 
   cputs("0000000001111111111222222222233333333334");
+#if defined(CHAR80)
+  cputs("4444444445555555555666666666677777777778");
+#endif
   cputsxy(0,2, "1234567890123456789012345678901234567890");
-  for(track = 0; track < 40; ++track)
+#if defined(CHAR80)
+  cputs("1234567890123456789012345678901234567890");
+#endif
+  for(track = 0; track < 80; ++track)
     {
       BYTE max_s = 40;
       BYTE sector;
       if (IS_1541(dt))
-        max_s = sectors1541[track];
+        {
+          if (track == 40)
+            {
+              break;
+            }
+          max_s = sectors1541[track];
+        }
       else if (dt == D1571)
         {
+#if defined(CHAR80)
+          if (track == 70)
+            break;
+#else
           if (track == 35)
             break;
+#endif
           max_s = sectors1571[track];
         }
       for(sector = 0; sector < max_s; ++sector)
@@ -1013,6 +1034,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
       const BYTE max_sector = maxSector(dt, track);
       BYTE sector;
 
+#if !defined(CHAR80)
       // check if 1541 writes to extra tracks
       if (IS_1541(dt)
           && track >= 40)
@@ -1033,6 +1055,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
           textcolor(textc);
           cputsxy(0,1,"4444444445555555555666666666677777777778");
         }
+#endif
 
       for(sector = 0; sector < max_sector; ++sector)
         {
