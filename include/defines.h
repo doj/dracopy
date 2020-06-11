@@ -122,7 +122,7 @@ extern BYTE DIR2H;
 
 #define DIRTYPE 6
 
-#define CH_LARROW 95
+#define CH_LARROW 0x5f
 #define CH_UARROW 0x5e
 #define CH_POUND  0x5c
 

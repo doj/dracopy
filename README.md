@@ -107,7 +107,6 @@ the following features can be implemented or bugs should be fixed:
   + support 1571 disk copy with sd2iec
   + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
-- help screen 'h'
 - device id: does it work with 1541? does it work with sd2iec?
 - pet
   + disk access doesn't work

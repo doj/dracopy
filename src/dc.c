@@ -132,7 +132,7 @@ updateMenu(void)
 	cputsxy(MENUXT,++menuy," @ DOS CMD");
 	cputsxy(MENUXT,++menuy," I MAKE IMG");
 #if defined(CHAR80)
-	cputsxy(MENUXT,++menuy," Q QUIT");
+	cputsxy(MENUXT,++menuy," . HELP");
 #else
 	cputsxy(MENUXT,++menuy," W WIN SIZE");
 #endif

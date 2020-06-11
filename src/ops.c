@@ -233,45 +233,97 @@ main(void)
   return 0;
 }
 
+#pragma charmap (0xff, 0x5f);
+#pragma charmap (0xfc, 0x5c);
+
+static const char* helpcontent[] = {
+  "F1", "read dir",
+  "F2", "change dev",
+  "F3", "view hex",
+  "F4", "view ASCII",
+  "F5", "copy files",
+  "F6", "delete file",
+  "F7", "execute PRG",
+  "F8", "disk copy",
+
+  "0", "switch win",
+  "\xff",  "switch win", // CH_LARROW
+  "w", "window size",
+
+  "CR", "change dir",
+  "DL", "parent dir",
+  "\x5e", "parent dir", // CH_UARROW
+  "","",
+
+  // middle column
+  "m", "make dir",
+  "f", "format disk",
+  "l", "relabel dsk",
+  "i", "disk image",
+  "r", "rename file",
+  "c", "copy on same device",
+
+  "@", "DOS command",
+  "\xfc", "change dev id", // CH_POUND
+
+  "HO", "goto top",
+  "t", "goto top",
+  "b", "goto bottom",
+  "n", "next page",
+  "p", "prev page",
+
+  "*", "invert selection",
+  "SP", "select file",
+
+  // right column
+  "q", "quit",
+  ".", "help",
+  NULL
+};
+
 void
 about(const char *progname)
 {
-	BYTE idx=0;
-	newscreen("About");
-	textcolor(COLOR_YELLOW);
-	idx=4;
-	gotoxy(0,idx++);
-  cputs(progname);
-	cputs(" " DRA_VER);
-#ifdef CHAR80
-	cputs(" 80 Chars");
-#endif
+  BYTE x = 0;
+  BYTE y = 10;
+  const char* *h = helpcontent;
+  sprintf(linebuffer, " About %s " DRA_VER, progname);
+  newscreen(linebuffer);
+
 	textcolor(COLOR_GREEN);
-	idx++;
-	idx++;
-	gotoxy(0,idx++);
-	cputs("Copyright 2009 by Draco and others");
-	idx++;
-	gotoxy(0,idx++);
-	cputs("https://github.com/doj/dracopy");
-	idx++;
-	idx++;
-	gotoxy(0,idx++);
-	cputs("THIS PROGRAM IS DISTRIBUTED IN THE HOPE");
-	gotoxy(0,idx++);
-	cputs("THAT IT WILL BE USEFUL.");
-	idx++;
-	gotoxy(0,idx++);
-	cputs("IT IS PROVIDED WITH NO WARRANTY OF ANY ");
-	gotoxy(0,idx++);
-	cputs("KIND.");
-	idx++;
-	gotoxy(0,idx++);
-	textcolor(COLOR_LIGHTRED);
-	cputs("USE IT AT YOUR OWN RISK!");
-	gotoxy(0,24);
-	textcolor(COLOR_VIOLET);
-	waitKey(0);
+	cputs("Copyright 2009 by Draco and others\n\r"
+        "https://github.com/doj/dracopy\n\r"
+        "\n\r"
+        "THIS PROGRAM IS DISTRIBUTED IN THE HOPE\n\r"
+        "THAT IT WILL BE USEFUL.\n\r"
+        "IT IS PROVIDED WITH NO WARRANTY OF ANY\n\r"
+        "KIND. USE IT AT YOUR OWN RISK!\n\r"
+        );
+
+  while(*h)
+    {
+      // print key
+      textcolor(COLOR_LIGHTGREEN);
+      cputsxy(x + 2 - strlen(*h), y, *h);
+      ++h;
+
+      // print description
+      textcolor(COLOR_GREEN);
+      cputsxy(x+3, y, *h);
+      ++h;
+
+      if (++y == SCREENH)
+        {
+#ifdef CHAR80
+          x += 23;
+#else
+          x += 14;
+#endif
+          y = 10;
+        }
+    }
+
+  cgetc();
 }
 
 void
