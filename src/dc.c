@@ -51,6 +51,7 @@ void doCopy(const BYTE context);
 void doDelete(const BYTE context);
 int doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo);
 int copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE destdevice, BYTE type);
+void doMakeImage(const BYTE device);
 
 extern BYTE devices[];
 extern char linebuffer[];
@@ -129,7 +130,7 @@ updateMenu(void)
 	cputcxy(MENUXT+1,++menuy,CH_POUND); cputs(" DEV ID");
 	cputsxy(MENUXT,++menuy," @ DOS CMD");
 	cputsxy(MENUXT,++menuy," S SORT DIR");
-	cputsxy(MENUXT,++menuy," . ABOUT");
+	cputsxy(MENUXT,++menuy," I MAKE IMG");
 #if defined(CHAR80)
 	cputsxy(MENUXT,++menuy," Q QUIT");
 #else
@@ -398,6 +399,12 @@ mainLoop(void)
 					doRenameOrCopy(context, 1);
           break;
 
+        case 'i':
+          doMakeImage(devices[context]);
+          updateScreen(context, 2);
+          refreshDir(context, sorted, context);
+          break;
+
         case CH_POUND:
           changeDeviceID(devices[context]);
           updateScreen(context, 2);
@@ -497,7 +504,7 @@ doCopy(const BYTE context)
 	const BYTE destdev = devices[context^1];
 	Directory * cwd = GETCWD;
 
-	sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
+	sprintf(linebuffer," Filecopy from device %d to device %d",srcdev,destdev);
   for(current = cwd->firstelement; current; current=current->next)
     {
       if (++cnt >= BOTTOM)
@@ -593,7 +600,7 @@ doDelete(const BYTE context)
       idx = 1;
     }
 
-  sprintf(linebuffer, "Delete %i files from device %d", idx, devices[context]);
+  sprintf(linebuffer, " Delete %i files from device %d", idx, devices[context]);
   newscreen(linebuffer);
   if (! really())
     {
@@ -661,7 +668,7 @@ doRenameOrCopy(const BYTE context, const BYTE mode)
     return;
 
   sprintf(linebuffer,
-          "%s file %s on device %d",
+          " %s file %s on device %d",
           mode ? "Copy" : "Rename",
           cwd->selected->dirent.name,devices[context]);
   newscreen(linebuffer);
@@ -788,6 +795,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
           if (cbm_write(7, buf, length) != length)
             {
               ERRMSG(COLOR_YELLOW,"WRITE ERROR");
+              ret = ERROR;
               break;
             }
           total_length += length;
@@ -943,7 +951,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
   BYTE i = devicetype[deviceTo];
   BYTE track = maxTrack(i);
 
-	sprintf(linebuffer, "Copy disk from device %d to %d? (Y/N)", deviceFrom, deviceTo);
+	sprintf(linebuffer, " Copy disk from device %d to %d? (Y/N)", deviceFrom, deviceTo);
   newscreen(linebuffer);
 
   if (max_track != track)
@@ -1186,4 +1194,258 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 
   textcolor(textc);
   return ret;
+}
+
+void
+doMakeImage(const BYTE device)
+{
+  BYTE dt = 0;
+  int bam;
+  int n;
+  int i;
+  BYTE *buf;
+  int answer_len;
+
+	sprintf(linebuffer, " Make Image on device %d", device);
+  newscreen(linebuffer);
+
+  cputs("\n\rValid Image extensions: .d64 .d71 .d81\n\rImage name: ");
+  answer_len = n = textInput(12,3,answer,16);
+  if (n < 0)
+    return;
+  if (n > 0 && n < 5)
+    {
+      cputsxy(0,6,"invalid image name\n\r");
+      waitKey(0);
+      return;
+    }
+
+  if (answer[n-3] == 'd' || answer[n-3] == 'D')
+    {
+      if (answer[n-2] == '6' &&
+          answer[n-1] == '4')
+        {
+          dt = D1541;
+          n = 683;
+          bam = 357;
+        }
+      else if (answer[n-2] == '7' &&
+               answer[n-1] == '1')
+        {
+          dt = D1571;
+          n = 1366;
+          bam = 357;
+        }
+      else if (answer[n-2] == '8' &&
+               answer[n-1] == '1')
+        {
+          dt = D1581;
+          n = 80*40;
+          bam = 39*40;
+        }
+    }
+  if (dt == 0)
+    {
+      cputsxy(0,6,"invalid image type\n\r");
+      waitKey(0);
+      return;
+    }
+
+  buf = (BYTE*) malloc(256);
+  if (! buf)
+    {
+      cputsxy(0,6,"Can't alloc\n\r");
+      waitKey(0);
+      return;
+    }
+  memset(buf, 0, 256);
+
+  sprintf(linebuffer, "%s,p", answer);
+  if (cbm_open(7, device, CBM_WRITE, linebuffer) != 0)
+    {
+      cputsxy(0,6,"Can't open output file\n\r");
+      waitKey(0);
+      goto done;
+    }
+
+  for(i = 0; i < n; ++i)
+    {
+      gotoxy(0,4);
+      cprintf("write block %i/%i", i, n);
+
+      memset(buf, 0, 256);
+      if (dt == D1541 || dt == D1571)
+        {
+          if (i == bam ||
+              (dt == D1571 && i == 1040))
+            {
+              int j;
+              // http://unusedino.de/ec64/technical/formats/d64.html
+
+              // track/sector of first directory block
+              buf[0] = 18;
+              buf[1] = 1;
+
+              buf[2] = 0x41; // DOS version
+
+              // http://unusedino.de/ec64/technical/formats/d71.html
+              if (dt == D1571)
+                {
+                  buf[3] = 0x80;
+                  for(j = 0; j < 35; ++j)
+                    {
+                      buf[0xDD + j] = maxSector(dt, j+35);
+                    }
+                }
+
+              // write BAM,
+              // 35 objects of 4 bytes.
+              for(j = 0; j < 35; ++j)
+                {
+                  // first byte, sectors per track
+                  BYTE max_sector = maxSector(dt, j);
+                  buf[4 + j*4] = max_sector;
+
+                  // 21, 19, 18, 17 bits set for each free block per track
+                  if (j == bam)
+                    {
+                      buf[5 + j*4] = 0x3f;
+                    }
+                  else
+                    {
+                      buf[5 + j*4] = 0xff;
+                    }
+
+                  buf[6 + j*4] = 0xff;
+
+                  switch(max_sector)
+                    {
+                    case 21: max_sector = 0x1f; break;
+                    case 19: max_sector = 0x07; break;
+                    case 18: max_sector = 0x03; break;
+                    case 17: max_sector = 0x01; break;
+                    }
+                  buf[7 + j*4] = max_sector;
+                }
+
+              // disk name
+              memset(&buf[0x90], 0xA0, 0xAB - 0x90);
+              memcpy(&buf[0x90], answer, answer_len-4);
+              // disk ID
+              buf[0xA2] = 'd';
+              buf[0xA3] = 'c';
+              // DOS type
+              buf[0xA5] = '2';
+              buf[0xA6] = 'a';
+            }
+          else if (i == bam+1)
+            {
+              // first directory sector
+              buf[1] = 0xff;
+            }
+        }
+
+      if (dt == D1581)
+        {
+          // http://unusedino.de/ec64/technical/formats/d81.html
+
+          // header sector at 40/0
+          if (i == bam)
+            {
+              // track/sector of first directory sector
+              buf[0] = 40;
+              buf[1] = 3;
+              // DOS type
+              buf[2] = 0x44;
+              // disk name
+              memset(&buf[4], 0xA0, 0x1D-4);
+              memcpy(&buf[4], answer, answer_len - 4);
+              // disk ID
+              buf[0x16] = 'd';
+              buf[0x17] = 'c';
+              // DOS version
+              buf[0x19] = '3';
+              // disk version
+              buf[0x1a] = 'd';
+            }
+          // first BAM at 40/1
+          // second BAM at 40/2
+          else if (i == bam+1 || i == bam+2)
+            {
+              BYTE *b;
+              int t;
+              // next track/sector
+              if (i == bam+1)
+                {
+                  buf[0] = 40;
+                  buf[1] = 2;
+                }
+              else
+                {
+                  buf[1] = 0xff;
+                }
+              // version
+              buf[2] = 'd';
+              buf[3] = 0xBB;
+              // disk ID
+              buf[4] = 'd';
+              buf[5] = 'c';
+              // I/O byte
+              buf[6] = 0xC0;
+
+              b = &buf[0x10];
+              for(t = 1; t <= 40; ++t)
+                {
+                  if (i == bam+2 && t == 40)
+                    {
+                      *b++ = 36;
+                      *b++ = 0xf0;
+                    }
+                  else
+                    {
+                      *b++ = 40;
+                      *b++ = 0xff;
+                    }
+                  *b++ = 0xff;
+                  *b++ = 0xff;
+                  *b++ = 0xff;
+                  *b++ = 0xff;
+                }
+            }
+          // first directory sector at 40/3
+          else if (i == bam+3)
+            {
+              buf[1] = 0xff;
+            }
+        }
+
+      if (i == n-1)
+        {
+          strcpy(buf+220, "image created by dracopy " DRA_VERNUM);
+        }
+
+      if (cbm_write(7, buf, 256) != 256)
+        {
+          cputsxy(0,6,"write error\n\r");
+          waitKey(0);
+          goto done;
+        }
+
+      if (kbhit())
+        {
+          char c = cgetc();
+          if (c == CH_ESC || c == CH_LARROW)
+            {
+              cputsxy(0,6,"abort");
+              cbm_close(7);
+              sprintf(linebuffer, "s:%s", answer);
+              cmd(device, linebuffer);
+              goto done;
+            }
+        }
+    }
+
+ done:
+  cbm_close(7);
+  free(buf);
 }

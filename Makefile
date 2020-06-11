@@ -130,7 +130,8 @@ x128:	all $(D71) $(D71_2) $(D64) $(D64_9)
 	$(X128) -autostart dc128 -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1571 -10 $(D71) -drive11type 1571 -11 $(D71_2) -truedrive
 
 x1280:	all $(D71) $(D71_2)
-	$(X128) -80col -autostart dc1280 -drive8type 1571 -8 $(D71) -drive9type 1571 -9 $(D71_2) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
+	#$(X128) -80col -autostart dc1280 -drive8type 1571 -8 $(D71) -drive9type 1571 -9 $(D71_2) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
+	$(X128) -80col -autostart dc1280 -drive8type 1571 -8 $(D71) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 
 XPLUS4?=xplus4
 xplus4:	all $(D64_9)

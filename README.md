@@ -59,6 +59,7 @@ See the TODO section below for some functions that may have issues.
 | £ | change device ID of current device
 | w | [enlarge or shrink](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-windowsize.png) current window
 | s | show directory entries sorted
+| i | create a D64, D71, D81 image file
 
 source code
 ------------
@@ -97,7 +98,6 @@ the following features can be implemented or bugs should be fixed:
   + check which variables should be "register" https://cc65.github.io/doc/cc65.html#s8
   + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize
 - copy features from 1.0e
-  + make image 'i'
   + copy seq and rel
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
 - diskcopy
@@ -113,6 +113,7 @@ the following features can be implemented or bugs should be fixed:
 - support IEEE-488 drives like SFD-1001, https://www.pagetable.com/?p=1303 http://www.zimmers.net/anonftp/pub/cbm/schematics/cartridges/c64/ieee-488/index.html https://www.lemon64.com/forum/viewtopic.php?t=65199&sid=720fd316d9a3227e0820c1465f4e042b
 - check drabrowse and 80 columns mode again, do both windows work correctly?
 - better program load for dc6480
+- use reu
 
 Version Information and Download
 ---------------------------------
