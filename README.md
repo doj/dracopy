@@ -60,6 +60,7 @@ See the TODO section below for some functions that may have issues.
 | w | [enlarge or shrink](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-windowsize.png) current window
 | s | show directory entries sorted
 | i | create a D64, D71, D81 image file
+| l | change disk name, relabel
 
 source code
 ------------
@@ -99,6 +100,7 @@ the following features can be implemented or bugs should be fixed:
   + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize
 - copy features from 1.0e
   + copy seq and rel
+  + move file
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
 - diskcopy
   + enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038
@@ -107,13 +109,15 @@ the following features can be implemented or bugs should be fixed:
   + support tracks 36-42 for 1541 disk copy
 - help screen 'h'
 - device id: does it work with 1541? does it work with sd2iec?
-- pet: disk access doesn't work
+- pet
+  + disk access doesn't work
+  + remove stuff the pet won't use like 1581
 - support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
 - better support vice without true drive emulation
 - support IEEE-488 drives like SFD-1001, https://www.pagetable.com/?p=1303 http://www.zimmers.net/anonftp/pub/cbm/schematics/cartridges/c64/ieee-488/index.html https://www.lemon64.com/forum/viewtopic.php?t=65199&sid=720fd316d9a3227e0820c1465f4e042b
 - check drabrowse and 80 columns mode again, do both windows work correctly?
 - better program load for dc6480
-- use reu
+- use reu to load file for copy. This will allow to copy between directories on the same device.
 
 Version Information and Download
 ---------------------------------
@@ -124,8 +128,9 @@ Version Information and Download
 | 1.0b | 23 May 2009 | Minor Bugfixes | Sascha Bader |
 | 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader | https://csdb.dk/release/?id=89910
 | 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader | https://csdb.dk/release/?id=98664
-| 1.0e | 2018        | combined DraBrowse and DraCopy, single window, lots of other improvements | rbm | https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser
-| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy, 80 column mode for C64 | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
+| 1.0e | 2018        | combined DraBrowse and DraCopy, single window, lots of other improvements | rbm | [freeforums.net](https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser) [csdb.dk](https://csdb.dk/release/?id=165305)
+| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy, 80 column mode for C64, create d64 image | doj |
+| 1.0doj | June 2020 | 80 column mode for C64, create d64 image | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
 
 Platform Notes
 ---------------

@@ -52,6 +52,7 @@ void doDelete(const BYTE context);
 int doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo);
 int copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE destdevice, BYTE type);
 void doMakeImage(const BYTE device);
+void doRelabel(const BYTE device);
 
 extern BYTE devices[];
 extern char linebuffer[];
@@ -113,23 +114,22 @@ updateMenu(void)
 	cputsxy(MENUXT,++menuy,"F6 DELETE");
 	cputsxy(MENUXT,++menuy,"F7 RUN");
 	cputsxy(MENUXT,++menuy,"F8 DISKCOPY");
-	cputsxy(MENUXT,++menuy,"SP TAG");
+	cputsxy(MENUXT,++menuy,"CR CHG DIR");
+	cputsxy(MENUXT,++menuy,"BS DIR UP");
 #ifdef __PLUS4__
-	cputsxy(MENUXT,++menuy,"EC SWITCH");
+	cputsxy(MENUXT,++menuy,"EC SWITCH W");
 #else
 	cputcxy(MENUXT+1,++menuy,CH_LARROW); cputs(" SWITCH W");
 #endif
-	cputsxy(MENUXT,++menuy,"CR CHG DIR");
-	cputsxy(MENUXT,++menuy,"BS DIR UP");
-	cputsxy(MENUXT,++menuy," T TOP");
-	cputsxy(MENUXT,++menuy," B BOTTOM");
+	cputsxy(MENUXT,++menuy,"SP SELECT");
 	cputsxy(MENUXT,++menuy," * INV SEL");
+	cputsxy(MENUXT,++menuy," S SORT DIR");
 	cputsxy(MENUXT,++menuy," R RENAME");
 	cputsxy(MENUXT,++menuy," M MAKE DIR");
 	cputsxy(MENUXT,++menuy," F FORMAT");
+	cputsxy(MENUXT,++menuy," L RELABEL");
 	cputcxy(MENUXT+1,++menuy,CH_POUND); cputs(" DEV ID");
 	cputsxy(MENUXT,++menuy," @ DOS CMD");
-	cputsxy(MENUXT,++menuy," S SORT DIR");
 	cputsxy(MENUXT,++menuy," I MAKE IMG");
 #if defined(CHAR80)
 	cputsxy(MENUXT,++menuy," Q QUIT");
@@ -401,6 +401,12 @@ mainLoop(void)
 
         case 'i':
           doMakeImage(devices[context]);
+          updateScreen(context, 2);
+          refreshDir(context, sorted, context);
+          break;
+
+        case 'l':
+          doRelabel(devices[context]);
           updateScreen(context, 2);
           refreshDir(context, sorted, context);
           break;
@@ -1136,6 +1142,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
             }
         }
 
+#if !defined(MACHINE_PET)
       if (IS_1541(dt))
         {
           textcolor(COLOR_LIGHTBLUE);
@@ -1172,11 +1179,10 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
             case 79: cputs("writing last track!!!"); break;
             }
         }
+#endif
     }
 
  success:
-  textcolor(COLOR_LIGHTBLUE);
-  cputsxy(0,BOTTOM,"disk copy success          ");
   ret = OK;
   goto done;
 
@@ -1448,4 +1454,124 @@ doMakeImage(const BYTE device)
  done:
   cbm_close(7);
   free(buf);
+}
+
+// copied from version 1.0e
+void
+doRelabel(const BYTE device)
+{
+  BYTE track, sector, name_offset, id_offset;
+  int i;
+  BYTE *buf;
+	sprintf(linebuffer, " Change disk name of device %d", device);
+  newscreen(linebuffer);
+
+	buf = malloc(256);
+  if (! buf)
+    {
+      cputs("can not malloc\n\r");
+      waitKey(0);
+      return;
+    }
+
+  switch(devicetype[device])
+    {
+      // http://unusedino.de/ec64/technical/formats/d64.html
+    case D1540:
+    case D1541:
+    case D1551:
+    case D1570:
+    case D1571:
+      track = 18;
+      sector = 0;
+      name_offset = 0x90;
+      id_offset = 0xA2;
+      break;
+
+      // http://unusedino.de/ec64/technical/formats/d81.html
+    case D1581:
+      track = 40;
+      sector = 0;
+      name_offset = 0x04;
+      id_offset = 0x16;
+      break;
+
+    default:
+      cputs("unsupported device: ");
+      cputs(drivetype[devicetype[device]]);
+      cputs("\n\r");
+      waitKey(0);
+      goto done;
+		}
+
+  // read BAM sector
+  cbm_open(2, device, 5, "#");
+  cbm_open(4, device, 15, "");
+
+  cbm_write(4, linebuffer, sprintf(linebuffer, "u1:5 0 %d %d", track, sector));
+  i = cbm_read(2, buf, 256);
+  if (i != 256)
+    {
+      cputsxy(0,6,"could not read BAM\n\r");
+      waitKey(0);
+      goto done;
+    }
+
+  // copy out disk name
+  for(i = 0; i < 16; ++i)
+    {
+      answer[i] = buf[name_offset + i];
+    }
+  answer[i] = 0;
+  // strip disk name
+  for(i = 15; i > 0; --i)
+    {
+      if (answer[i] == 0xA0)
+        answer[i] = 0;
+      else
+        break;
+    }
+  if (i > 0)
+    ++i;
+  answer[i++] = ',';
+  answer[i++] = buf[id_offset];
+  answer[i++] = buf[id_offset + 1];
+  answer[i] = 0;
+
+  cputsxy(0,2,"disk name: ");
+  i = textInput(10,2, answer, 19);
+  if (i >= 0)
+    {
+      // check if disk ID was given
+      if (i >= 3)
+        {
+          if (answer[i - 3] == ',')
+            {
+              // copy ID
+              buf[id_offset] = answer[i - 2];
+              buf[id_offset + 1] = answer[i - 1];
+              i -= 3;
+            }
+        }
+
+      // fill up disk name with $A0
+      memset(answer + i, 0xA0, 16-i);
+      memcpy(buf + name_offset, answer, 16);
+
+      // write new BAM sector
+      cbm_write(4, "b-p:5 0", 7);
+      i = cbm_write(2, buf, 256);
+      cbm_write(4, linebuffer, sprintf(linebuffer, "u2:5 0 %d %d", track, sector));
+
+      if (i != 256)
+        {
+          cputsxy(0,6,"relabel error\n\r");
+          waitKey(0);
+        }
+		}
+
+ done:
+  cbm_close(4);
+  cbm_close(2);
+	free(buf);
 }
