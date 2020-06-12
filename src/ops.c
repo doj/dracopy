@@ -50,7 +50,7 @@ initDirWindowHeight()
 char DOSstatus[40];
 
 /// string descriptions of enum drive_e
-const char* drivetype[LAST_DRIVE_E] = {"", "1540", "1541", "1551", "1570", "1571", "1581", "sd2iec", "cmd", "vice"};
+const char* drivetype[LAST_DRIVE_E] = {"", "1540", "1541", "1551", "1570", "1571", "1581", "1001", "sd2iec", "cmd", "vice"};
 /// enum drive_e value for each device 0-11.
 BYTE devicetype[12];
 
@@ -80,12 +80,21 @@ getDeviceType(BYTE context)
           return drivetype[idx];
         }
     }
+#if defined(MACHINE_PLUS4)
   if(strstr(DOSstatus, "tdisk"))
     {
       devicetype[device] = D1551;
       return drivetype[D1551];
     }
-  return "!nf";
+#endif
+#if defined(SFD1001)
+  if(strstr(DOSstatus, "cbm dos v2.7"))
+    {
+      devicetype[device] = D1001;
+      return drivetype[D1001];
+    }
+#endif
+  return "!n";
 }
 
 BYTE
@@ -152,10 +161,12 @@ execute(char * prg, BYTE device)
   gotoxy(0,7);
 	cputs("run");
 
+#if !defined(MACHINE_PET)
   gotoxy(14,BOTTOM-1);
   cputs("this program was loaded by");
   gotoxy(14,BOTTOM);
   cputs("DraCopy " DRA_VER);
+#endif
 
   // put two CR in keyboard buffer
 	*((unsigned char *)KBCHARS)=13;
@@ -192,16 +203,16 @@ main(void)
       if (PEEK(0xAfff) == POKE(0xAfff, PEEK(0xAfff)+1))
         {
           _heapadd ((void *) 0x9000, 0x2000);
-          printf("9 8KB\r\n");
+          //printf("9 8KB\r\n");
         }
       else if (PEEK(0x9fff) == POKE(0x9fff, PEEK(0x9fff)+1))
         {
           _heapadd ((void *) 0x9000, 0x1000);
-          printf("9 4KB\r\n");
+          //printf("9 4KB\r\n");
         }
       else
         {
-          printf("9 fail\r\n");
+          //printf("9 fail\r\n");
         }
     }
   else if (PEEK(0xA000) == POKE(0xA000, PEEK(0xA000)+1))
@@ -209,16 +220,16 @@ main(void)
       if (PEEK(0xAfff) == POKE(0xAfff, PEEK(0xAfff)+1))
         {
           _heapadd ((void *) 0xA000, 0x1000);
-          printf("A 4KB\r\n");
+          //printf("A 4KB\r\n");
         }
       else
         {
-          printf("A fail\r\n");
+          //printf("A fail\r\n");
         }
     }
   else
     {
-      printf("no RAM\r\n");
+      //printf("no RAM\r\n");
     }
   //return 0;
 #endif
@@ -233,6 +244,7 @@ main(void)
   return 0;
 }
 
+#if !defined(MACHINE_PET)
 #pragma charmap (0xff, 0x5f);
 #pragma charmap (0xfc, 0x5c);
 
@@ -325,6 +337,17 @@ about(const char *progname)
 
   cgetc();
 }
+#else
+void
+about(const char *progname)
+{
+  sprintf(linebuffer, " About %s " DRA_VER, progname);
+  newscreen(linebuffer);
+	cputs("Copyright 2009 by Draco and others\n\r"
+        "https://github.com/doj/dracopy\n\r");
+  cgetc();
+}
+#endif
 
 void
 clrDir(BYTE context)
@@ -732,7 +755,9 @@ doDOScommand(const BYTE context, const BYTE sorted, const BYTE use_linebuffer)
   int i;
   const BYTE device = devices[context];
   newscreen(" DOS command");
+#if !defined(MACHINE_PET)
   cprintf("\n\rsend DOS command to device %i:", device);
+#endif
   linebuffer[use_linebuffer ? SCREENW : 0] = 0;
   i = textInput(0, 3, linebuffer, SCREENW);
   if (i > 0)

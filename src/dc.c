@@ -848,7 +848,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
   }
 */
 
-const char sectors1541[42] = {
+const BYTE sectors1541[42] = {
   21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
   19, 19, 19, 19, 19, 19, 19,
   18, 18, 18, 18, 18, 18,
@@ -857,16 +857,41 @@ const char sectors1541[42] = {
   17, 17 // track 41-42
 };
 
-const char sectors1571[70] = {
-  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
-  19, 19, 19, 19, 19, 19, 19,
-  18, 18, 18, 18, 18, 18,
-  17, 17, 17, 17, 17,
-  21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
-  19, 19, 19, 19, 19, 19, 19,
-  18, 18, 18, 18, 18, 18,
-  17, 17, 17, 17, 17
-};
+BYTE
+sectors1571(const BYTE t)
+{
+  if (t < 35)
+    return sectors1541[t];
+  if (t < 70)
+    return sectors1541[t-35];
+  return 0;
+}
+
+#if defined(SFD1001)
+BYTE
+sectors1001(const BYTE t)
+{
+  if (t < 39)
+    return 29;
+  if (t < 53)
+    return 27;
+  if (t < 64)
+    return 25;
+  if (t < 77)
+    return 23;
+
+  if (t < 116)
+    return 29;
+  if (t < 130)
+    return 27;
+  if (t < 141)
+    return 25;
+  if (t < 154)
+    return 23;
+
+  return 0;
+}
+#endif
 
 BYTE diskCopyBuf[256];
 
@@ -877,10 +902,14 @@ maxTrack(BYTE dt)
 {
   if (IS_1541(dt))
     return 35;//42;
-  else if (dt == D1571)
+  if (dt == D1571)
     return 70;
-  else if (dt == D1581)
+  if (dt == D1581)
     return 80;
+#if defined(SFD1001)
+  if (dt == D1001)
+    return 154;
+#endif
   return 0;
 }
 
@@ -890,24 +919,37 @@ maxSector(BYTE dt, BYTE t)
   if (IS_1541(dt))
     return sectors1541[t];
   if (dt == D1571)
-    return sectors1571[t];
+    return sectors1571(t);
   if (dt == D1581)
     return 40;
+#if defined(SFD1001)
+  if (dt == D1001)
+    return sectors1001(t);
+#endif
   return 0;
 }
 
 void
 printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
 {
-  if (t & 0x80)
+  if (st == 'E')
     {
       textcolor(COLOR_RED);
-      t &= 0x7f;
     }
   else
     {
       textcolor(COLOR_GRAY3);
     }
+
+#if defined(SFD1001)
+  if (dt == D1001)
+    {
+      gotoxy(0,5);
+      cprintf("%u/%u %c     ", t, s, st);
+      return;
+    }
+#endif
+
   if (IS_1541(dt))
     {
       if (t >= 35)
@@ -985,40 +1027,44 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
         return ABORT;
     }
 
-  cputs("0000000001111111111222222222233333333334");
-#if defined(CHAR80)
-  cputs("4444444445555555555666666666677777777778");
-#endif
-  cputsxy(0,2, "1234567890123456789012345678901234567890");
-#if defined(CHAR80)
-  cputs("1234567890123456789012345678901234567890");
-#endif
-  for(track = 0; track < 80; ++track)
+  if (dt != D1001)
     {
-      BYTE max_s = 40;
-      BYTE sector;
-      if (IS_1541(dt))
-        {
-          if (track == 40)
-            {
-              break;
-            }
-          max_s = sectors1541[track];
-        }
-      else if (dt == D1571)
-        {
+      cputsxy(0,1,"0000000001111111111222222222233333333334");
 #if defined(CHAR80)
-          if (track == 70)
-            break;
-#else
-          if (track == 35)
-            break;
+      cputs("4444444445555555555666666666677777777778");
 #endif
-          max_s = sectors1571[track];
-        }
-      for(sector = 0; sector < max_s; ++sector)
+      cputsxy(0,2, "1234567890123456789012345678901234567890");
+#if defined(CHAR80)
+      cputs("1234567890123456789012345678901234567890");
+#endif
+      for(track = 0; track < 80; ++track)
         {
-          printSecStatus(dt, track, sector, '.');
+          BYTE max_s = 40;
+          BYTE sector;
+          if (IS_1541(dt))
+            {
+              if (track == 40)
+                {
+                  break;
+                }
+              max_s = sectors1541[track];
+            }
+          else if (dt == D1571)
+            {
+#if defined(CHAR80)
+              if (track == 70)
+                break;
+#else
+              if (track == 35)
+                break;
+#endif
+              max_s = sectors1571(track);
+            }
+
+          for(sector = 0; sector < max_s; ++sector)
+            {
+              printSecStatus(dt, track, sector, '.');
+            }
         }
     }
 
@@ -1090,7 +1136,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 #define SECTOR_ERROR                                    \
               textcolor(COLOR_LIGHTRED);                \
               cputsxy(0,BOTTOM,diskCopyBuf);                \
-              printSecStatus(dt, track|0x80, sector, 'E');
+              printSecStatus(dt, track, sector, 'E');
               SECTOR_ERROR;
               continue;
             }
@@ -1142,7 +1188,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
             }
         }
 
-#if !defined(MACHINE_PET)
+#if !defined(MACHINE_PET) && !defined(SFD1001)
       if (IS_1541(dt))
         {
           textcolor(COLOR_LIGHTBLUE);
@@ -1286,7 +1332,7 @@ doMakeImage(const BYTE device)
               (dt == D1571 && i == 1040))
             {
               int j;
-              // http://unusedino.de/ec64/technical/formats/d64.html
+              // https://ist.uwaterloo.ca/~schepers/formats/D64.TXT
 
               // track/sector of first directory block
               buf[0] = 18;
@@ -1294,7 +1340,7 @@ doMakeImage(const BYTE device)
 
               buf[2] = 0x41; // DOS version
 
-              // http://unusedino.de/ec64/technical/formats/d71.html
+              // https://ist.uwaterloo.ca/~schepers/formats/D71.TXT
               if (dt == D1571)
                 {
                   buf[3] = 0x80;
@@ -1353,7 +1399,7 @@ doMakeImage(const BYTE device)
 
       if (dt == D1581)
         {
-          // http://unusedino.de/ec64/technical/formats/d81.html
+          // https://ist.uwaterloo.ca/~schepers/formats/D81.TXT
 
           // header sector at 40/0
           if (i == bam)
@@ -1476,7 +1522,7 @@ doRelabel(const BYTE device)
 
   switch(devicetype[device])
     {
-      // http://unusedino.de/ec64/technical/formats/d64.html
+      // https://ist.uwaterloo.ca/~schepers/formats/D64.TXT
     case D1540:
     case D1541:
     case D1551:
@@ -1488,12 +1534,20 @@ doRelabel(const BYTE device)
       id_offset = 0xA2;
       break;
 
-      // http://unusedino.de/ec64/technical/formats/d81.html
+      // https://ist.uwaterloo.ca/~schepers/formats/D81.TXT
     case D1581:
       track = 40;
       sector = 0;
       name_offset = 0x04;
       id_offset = 0x16;
+      break;
+
+      // https://ist.uwaterloo.ca/~schepers/formats/D80-D82.TXT
+    case D1001:
+      track = 38;
+      sector = 0;
+      name_offset = 6;
+      id_offset = 0x18;
       break;
 
     default:

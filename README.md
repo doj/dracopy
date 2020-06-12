@@ -15,14 +15,16 @@ Both programs use the kernal routines and are
 able to work with most file oriented IEC devices.
 
 Directories are supported on CMD compatible devices and [sd2iec](https://www.c64-wiki.com/wiki/SD2IEC).
+The [SFD-1001](https://www.c64-wiki.com/wiki/SFD-1001) floppy is supported with the
+[IEEE-488](https://www.pagetable.com/?p=1303) interface and the C64 version, use the dc64ieee program.
 
 | Platforms | 40 columns | 80 columns |
 | --------- | ---------- | ---------- |
-| C64       | dc64, db64 | [dc6480](https://raw.githubusercontent.com/doj/dracopy/master/images/dc6480.png)
+| C64       | dc64, db64, dc64ieee | [dc6480](https://raw.githubusercontent.com/doj/dracopy/master/images/dc6480.png), dc64ieee80
 | C128      | dc128, db128 | [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280
 | Plus 4    | dcp4, dbp4
 | CBM 610   | | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
-| PET 8096  | | dcpet8, dbpet8
+| PET 8296  | | dcpet8, dbpet8
 
 Keys
 -----
@@ -107,13 +109,13 @@ the following features can be implemented or bugs should be fixed:
   + support 1571 disk copy with sd2iec
   + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
+  + graphical sector map for SFD-1001
 - device id: does it work with 1541? does it work with sd2iec?
 - pet
   + disk access doesn't work
   + remove stuff the pet won't use like 1581
 - support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
-- better support vice without true drive emulation
-- support IEEE-488 drives like SFD-1001, https://www.pagetable.com/?p=1303 http://www.zimmers.net/anonftp/pub/cbm/schematics/cartridges/c64/ieee-488/index.html https://www.lemon64.com/forum/viewtopic.php?t=65199&sid=720fd316d9a3227e0820c1465f4e042b
+- support vice without true drive emulation?
 - check drabrowse and 80 columns mode again, do both windows work correctly?
 - better program load for dc6480
 - use reu to load file for copy. This will allow to copy between directories on the same device.
@@ -129,7 +131,7 @@ Version Information and Download
 | 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader | https://csdb.dk/release/?id=98664
 | 1.0e | 2018        | combined DraBrowse and DraCopy, single window, lots of other improvements | rbm | [freeforums.net](https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser) [csdb.dk](https://csdb.dk/release/?id=165305)
 | 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy, 80 column mode for C64, create d64 image | doj |
-| 1.0doj | June 2020 | 80 column mode for C64, create d64 image | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
+| 1.0doj | June 2020 | 80 column mode for C64, create d64 image, SFD-1001 support | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
 
 Platform Notes
 ---------------
@@ -147,3 +149,9 @@ Contact
 --------
 The github repository https://github.com/doj/dracopy is maintained by
 Dirk Jagdmann <doj@cubic.org>
+
+Links
+------
+IEEE-488 drives like SFD-1001:
+http://www.zimmers.net/anonftp/pub/cbm/schematics/cartridges/c64/ieee-488/index.html
+https://www.lemon64.com/forum/viewtopic.php?t=65199&sid=720fd316d9a3227e0820c1465f4e042b
