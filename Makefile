@@ -1,7 +1,15 @@
 ##############################################################################
+# configuration
+
+# color schemes.
+# uncomment one of these CFLAGS to enable a color scheme
+#CFLAGS+=-DCOLOR_SCHEME_BLUE
+#CFLAGS+=-DCOLOR_SCHEME_SX
+
+##############################################################################
 # building
 
-CFLAGS=-I include -O -Or -Os -r
+CFLAGS+=-I include -O -Or -Os -r
 
 D64=dracopy10doj.d64
 TARGETS=dc64 db64 dc6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dcp4 dbp4 db610 dc610 dbpet8 dcpet8
@@ -19,7 +27,7 @@ dc64:	$(DC_SRC)
 	-pucrunch -c64 $@.prg $@
 
 dc6480:	$(DC_SRC)
-	cl65 $(CFLAGS) -DCHAR80 -DMACHINE_C64 -t c64 -m $@.map $^ c64-soft80.o -o $@.prg
+	cl65 $(CFLAGS) -DCHAR80 -t c64 -m $@.map $^ c64-soft80.o -o $@.prg
 	-pucrunch -c64 $@.prg $@
 
 dc64ieee:	$(DC_SRC)
@@ -27,7 +35,7 @@ dc64ieee:	$(DC_SRC)
 	-pucrunch -c64 $@.prg $@
 
 dc64ieee80:	$(DC_SRC)
-	cl65 $(CFLAGS) -DSFD1001 -DCHAR80 -DMACHINE_C64 -t c64 -C dc64ieee.cfg -m $@.map $^ c64-soft80.o -o $@.prg
+	cl65 $(CFLAGS) -DSFD1001 -DCHAR80 -t c64 -C dc64ieee.cfg -m $@.map $^ c64-soft80.o -o $@.prg
 	-pucrunch -c64 $@.prg $@
 
 dc128:	$(DC_SRC)
@@ -39,14 +47,14 @@ dc1280:	$(DC_SRC)
 	-pucrunch -fc128 $@.prg $@
 
 dcp4:	$(DC_SRC)
-	cl65 $(CFLAGS) -DMACHINE_PLUS4 -t plus4 $^ -o $@.prg
+	cl65 $(CFLAGS) -t plus4 $^ -o $@.prg
 	-pucrunch -fc16 $@.prg $@
 
 dc610:	$(DC_SRC)
-	cl65 $(CFLAGS) -t cbm610 -DCHAR80 -DNOCOLOR $^ -o $@
+	cl65 $(CFLAGS) -t cbm610 -DCHAR80 $^ -o $@
 
 dcpet8:	$(DC_SRC)
-	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 -DNOCOLOR -DMACHINE_PET $^ -o $@
+	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@
 
 DB_SRC=src/db.c $(COMMON_SRC)
 
@@ -67,10 +75,10 @@ dbp4:	$(DB_SRC)
 	-pucrunch -fc16 $@.prg $@
 
 db610:	$(DB_SRC)
-	cl65 $(CFLAGS) -t cbm610 -DCHAR80 -DNOCOLOR $^ -o $@
+	cl65 $(CFLAGS) -t cbm610 -DCHAR80 $^ -o $@
 
 dbpet8:	$(DB_SRC)
-	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 -DNOCOLOR -DMACHINE_PET $^ -o $@
+	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@
 
 clean:
 	$(RM) -rf d src/*.o src/*.s *.prg *.map *.seq *.d64 *.d71 *.d8[012] $(TARGETS) dracopy-1.0doj.zip
@@ -117,12 +125,8 @@ $(D81_2):
 	$(RM) *.seq
 
 X64?=x64sc
-x64:	all $(D64_9) $(D71) $(D81) $(D81_2)
-#	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1571 -10 $(D71) -drive11type 1581 -11 $(D81)
-#	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 0 -drive11type 0
-#	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 0 -drive10type 0 -drive11type 0
-#	$(X64) -autostart dc6480.prg -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
-	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
+x64:	all $(D81) $(D81_2)
+	$(X64) -autostart dc6480.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 
 D82=8.d82
 $(D82):	dc64ieee

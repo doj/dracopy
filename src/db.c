@@ -42,7 +42,6 @@
 extern BYTE devices[];
 extern char linebuffer[];
 extern Directory* dirs[];
-extern const BYTE textc;
 
 static BYTE sorted = 0;
 
@@ -52,7 +51,7 @@ updateMenu(void)
 	BYTE menuy=MENUY;
 
 	revers(0);
-	textcolor(textc);
+	textcolor(DC_COLOR_TEXT);
 	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,NULL);
 
 	++menuy;
@@ -102,7 +101,7 @@ mainLoop(void)
           // fallthrough
         case '1':
         case CH_F1:
-          textcolor(COLOR_WHITE);
+          textcolor(DC_COLOR_HIGHLIGHT);
 					dirs[context]=readDir(dirs[context], devices[context], context, sorted);
 					showDir(context, dirs[context], context);
 					break;

@@ -58,7 +58,6 @@ extern BYTE devices[];
 extern char linebuffer[];
 extern char answer[];
 extern Directory* dirs[];
-extern const BYTE textc;
 
 /* definitions */
 char menustatus[MENUW];
@@ -103,7 +102,7 @@ updateMenu(void)
 	BYTE menuy=MENUY;
 
 	revers(0);
-	textcolor(textc);
+	textcolor(DC_COLOR_TEXT);
 	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,menustatus);
 
 	cputsxy(MENUXT,++menuy,"F1 READ DIR");
@@ -155,7 +154,7 @@ mainLoop(void)
 
   {
     BYTE i = 7;
-    textcolor(COLOR_WHITE);
+    textcolor(DC_COLOR_HIGHLIGHT);
     while(++i < 12)
       {
         devices[context] = i;
@@ -168,7 +167,7 @@ mainLoop(void)
       }
 
   found_upper_drive:
-    textcolor(textc);
+    textcolor(DC_COLOR_TEXT);
     while(++i < 12)
       {
         devices[1] = i;
@@ -202,9 +201,9 @@ mainLoop(void)
         if (s < 0x1000)
           {
             gotoxy(MENUXT,BOTTOM);
-            textcolor(COLOR_WHITE);
+            textcolor(DC_COLOR_HIGHLIGHT);
             cprintf("lowmem:%04x",s);
-            textcolor(textc);
+            textcolor(DC_COLOR_TEXT);
           }
       }
 
@@ -215,7 +214,7 @@ mainLoop(void)
           // fallthrough
         case '1':
         case CH_F1:
-          textcolor(COLOR_WHITE);
+          textcolor(DC_COLOR_HIGHLIGHT);
 					dirs[context] = readDir(dirs[context], devices[context], context, sorted);
 					showDir(context, dirs[context], context);
 					break;
@@ -636,11 +635,11 @@ doDelete(const BYTE context)
         }
       else
         {
-          textcolor(COLOR_VIOLET);
+          textcolor(DC_COLOR_ERROR);
           cputs("ERROR");
           break;
         }
-      textcolor(textc);
+      textcolor(DC_COLOR_TEXT);
       revers(0);
 
       if (++idx > BOTTOM)
@@ -775,11 +774,11 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
           revers(1);            \
           textcolor(color);     \
           cputs(msg);           \
-          textcolor(textc);     \
+          textcolor(DC_COLOR_TEXT);     \
           revers(0);            \
           cputs("\r\n");
 
-          ERRMSG(COLOR_YELLOW,"READ ERROR");
+          ERRMSG(DC_COLOR_ERROR,"READ ERROR");
           ret = ERROR;
           break;
         }
@@ -790,7 +789,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
           if (c == CH_ESC || c == CH_LARROW)
             {
               ret = ABORT;
-              ERRMSG(COLOR_YELLOW,"ABORT");
+              ERRMSG(DC_COLOR_WARNING,"ABORT");
               break;
             }
         }
@@ -800,7 +799,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
           cputsxy(xpos, ypos, "W");
           if (cbm_write(7, buf, length) != length)
             {
-              ERRMSG(COLOR_YELLOW,"WRITE ERROR");
+              ERRMSG(DC_COLOR_ERROR,"WRITE ERROR");
               ret = ERROR;
               break;
             }
@@ -810,7 +809,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
       if (length < BUFFERSIZE)
         {
           cprintf(" %lu bytes", total_length);
-          ERRMSG(textc,"OK");
+          ERRMSG(DC_COLOR_TEXT,"OK");
           break;
         }
 
@@ -934,11 +933,11 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
 {
   if (st == 'E')
     {
-      textcolor(COLOR_RED);
+      textcolor(DC_COLOR_ERROR);
     }
   else
     {
-      textcolor(COLOR_GRAY3);
+      textcolor(DC_COLOR_GRAY);
     }
 
 #if defined(SFD1001)
@@ -953,7 +952,7 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
   if (IS_1541(dt))
     {
       if (t >= 35)
-        textcolor(COLOR_GRAY1);
+        textcolor(DC_COLOR_GRAYBRIGHT);
       if (t >= 40)
         t = 39;
     }
@@ -961,7 +960,7 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
   else if (dt == D1571 && t >= 35)
     {
       t -= 35;
-      textcolor(COLOR_WHITE);
+      textcolor(DC_COLOR_HIGHLIGHT);
     }
 #endif
   else if (dt == D1581)
@@ -969,7 +968,7 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
 #if !defined(CHAR80)
       if (t >= 40)
         {
-          textcolor(COLOR_WHITE);
+          textcolor(DC_COLOR_HIGHLIGHT);
           t -= 40;
         }
 #endif
@@ -1060,6 +1059,13 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 #endif
               max_s = sectors1571(track);
             }
+          else if (dt == D1581)
+            {
+#if !defined(CHAR80)
+              if (track == 40)
+                break;
+#endif
+            }
 
           for(sector = 0; sector < max_s; ++sector)
             {
@@ -1099,20 +1105,20 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
       if (IS_1541(dt)
           && track >= 40)
         {
-          textcolor(textc);
+          textcolor(DC_COLOR_TEXT);
           cputcxy(39,2, '1'+track-40);
         }
       // check if 1571 writes on back side
       if (dt == D1571 && track == 35)
         {
-          textcolor(textc);
+          textcolor(DC_COLOR_TEXT);
           cputsxy(0,1,"33334444444444555555555566666666667     ");
           cputsxy(0,2,"67890123456789012345678901234567890     ");
         }
       // check if 1581 writes on back side
       if (dt == D1581 && track == 40)
         {
-          textcolor(textc);
+          textcolor(DC_COLOR_TEXT);
           cputsxy(0,1,"4444444445555555555666666666677777777778");
         }
 #endif
@@ -1134,7 +1140,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
             {
               sprintf(diskCopyBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
 #define SECTOR_ERROR                                    \
-              textcolor(COLOR_LIGHTRED);                \
+              textcolor(DC_COLOR_ERROR);                \
               cputsxy(0,BOTTOM,diskCopyBuf);                \
               printSecStatus(dt, track, sector, 'E');
               SECTOR_ERROR;
@@ -1191,7 +1197,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 #if !defined(MACHINE_PET) && !defined(SFD1001)
       if (IS_1541(dt))
         {
-          textcolor(COLOR_LIGHTBLUE);
+          textcolor(DC_COLOR_EE);
           gotoxy(0,BOTTOM);
           switch(track)
             {
@@ -1199,15 +1205,15 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
             case 6: cputs("                      "); break;
             case 17: cputs("halftime"); break;
             case 18: cputs("        "); break;
-            case 31: cputs("almost there"); break;
-            case 32: cputs("any minute now"); break;
-            case 33: cputs("writing last track!!!"); break;
+            case 32: cputs("almost there"); break;
+            case 33: cputs("any minute now"); break;
+            case 34: cputs("writing last track!!!"); break;
             case 35: cputs("this disk is oversized"); break;
             }
         }
       else if (dt == D1571)
         {
-          textcolor(COLOR_LIGHTBLUE);
+          textcolor(DC_COLOR_EE);
           gotoxy(0,BOTTOM);
           switch(track)
             {
@@ -1217,7 +1223,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
         }
       else if (dt == D1581)
         {
-          textcolor(COLOR_LIGHTBLUE);
+          textcolor(DC_COLOR_EE);
           gotoxy(0,BOTTOM);
           switch(track)
             {
@@ -1234,7 +1240,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 
  error:
   ret = ERROR;
-  textcolor(COLOR_LIGHTRED);
+  textcolor(DC_COLOR_ERROR);
   cputsxy(0,BOTTOM,diskCopyBuf);
   cgetc();
 
@@ -1244,7 +1250,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
   cbm_close(8);
   cbm_close(9);
 
-  textcolor(textc);
+  textcolor(DC_COLOR_TEXT);
   return ret;
 }
 

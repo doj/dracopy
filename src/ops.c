@@ -14,17 +14,11 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
-#ifdef MACHINE_PET
+#if defined(__PET__)
 #include <peekpoke.h>
 #endif
 
 const char *value2hex = "0123456789abcdef";
-
-#ifdef NOCOLOR
-const BYTE textc = COLOR_WHITE;
-#else
-const BYTE textc = COLOR_LIGHTGREEN;
-#endif
 
 Directory* dirs[] = {NULL,NULL};
 BYTE devices[] = {8,9};
@@ -80,7 +74,7 @@ getDeviceType(BYTE context)
           return drivetype[idx];
         }
     }
-#if defined(MACHINE_PLUS4)
+#if defined(__PLUS4__)
   if(strstr(DOSstatus, "tdisk"))
     {
       devicetype[device] = D1551;
@@ -145,7 +139,7 @@ cmd(unsigned char device, const char *cmd)
 void
 execute(char * prg, BYTE device)
 {
-#if defined(MACHINE_C64) && defined(CHAR80)
+#if defined(__C64__) && defined(CHAR80)
   BYTE len = sprintf(KBCHARS, "lO\"%s\",%d", prg, device);
 	*((unsigned char *)KBCHARS + len) = 13;  ++len;
 	*((unsigned char *)KBCHARS + len) = 'r'; ++len;
@@ -161,7 +155,7 @@ execute(char * prg, BYTE device)
   gotoxy(0,7);
 	cputs("run");
 
-#if !defined(MACHINE_PET)
+#if !defined(__PET__)
   gotoxy(14,BOTTOM-1);
   cputs("this program was loaded by");
   gotoxy(14,BOTTOM);
@@ -195,7 +189,7 @@ updateScreen(const BYTE context, BYTE num_dirs)
 int
 main(void)
 {
-#ifdef MACHINE_PET
+#ifdef __PET__
   // check for memory at 0x9000 and add to heap
   // https://cc65.github.io/doc/pet.html
   if (PEEK(0x9000) == POKE(0x9000, PEEK(0x9000)+1))
@@ -234,17 +228,17 @@ main(void)
   //return 0;
 #endif
 
-#if defined(MACHINE_C64) && defined(CHAR80)
+#if defined(__C64__) && defined(CHAR80)
   _heapadd((void *) 0x0400, 0x0400);
 #endif
 
-  initScreen(COLOR_BLACK, COLOR_BLACK, textc);
+  initScreen(DC_COLOR_BORDER, DC_COLOR_BG, DC_COLOR_TEXT);
   mainLoop();
   exitScreen();
   return 0;
 }
 
-#if !defined(MACHINE_PET)
+#if !defined(__PET__)
 #pragma charmap (0xff, 0x5f);
 #pragma charmap (0xfc, 0x5c);
 
@@ -302,7 +296,7 @@ about(const char *progname)
   sprintf(linebuffer, " About %s " DRA_VER, progname);
   newscreen(linebuffer);
 
-	textcolor(COLOR_GREEN);
+	textcolor(DC_COLOR_DIM);
 	cputs("Copyright 2009 by Draco and others\n\r"
         "https://github.com/doj/dracopy\n\r"
         "\n\r"
@@ -315,12 +309,12 @@ about(const char *progname)
   while(*h)
     {
       // print key
-      textcolor(COLOR_LIGHTGREEN);
+      textcolor(DC_COLOR_TEXT);
       cputsxy(x + 2 - strlen(*h), y, *h);
       ++h;
 
       // print description
-      textcolor(COLOR_GREEN);
+      textcolor(DC_COLOR_DIM);
       cputsxy(x+3, y, *h);
       ++h;
 
@@ -359,7 +353,7 @@ void
 refreshDir(const BYTE context, const BYTE sorted, const BYTE mycontext)
 {
 	Directory * cwd = dirs[context];
-  textcolor(COLOR_WHITE);
+  textcolor(DC_COLOR_HIGHLIGHT);
 	cwd = readDir(cwd, devices[context], context, sorted);
 	dirs[context]=cwd;
 	cwd->selected=cwd->firstelement;
@@ -414,11 +408,11 @@ printElementPriv(const BYTE context, const Directory *dir, const DirElement *cur
   if (current->flags!=0)
     {
       gotoxy(xpos,ypos);
-      textcolor(COLOR_WHITE);
+      textcolor(DC_COLOR_HIGHLIGHT);
       cputc('>');
     }
 
-  textcolor(textc);
+  textcolor(DC_COLOR_TEXT);
   revers(0);
 }
 
@@ -520,11 +514,11 @@ drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext)
 	if(mycontext==context)
     {
       linebuffer[0] = '>';
-      textcolor(COLOR_WHITE);
+      textcolor(DC_COLOR_HIGHLIGHT);
     }
 	else
     {
-      textcolor(textc);
+      textcolor(DC_COLOR_TEXT);
     }
 
   if (dir)
@@ -536,7 +530,7 @@ drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext)
       linebuffer2[0] = 0;
     }
 	drawFrame(linebuffer, DIRX, DIRY, DIRW+2, DIRH+2, linebuffer2);
-	textcolor(textc);
+	textcolor(DC_COLOR_TEXT);
 }
 
 void
@@ -755,7 +749,7 @@ doDOScommand(const BYTE context, const BYTE sorted, const BYTE use_linebuffer)
   int i;
   const BYTE device = devices[context];
   newscreen(" DOS command");
-#if !defined(MACHINE_PET)
+#if !defined(__PET__)
   cprintf("\n\rsend DOS command to device %i:", device);
 #endif
   linebuffer[use_linebuffer ? SCREENW : 0] = 0;

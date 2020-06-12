@@ -29,6 +29,56 @@
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
+#if defined(__PET__) || defined(__CBM610__)
+#define COLOR_LIGHTGREEN COLOR_WHITE
+#define COLOR_LIGHTBLUE COLOR_WHITE
+#define COLOR_BLUE COLOR_WHITE
+#define COLOR_CYAN COLOR_WHITE
+#endif
+
+// a C64 style lightblue on blue scheme
+#if defined(COLOR_SCHEME_BLUE)
+#define DC_COLOR_BG COLOR_BLUE
+#define DC_COLOR_BORDER COLOR_BLUE
+#define DC_COLOR_TEXT COLOR_LIGHTBLUE
+#define DC_COLOR_HIGHLIGHT COLOR_WHITE
+#define DC_COLOR_DIM COLOR_GRAY2
+#define DC_COLOR_ERROR COLOR_RED
+#define DC_COLOR_WARNING COLOR_YELLOW
+#define DC_COLOR_EE COLOR_YELLOW
+#define DC_COLOR_GRAY COLOR_GRAY2
+#define DC_COLOR_GRAYBRIGHT COLOR_GRAY3
+#define DC_COLOR_WAITKEY COLOR_VIOLET
+
+// a SX-64 style blue on white scheme
+#elif defined(COLOR_SCHEME_SX)
+#define DC_COLOR_BG COLOR_WHITE
+#define DC_COLOR_BORDER COLOR_CYAN
+#define DC_COLOR_TEXT COLOR_BLUE
+#define DC_COLOR_HIGHLIGHT COLOR_LIGHTBLUE
+#define DC_COLOR_DIM COLOR_GRAY2
+#define DC_COLOR_ERROR COLOR_RED
+#define DC_COLOR_WARNING COLOR_YELLOW
+#define DC_COLOR_EE COLOR_GRAY1
+#define DC_COLOR_GRAY COLOR_GRAY2
+#define DC_COLOR_GRAYBRIGHT COLOR_GRAY3
+#define DC_COLOR_WAITKEY COLOR_VIOLET
+
+// the classic dracopy green on black color scheme
+#else
+#define DC_COLOR_BG COLOR_BLACK
+#define DC_COLOR_BORDER COLOR_BLACK
+#define DC_COLOR_TEXT COLOR_LIGHTGREEN
+#define DC_COLOR_HIGHLIGHT COLOR_WHITE
+#define DC_COLOR_DIM COLOR_GREEN
+#define DC_COLOR_ERROR COLOR_RED
+#define DC_COLOR_WARNING COLOR_YELLOW
+#define DC_COLOR_EE COLOR_LIGHTBLUE
+#define DC_COLOR_GRAY COLOR_GRAY3
+#define DC_COLOR_GRAYBRIGHT COLOR_GRAY1
+#define DC_COLOR_WAITKEY COLOR_VIOLET
+#endif
+
 typedef unsigned char BYTE;
 
 #define OK 0
@@ -36,12 +86,6 @@ typedef unsigned char BYTE;
 #define ABORT +1
 
 #define BUFFERSIZE (4*254)
-
-#ifdef NOCOLOR
-  #define COLOR_SIGNAL COLOR_WHITE
-#else
-  #define COLOR_SIGNAL COLOR_VIOLET
-#endif
 
 // height of sceen
 #define SCREENH 25
@@ -106,7 +150,6 @@ extern BYTE DIR2H;
 #define KBCHARS 631
 #define KBNUM 198
 #endif
-
 
 // define function keys to something on PET
 #ifdef __PET__

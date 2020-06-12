@@ -26,6 +26,19 @@ The [SFD-1001](https://www.c64-wiki.com/wiki/SFD-1001) floppy is supported with 
 | CBM 610   | | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
 | PET 8296  | | dcpet8, dbpet8
 
+Version Information and Download
+---------------------------------
+
+| Ver  | Date        | Feature | Author | Download |
+| ---- | ------------| --------| ------ | -------- |
+| 1.0  | 23 Jan 2009 | Initial Version | Sascha Bader |
+| 1.0b | 23 May 2009 | Minor Bugfixes | Sascha Bader |
+| 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader | https://csdb.dk/release/?id=89910
+| 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader | https://csdb.dk/release/?id=98664
+| 1.0e | 2018        | combined DraBrowse and DraCopy, single window, lots of other improvements | rbm | [freeforums.net](https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser) [csdb.dk](https://csdb.dk/release/?id=165305)
+| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy, 80 column mode for C64, create d64 image | doj |
+| 1.0doj | June 2020 | 80 column mode for C64, create d64 image, SFD-1001 support | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
+
 Keys
 -----
 The following key can be pressed to select a function.
@@ -43,9 +56,11 @@ See the TODO section below for some functions that may have issues.
 | F7, 7 | execute selected program
 | F8, 8 | [copy disk](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-diskcopy.png) from current window to the other device
 | ←, ESC, 0 | switch window
+| w | [enlarge or shrink](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-windowsize.png) current window
 | Return, right | enter directory
 | DEL, left | go to parent directory
 | ↑ | go to root directory
+| s | show directory entries sorted
 | space | select current file
 | * | invert selection
 | HOME, t | move cursor to top row of first page in current window
@@ -55,40 +70,12 @@ See the TODO section below for some functions that may have issues.
 | c | copy current file on the same device
 | r | rename current file
 | f | format device in current window
-| @ | send DOS command to device in current window
-| . | show about information
-| q | quit program to BASIC
-| £ | change device ID of current device
-| w | [enlarge or shrink](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-windowsize.png) current window
-| s | show directory entries sorted
-| i | create a D64, D71, D81 image file
 | l | change disk name, relabel
-
-source code
-------------
-This repository contains the source code of the Commodore 64 copy program dracopy.
-I have found two versions of the source code:
-- 1.0c on https://csdb.dk/release/?id=89910 , [github branch](https://github.com/doj/dracopy/tree/1.0c-import)
-- 1.0e on https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser , [github branch](https://github.com/doj/dracopy/tree/1.0e-import)
-
-The original program was written by Sascha Bader and is available at
-http://www.mobilefx.de/html/dracopy.html
-it currently has version 1.0d for download, but the source code is not available.
-
-The 1.0e version was updated by rbm.
-
-The master branch in this repository is currently used to develop
-the 1.0doj version which was branched from the 1.0c version. It is
-re-implementing some features from the independently branched 1.0e
-version.
-
-The code was tested to build on a unix system (Linux and OsX) with GNU
-make and the [cc65](https://cc65.github.io/) C compiler for Commodore
-8 bit computers.
-
-You can use pucrunch to compress the compiled dracopy program.
-See http://a1bert.kapsi.fi/Dev/pucrunch/ or https://github.com/mist64/pucrunch
-for the source code.
+| i | create a D64, D71, D81 image file
+| @ | send DOS command to device in current window
+| £ | change device ID of current device
+| . | show about/help information
+| q | quit program to BASIC
 
 TODO
 -----
@@ -119,19 +106,7 @@ the following features can be implemented or bugs should be fixed:
 - check drabrowse and 80 columns mode again, do both windows work correctly?
 - better program load for dc6480
 - use reu to load file for copy. This will allow to copy between directories on the same device.
-
-Version Information and Download
----------------------------------
-
-| Ver  | Date        | Feature | Author | Download |
-| ---- | ------------| --------| ------ | -------- |
-| 1.0  | 23 Jan 2009 | Initial Version | Sascha Bader |
-| 1.0b | 23 May 2009 | Minor Bugfixes | Sascha Bader |
-| 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader | https://csdb.dk/release/?id=89910
-| 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader | https://csdb.dk/release/?id=98664
-| 1.0e | 2018        | combined DraBrowse and DraCopy, single window, lots of other improvements | rbm | [freeforums.net](https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser) [csdb.dk](https://csdb.dk/release/?id=165305)
-| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy, 80 column mode for C64, create d64 image | doj |
-| 1.0doj | June 2020 | 80 column mode for C64, create d64 image, SFD-1001 support | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
+- order directory entries
 
 Platform Notes
 ---------------
@@ -139,16 +114,45 @@ The Commodore 128 has less memory available than the C64.
 This results from the memory layout of the [cc65](https://cc65.github.io/) compiler.
 If you use disks with many directory entries, you could run out of memory on the C128.
 
-Copyright Notice
------------------
-The code can be used freely as long as you retain a notice describing original source and author.
-THE PROGRAMS ARE DISTRIBUTED IN THE HOPE THAT THEY WILL BE USEFUL, BUT WITHOUT ANY WARRANTY.
-USE THEM AT YOUR OWN RISK!
+The [vice](https://vice-emu.sourceforge.io/) emulator needs to enable
+the _True Drive Emulation_ to support all operations.
 
 Contact
 --------
 The github repository https://github.com/doj/dracopy is maintained by
 Dirk Jagdmann <doj@cubic.org>
+
+source code
+------------
+This repository contains the source code of the Commodore 64 copy program dracopy.
+Two versions of the source code were released previously:
+- 1.0c on https://csdb.dk/release/?id=89910 , [github branch](https://github.com/doj/dracopy/tree/1.0c-import)
+- 1.0e on https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser , [github branch](https://github.com/doj/dracopy/tree/1.0e-import)
+
+The original program was written by Sascha Bader and is available at
+http://www.mobilefx.de/html/dracopy.html
+it currently has version 1.0d for download, but the source code is not available.
+
+The 1.0e version was updated by rbm.
+
+The master branch in this repository is currently used to develop
+the 1.0doj version which was branched from the 1.0c version. It is
+re-implementing some features from the independently branched 1.0e
+version.
+
+The code was tested to build on a unix system (Linux and OsX) with GNU
+make and the [cc65](https://cc65.github.io/) C compiler for Commodore
+8 bit computers.
+
+You can use pucrunch to compress the compiled dracopy program.
+See http://a1bert.kapsi.fi/Dev/pucrunch/ or https://github.com/mist64/pucrunch
+for the source code.
+
+Copyright Notice
+-----------------
+The code can be used freely as long as you retain a notice describing original source and author.
+THE PROGRAMS ARE DISTRIBUTED IN THE HOPE THAT THEY WILL BE USEFUL, BUT WITHOUT ANY WARRANTY.
+USE THEM AT YOUR OWN RISK!
 
 Links
 ------

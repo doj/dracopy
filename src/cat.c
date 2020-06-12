@@ -75,16 +75,16 @@ int cathex(BYTE device, char * filename)
         }
 			for (c=0; c<len; ++c)
         {
-          textcolor(textc);
+          textcolor(DC_COLOR_TEXT);
           pchar=buffer[c];
           if (pchar==10 || pchar ==13)
             {
-              textcolor(COLOR_GRAY1);
+              textcolor(DC_COLOR_DIM);
               pchar='.';
             }
           cputc(filterchar(pchar));
         }
-      textcolor(textc);
+      textcolor(DC_COLOR_TEXT);
 
 			cputc(13);
 			cputc(10);
@@ -128,7 +128,7 @@ int catasc(BYTE device, char * filename)
 			len = cbm_read (6, buffer, sizeof(buffer));
 			for (c=0;c<len;c++)
         {
-          textcolor(textc);
+          textcolor(DC_COLOR_TEXT);
           pchar=buffer[c];
           if (pchar==13 || pchar==10 )
             {
@@ -139,7 +139,7 @@ int catasc(BYTE device, char * filename)
             {
               cputc(filterchar(pchar));
             }
-          textcolor(textc);
+          textcolor(DC_COLOR_TEXT);
         }
 
 			offset+=sizeof(buffer);
@@ -164,7 +164,7 @@ BYTE filterchar(BYTE pchar)
 {
   if (pchar==9) // tab
     {
-      textcolor(COLOR_GRAY1);
+      textcolor(DC_COLOR_DIM);
       cputc(0xba);
     }
 	else if (! ( (pchar==13) ||
@@ -172,7 +172,7 @@ BYTE filterchar(BYTE pchar)
                (pchar >= 0x20 && pchar <= 0x7f) ||
                (pchar >= 0xA0) ) )
   {
-    textcolor(COLOR_GRAY1);
+    textcolor(DC_COLOR_DIM);
 		pchar = '.';
 	}
 	if ( pchar>=65 && pchar<=90)

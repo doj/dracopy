@@ -34,7 +34,6 @@ enum drive_e {NONE=0, D1540, D1541, D1551, D1570, D1571, D1581, D1001, SD2IEC, C
 
 extern BYTE devicetype[];
 extern const char* drivetype[];
-extern const BYTE textc;
 
 void debugs(const char *s);
 void debugu(const unsigned u);
