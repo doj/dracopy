@@ -5,6 +5,7 @@
 # uncomment one of these CFLAGS to enable a color scheme
 #CFLAGS+=-DCOLOR_SCHEME_BLUE
 #CFLAGS+=-DCOLOR_SCHEME_SX
+#CFLAGS+=-DCOLOR_SCHEME_128
 
 ##############################################################################
 # building
@@ -100,9 +101,9 @@ $(D64_9):
 	$(RM) *.seq
 
 D71=10.d71
-$(D71):	dc128 dc1280
+$(D71):	dc128 dc1280 db128 db1280
 	for i in `perl -e 'for(1..140){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
-	TYPE=d71 sh d64.sh 'test,71' $@ dc128 dc1280 *.seq
+	TYPE=d71 sh d64.sh 'test,71' $@ dc128 dc1280 db128 db1280 *.seq
 	$(RM) *.seq
 
 D71_2=10_2.d71
@@ -125,8 +126,8 @@ $(D81_2):
 	$(RM) *.seq
 
 X64?=x64sc
-x64:	all $(D81) $(D81_2)
-	$(X64) -autostart dc6480.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
+x64:	$(D64) $(D81) $(D81_2)
+	$(X64) -autostart dc6480.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive -autostart-handle-tde -autostart-warp
 
 D82=8.d82
 $(D82):	dc64ieee
@@ -151,10 +152,10 @@ x64_81:	dc64 $(D81) $(D81_2)
 	$(X64) -autostart dc64 -drive8type 1581 -8 $(D81) -drive9type 1581 -9 $(D81_2)
 
 X128?=x128
-x128:	dc128 $(D71) $(D71_2) $(D64) $(D64_9)
+x128:	$(D71) $(D71_2) $(D64) $(D64_9)
 	$(X128) -autostart dc128 -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1571 -10 $(D71) -drive11type 1571 -11 $(D71_2) -truedrive
 
-x1280:	dc1280 $(D71) $(D71_2)
+x1280:	$(D71) $(D71_2)
 	#$(X128) -80col -autostart dc1280 -drive8type 1571 -8 $(D71) -drive9type 1571 -9 $(D71_2) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 	$(X128) -80col -autostart dc1280 -drive8type 1571 -8 $(D71) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 

@@ -148,6 +148,10 @@ You can use pucrunch to compress the compiled dracopy program.
 See http://a1bert.kapsi.fi/Dev/pucrunch/ or https://github.com/mist64/pucrunch
 for the source code.
 
+Different color schemes can be compiled, see the top of the Makefile how to enable them.
+To create additional color schemes, add a new define to the Makefile and configure
+the scheme in defines.h
+
 Copyright Notice
 -----------------
 The code can be used freely as long as you retain a notice describing original source and author.
