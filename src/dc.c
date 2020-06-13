@@ -2,14 +2,11 @@
  * vi: set shiftwidth=2 tabstop=2 expandtab:
  * :indentSize=2:tabSize=2:noTabs=true:
  */
-/*
- * dc.c
- *
- *  Created on: 10.01.2009
- *      Author: bader
+/** @file
+ * \date 10.01.2009
+ * \author bader
  *
  * DraCopy (dc*) is a simple copy program.
- * DraBrowse (db*) is a simple file browser.
  *
  * Since both programs make use of kernal routines they shall
  * be able to work with most file oriented IEC devices.
@@ -22,10 +19,7 @@
  * THE PROGRAMS ARE DISTRIBUTED IN THE HOPE THAT THEY WILL BE USEFUL,
  * BUT WITHOUT ANY WARRANTY. USE THEM AT YOUR OWN RISK!
  *
- * Newer versions might be available here: http://www.sascha-bader.de/html/code.html
- */
-/*
- * this code is now maintained on https://github.com/doj/dracopy
+ * https://github.com/doj/dracopy
  */
 
 #include <assert.h>
@@ -624,7 +618,7 @@ doDelete(const BYTE context)
 
       sprintf(linebuffer,
               "%s:%s",
-              (current->dirent.type==DIRTYPE) ? "rd" : "s",
+              (current->dirent.type==DIRTYPE) ? "rd" : "s", // TODO: when is rd required?
               current->dirent.name);
       ret = cmd(devices[context],linebuffer);
       cputc(' ');

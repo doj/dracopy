@@ -2,14 +2,11 @@
  * vi: set shiftwidth=2 tabstop=2 expandtab:
  * :indentSize=2:tabSize=2:noTabs=true:
  */
-/*
- * db.c
+/** @file
+ * \date 10.01.2009
+ * \author bader
  *
- *  Created on: 10.01.2009
- *      Author: bader
- *
- * DraCopy (dc*) is a simple copy program.
- * DraBrowser (db*) is a simple file browser.
+ * DraBrowse (db*) is a simple file browser.
  *
  * Since both programs make use of kernal routines they shall
  * be able to work with most file oriented IEC devices.
@@ -22,8 +19,7 @@
  * THE PROGRAMS ARE DISTRIBUTED IN THE HOPE THAT THEY WILL BE USEFUL,
  * BUT WITHOUT ANY WARRANTY. USE THEM AT YOUR OWN RISK!
  *
- * Newer versions might be available here: http://www.sascha-bader.de/html/code.html
- *
+ * https://github.com/doj/dracopy
  */
 
 #include <string.h>

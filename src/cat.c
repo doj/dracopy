@@ -2,11 +2,9 @@
  * vi: set shiftwidth=2 tabstop=2 expandtab:
  * :indentSize=2:tabSize=2:noTabs=true:
  */
-/*
- * cat.c
- *
- *  Created on: 10.01.2009
- *      Author: bader
+/** @file
+ * \date 10.01.2009
+ * \author bader
  *
  * DraCopy (dc*) is a simple copy program.
  * DraBrowse (db*) is a simple file browser.
@@ -22,9 +20,9 @@
  * THE PROGRAMS ARE DISTRIBUTED IN THE HOPE THAT THEY WILL BE USEFUL,
  * BUT WITHOUT ANY WARRANTY. USE THEM AT YOUR OWN RISK!
  *
- * Newer versions might be available here: http://www.sascha-bader.de/html/code.html
- *
+ * https://github.com/doj/dracopy
  */
+
 #include <stdio.h>
 #include <conio.h>
 #include <string.h>
@@ -37,9 +35,8 @@
 #include "defines.h"
 #include "ops.h"
 
-#define x2(x) (buffer[x] < 10 ? "0" : ""), buffer[x]
-
-int cathex(BYTE device, char * filename)
+int
+cathex(BYTE device, char *filename)
 {
 	unsigned int c;
 	BYTE pchar = 0;
@@ -107,7 +104,8 @@ int cathex(BYTE device, char * filename)
 	return 0;
 }
 
-int catasc(BYTE device, char * filename)
+int
+catasc(BYTE device, char *filename)
 {
 	unsigned int c;
 	BYTE pchar = 0;

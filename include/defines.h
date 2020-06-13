@@ -2,11 +2,9 @@
  * vi: set shiftwidth=2 tabstop=2 expandtab:
  * :indentSize=2:tabSize=2:noTabs=true:
  */
-/*
- * defines.h
- *
- *  Created on: 10.01.2009
- *      Author: bader
+/** @file
+ * \date 10.01.2009
+ * \author bader
  *
  * DraCopy (dc*) is a simple copy program.
  * DraBrowse (db*) is a simple file browser.
@@ -22,10 +20,8 @@
  * THE PROGRAMS ARE DISTRIBUTED IN THE HOPE THAT THEY WILL BE USEFUL,
  * BUT WITHOUT ANY WARRANTY. USE THEM AT YOUR OWN RISK!
  *
- * Newer versions might be available here: http://www.sascha-bader.de/html/code.html
- *
+ * https://github.com/doj/dracopy
  */
-
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
@@ -142,7 +138,7 @@ typedef unsigned char BYTE;
   #define DIR2Y 0
 #else
   #define DIR2X 0
-  #define DIR2Y (DIR1Y+DIR1H+2)
+  #define DIR2Y (DIR1Y+2+DIR1H)
 #endif
 
 #define DIRH (context?DIR2H:DIR1H)
@@ -151,10 +147,6 @@ typedef unsigned char BYTE;
 
 extern BYTE DIR1H;
 extern BYTE DIR2H;
-
-#define SPLITTER 12
-#define ERROR -1
-#define OK 0
 
 // keyboard buffer
 #if defined(__PLUS4__)

@@ -2,11 +2,9 @@
  * vi: set shiftwidth=2 tabstop=2 expandtab:
  * :indentSize=2:tabSize=2:noTabs=true:
  */
-/*
- * base.c
- *
- *  Created on: 3.01.2009
- *      Author: bader
+/** @file
+ * \date 10.01.2009
+ * \author bader
  *
  * DraCopy (dc*) is a simple copy program.
  * DraBrowse (db*) is a simple file browser.
@@ -22,12 +20,10 @@
  * THE PROGRAMS ARE DISTRIBUTED IN THE HOPE THAT THEY WILL BE USEFUL,
  * BUT WITHOUT ANY WARRANTY. USE THEM AT YOUR OWN RISK!
  *
- * Newer versions might be available here: http://www.sascha-bader.de/html/code.html
- *
+ * https://github.com/doj/dracopy
  */
 
 #include "base.h"
-#include <stdio.h>
 #include <conio.h>
 
 BYTE waitKey(BYTE flag)
