@@ -37,8 +37,8 @@ Version Information and Download
 | 1.0b | 23 May 2009 | Minor Bugfixes | Sascha Bader |
 | 1.0c | 27 Dec 2009 | Files are now deleted using the scratch command | Sascha Bader | https://csdb.dk/release/?id=89910
 | 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader | https://csdb.dk/release/?id=98664
-| 1.0e | 2018        | combined DraBrowse and DraCopy, single window, lots of other improvements | rbm | [freeforums.net](https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser) [csdb.dk](https://csdb.dk/release/?id=165305)
-| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy, 80 column mode for C64, create d64 image | doj |
+| 1.0e | 2018        | single window, REU, many other improvements | rbm | [freeforums.net](https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser) [csdb.dk](https://csdb.dk/release/?id=165305)
+| 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy | doj |
 | 1.0doj | June 2020 | 80 column mode for C64, create d64 image, SFD-1001 support | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
 
 You can also download dracopy in alternate color schemes:
@@ -46,9 +46,9 @@ You can also download dracopy in alternate color schemes:
 | Scheme  | Download | Screenshot |
 | ------- | -------- | ---------- |
 | default | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip) | [dc64](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64.png)
-| blue    | [dracopy-1.0doj-BLUE.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-BLUE.zip) | [dc64](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-blue.png)
-| SX-64   | [dracopy-1.0doj-SX.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-SX.zip) | [dc64](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-sx.png)
-| C128    | [dracopy-1.0doj-128.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-128.zip) | [dc64](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-128.png)
+| blue    | [dracopy-1.0doj-BLUE.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-BLUE.zip) | [dc64-blue](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-blue.png)
+| SX-64   | [dracopy-1.0doj-SX.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-SX.zip) | [dc64-sx](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-sx.png)
+| C128    | [dracopy-1.0doj-128.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-128.zip) | [dc64-128](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-128.png)
 
 Keys
 -----
@@ -108,7 +108,6 @@ the following features can be implemented or bugs should be fixed:
   + support 1571 disk copy with sd2iec
   + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
-  + graphical sector map for SFD-1001
 - device id: does it work with 1541? does it work with sd2iec?
 - dc510
   + run PRG
@@ -142,7 +141,11 @@ The program prints the status of reading/writing every sector during the diskcop
 | O (uppercase O) | the sector contains only 0 bytes, the sector is not written in optimized diskcopy
 | E    | error while reading or writing the sector
 | 0..9 | sector is partially used 0-99%
-| !    | sector with an invalid link to the next sector (next sector track too large)
+| !    | sector with an invalid link to the next sector (track too large)
+
+When the optimized diskcopy is used (key 'D') sectors which are all
+zero bytes will not be written to the target disk. This will decrease
+the copy time by only writing sectors with data.
 
 Contact
 --------

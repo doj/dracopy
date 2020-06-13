@@ -972,9 +972,29 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
 #if defined(SFD1001)
   if (dt == D1001)
     {
-      gotoxy(0,5);
-      cprintf("%u/%u %c     ", t, s, st);
+#if defined(CHAR80)
+      if (t >= 77)
+        {
+          textcolor(DC_COLOR_HIGHLIGHT);
+          t -= 77;
+        }
+      if ((s&1) == 0)
+        {
+          if (st == 'R') st = 'r';
+          else if (st == 'W') st = 'w';
+        }
+      s >>= 1;
+#else
+      const BYTE tt = (t % 23) + 1;
+      if (s == 0)
+        {
+          gotoxy(0,tt);
+          cprintf("%3u", t);
+          cclearxy(5,tt,30);
+        }
+      cputcxy(s+4,tt,st);
       return;
+#endif
     }
 #endif
 
@@ -1066,19 +1086,21 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 
   sprintf(linebuffer2, "%s -> %s", type_from, type_to);
 
+#if !defined(CHAR80)
   if (dt != D1001)
+#endif
     {
       for(track = 0; track < 80; ++track)
         {
-          BYTE max_s = 40;
+          const BYTE max_s = maxSector(dt, track);
           BYTE sector;
+          BYTE sector_inc = 1;
           if (IS_1541(dt))
             {
               if (track == 40)
                 {
                   break;
                 }
-              max_s = sectors1541[track];
             }
 #if !defined(__PET__)
           else if (dt == D1571)
@@ -1090,7 +1112,6 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
               if (track == 35)
                 break;
 #endif
-              max_s = sectors1571(track);
             }
           else if (dt == D1581)
             {
@@ -1098,13 +1119,22 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
               if (track == 40)
                 break;
 #endif
+              sector_inc = 2;
             }
 #endif // PET
+#if defined(SFD1001)
+          else if (dt == D1001)
+            {
+              if (track == 77)
+                break;
+              sector_inc = 2;
+            }
+#endif
 
           textcolor(DC_COLOR_TEXT);
           cputcxy(track,1,((track+1)/10)+'0');
           cputcxy(track,2,((track+1)%10)+'0');
-          for(sector = 0; sector < max_s; ++sector)
+          for(sector = 0; sector < max_s; sector += sector_inc)
             {
               printSecStatus(dt, track, sector, '.');
             }
@@ -1146,7 +1176,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
       const BYTE max_sector = maxSector(dt, track);
       BYTE sector;
 
-#if !defined(__PET__) && !defined(SFD1001) && !defined(__CBM610__)
+#if !defined(__PET__)
       cclearxy(0,BOTTOM,SCREENW);
       textcolor(DC_COLOR_EE);
       gotoxy(0,BOTTOM);
@@ -1158,14 +1188,15 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
         {
           cputs("use D for optimized diskcopy");
         }
-      else if ((dt == D1571 && track == 34) ||
-               (dt == D1581 && track == 39))
-        {
-          cputs("copy the back side");
-        }
       else if (track == max_track-1)
         {
           cputs("writing last track!!!");
+        }
+      else if ((dt == D1571 && track >= 35) ||
+               (dt == D1581 && track >= 40) ||
+               (dt == D1001 && track >= 77))
+        {
+          cputs("copy the back side");
         }
       else if (IS_1541(dt))
         {
