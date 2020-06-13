@@ -83,12 +83,23 @@ mainLoop(void)
   DIR2H = 23;
 	devices[0]=8;
 	devices[1]=9;
-	dirs[0]=readDir(dirs[0], devices[0], (BYTE)0, sorted);
+	dirs[0]=readDir(NULL, devices[0], 0, sorted);
 	dirs[1]=NULL;
 
 	updateScreen(context, 1);
 	while(1)
     {
+#if 0
+      {
+        // TODO: find out where a file is left open, then remove this workaround block
+        BYTE i;
+        for(i = 0; i < 16; ++i)
+          {
+            cbm_close(i);
+            cbm_closedir(i);
+          }
+      }
+#endif
       c = cgetc();
     	switch (c)
       	{

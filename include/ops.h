@@ -50,7 +50,7 @@ void initDirWindowHeight();
 int textInput(const BYTE xpos, const BYTE ypos, char *str, const BYTE size);
 void doDOScommand(const BYTE context, const BYTE sorted, const BYTE use_linebuffer);
 
-enum drive_e {NONE=0, D1540, D1541, D1551, D1570, D1571, D1581, D1001, SD2IEC, CMD, VICE, LAST_DRIVE_E};
+enum drive_e {NONE=0, D1540, D1541, D1551, D1570, D1571, D1581, D1001, D2031, D8040, SD2IEC, CMD, VICE, LAST_DRIVE_E};
 
 extern BYTE devicetype[];
 extern const char* drivetype[];

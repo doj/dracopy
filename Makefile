@@ -13,7 +13,7 @@
 CFLAGS+=-I include -O -Or -Os -r
 
 D64=dracopy10doj.d64
-TARGETS=dc64 db64 dc6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dcp4 dbp4 db610 dc610 dbpet8 dcpet8
+TARGETS=dc64 db64 dc6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dcp4 dbp4 db610 dc610 dbpet8 dcpet8 dc510
 
 all:	$(TARGETS) $(D64)
 
@@ -51,8 +51,11 @@ dcp4:	$(DC_SRC)
 	cl65 $(CFLAGS) -t plus4 $^ -o $@.prg
 	-pucrunch -fc16 $@.prg $@
 
+dc510:	$(DC_SRC)
+	cl65 $(CFLAGS) -t cbm510 -DSFD1001 $^ -o $@
+
 dc610:	$(DC_SRC)
-	cl65 $(CFLAGS) -t cbm610 -DCHAR80 $^ -o $@
+	cl65 $(CFLAGS) -t cbm610 -DSFD1001 -DCHAR80 $^ -o $@
 
 dcpet8:	$(DC_SRC)
 	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@
@@ -76,7 +79,7 @@ dbp4:	$(DB_SRC)
 	-pucrunch -fc16 $@.prg $@
 
 db610:	$(DB_SRC)
-	cl65 $(CFLAGS) -t cbm610 -DCHAR80 $^ -o $@
+	cl65 $(CFLAGS) -t cbm610 -DSFD1001 -DCHAR80 $^ -o $@
 
 dbpet8:	$(DB_SRC)
 	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@
@@ -91,14 +94,18 @@ zip:	dracopy-1.0doj.zip
 dracopy-1.0doj.zip:	$(TARGETS)
 	zip -9 $@ $^ README.md
 
+test.prg:	src/test.c
+	cl65 $(CFLAGS) -t pet $^ -o $@
+
 ##############################################################################
 # testing
 
 D64_9=9.d64
-$(D64_9):
-	for i in `perl -e 'for(1..143){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
-	sh d64.sh 'number nine,n9' $@ README.md *.seq
-	$(RM) *.seq
+$(D64_9):	dc510 test.prg
+	for i in `perl -e 'for(1..141){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
+	cp -f test.prg test
+	sh d64.sh 'number nine,n9' $@ dc510 test README.md *.seq
+	$(RM) *.seq test
 
 D71=10.d71
 $(D71):	dc128 dc1280 db128 db1280
@@ -164,11 +171,36 @@ xplus4:	dcp4 $(D64_9)
 	$(XPLUS4) -autostart dcp4 -drive8type 1551 -8 $(D64) -drive9type 1551 -9 $(D64_9) -truedrive
 
 D64PET=pet.d64
-$(D64PET):	dbpet8 dcpet8
+$(D64PET):	dbpet8 dcpet8 test.prg
+	cp -f test.prg test
 	c1541 -format dbpet,dc d64 $@
+	c1541 $@ -write dbpet8
+	c1541 $@ -write dcpet8
+	c1541 $@ -write test.prg
+	c1541 $@ -write test
+	rm test
+
+D80PET=pet.d80
+$(D80PET):	dcpet8 dbpet8
+	c1541 -format d80,dc d80 $@
 	c1541 $@ -write dbpet8
 	c1541 $@ -write dcpet8
 
 XPET?=xpet
-xpet:	$(D80PET) $(D82) $(D64)
-	$(XPET) -model 8296 -ramsize 32 -petram9 -petramA -autostart dbpet8 -drive8type 2031 -8 $(D64PET) -drive9type 2031 -9 $(D64)  -drive10type 1001 -10 $(D82) -drive11type 1001 -truedrive
+xpet:	$(D64PET) $(D82) $(D64)
+	$(XPET) -model 8296 -ramsize 32 -petram9 -petramA -autostart dbpet8 -drive8type 2031 -8 $(D64PET) -drive9type 2031 -9 $(D64) -drive10type 1001 -10 $(D82) -drive11type 1001 -truedrive
+	#$(XPET) -model 8296 -ramsize 32 -petram9 -petramA -autostart dcpet8 -drive8type 4040 -8 $(D64PET) -drive10type 4040 -10 $(D64) -truedrive
+
+D80CBM2=cbm2.d64
+$(D80CBM2):	dc610 db610
+	c1541 -format cbm2,dc d80 $@
+	c1541 $@ -write dc610
+	c1541 $@ -write db610
+
+XCBM2?=xcbm2
+xcbm2:	$(D80CBM2) $(D82) $(D80PET) $(D82_2)
+	$(XCBM2) -autostart dc610 -drive8type 8050 -8 $(D80CBM2) -drive9type 8050 -9 $(D80PET) -drive10type 1001 -10 $(D82) -drive11type 1001 -11 $(D82_2) -truedrive
+
+XCBM510?=xcbm5x0
+xcbm510:	$(D64) $(D64_9)
+	$(XCBM510) -autostart dc510 -drive8type 2031 -8 $(D64_9) -drive9type 2031 -9 $(D64) -truedrive

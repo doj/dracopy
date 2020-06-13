@@ -23,6 +23,7 @@ The [SFD-1001](https://www.c64-wiki.com/wiki/SFD-1001) floppy is supported with 
 | C64       | dc64, db64, dc64ieee | [dc6480](https://raw.githubusercontent.com/doj/dracopy/master/images/dc6480.png), dc64ieee80
 | C128      | dc128, db128 | [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280
 | Plus 4    | dcp4, dbp4
+| CBM 510   | dc510
 | CBM 610   | | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
 | PET 8296  | | dcpet8, dbpet8
 
@@ -64,6 +65,7 @@ See the TODO section below for some functions that may have issues.
 | F6, 6 | delete all selected file in current window
 | F7, 7 | execute selected program
 | F8, 8 | [copy disk](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-diskcopy.png) from current window to the other device
+| d | optimized disk copy, only write sectors which are not all 0 bytes.
 | ←, ESC, 0 | switch window
 | w | [enlarge or shrink](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-windowsize.png) current window
 | Return, right | enter directory
@@ -106,10 +108,15 @@ the following features can be implemented or bugs should be fixed:
   + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
   + graphical sector map for SFD-1001
+  + detect disk size of PET drives like 8031, 8050
 - device id: does it work with 1541? does it work with sd2iec?
 - pet
   + disk access doesn't work
   + remove stuff the pet won't use like 1581
+- dc610
+  + dc610 seems to be too big for memory, it won't even load
+- dc510
+  + execute keyboard buffer
 - support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
 - support vice without true drive emulation?
 - better program load for dc6480

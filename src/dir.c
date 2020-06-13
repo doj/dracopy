@@ -59,7 +59,8 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
 
   freeDir(&dir);
 
-  cbm_closedir(device);
+  //cbm_close(device);
+  //cbm_closedir(device);
 	if (cbm_opendir(device, device) != 0)
     {
       cbm_closedir(device);
@@ -122,6 +123,7 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
           // blocks free entry
           dir->free=de->dirent.size;
           free(de);
+          goto stop;
         }
       else if (dir->firstelement==NULL)
         {

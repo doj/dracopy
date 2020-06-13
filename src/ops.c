@@ -64,7 +64,7 @@ initDirWindowHeight()
 char DOSstatus[40];
 
 /// string descriptions of enum drive_e
-const char* drivetype[LAST_DRIVE_E] = {"", "1540", "1541", "1551", "1570", "1571", "1581", "1001", "sd2iec", "cmd", "vice"};
+const char* drivetype[LAST_DRIVE_E] = {"", "1540", "1541", "1551", "1570", "1571", "1581", "1001", "2031", "8040", "sd2iec", "cmd", "vice"};
 /// enum drive_e value for each device 0-11.
 BYTE devicetype[12];
 
@@ -108,6 +108,13 @@ getDeviceType(BYTE context)
       return drivetype[D1001];
     }
 #endif
+#if defined(__PET__)
+  if(strstr(DOSstatus, "cbm dos v2"))
+    {
+      devicetype[device] = D8040;
+      return drivetype[D8040];
+    }
+#endif
   return "!n";
 }
 
@@ -144,8 +151,7 @@ dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cm
     }
 
 #if 0
-  gotoxy(0,BOTTOM);
-  cputs(DOSstatus);
+  cputsxy(0,BOTTOM,DOSstatus);
 #endif
 	return (DOSstatus[0] - 48) * 10 + DOSstatus[1] - 48;
 }
@@ -182,10 +188,12 @@ execute(char * prg, BYTE device)
   cputs("DraCopy " DRA_VER);
 #endif
 
+#if defined(KBCHARS)
   // put two CR in keyboard buffer
 	*((unsigned char *)KBCHARS)=13;
 	*((unsigned char *)KBCHARS+1)=13;
 	*((unsigned char *)KBNUM)=2;
+#endif
 
   // exit DraCopy, which will execute the BASIC LOAD above
 	gotoxy(0,0);

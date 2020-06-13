@@ -43,7 +43,7 @@ void doRenameOrCopy(const BYTE context, const BYTE mode);
 void doToggleAll(const BYTE context);
 void doCopy(const BYTE context);
 void doDelete(const BYTE context);
-int doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo);
+int doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized);
 int copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE destdevice, BYTE type);
 void doMakeImage(const BYTE device);
 void doRelabel(const BYTE device);
@@ -140,6 +140,7 @@ mainLoop(void)
 	BYTE lastpage = 0;
 	BYTE nextpage = 0;
   BYTE context = 0;
+  BYTE key_pressed;
 
   initDirWindowHeight();
 
@@ -181,6 +182,7 @@ mainLoop(void)
  found_lower_drive:
 	while(1)
     {
+#if 0 //!defined(__PET__)
       {
         // TODO: find out where a file is left open, then remove this workaround block
         BYTE i;
@@ -190,6 +192,7 @@ mainLoop(void)
             cbm_closedir(i);
           }
       }
+#endif
       {
         const size_t s = _heapmemavail();
         if (s < 0x1000)
@@ -201,7 +204,8 @@ mainLoop(void)
           }
       }
 
-    	switch (cgetc())
+      key_pressed = cgetc();
+    	switch (key_pressed)
       	{
         case 's':
           sorted = ! sorted;
@@ -267,10 +271,11 @@ mainLoop(void)
 
         case '8':
         case CH_F8:
+        case 'd':
           {
             const BYTE other_context = context^1;
             freeDir(&dirs[other_context]);
-            doDiskCopy(devices[context], devices[other_context]);
+            doDiskCopy(devices[context], devices[other_context], key_pressed == 'd');
             updateScreen(context, 2);
             refreshDir(other_context, sorted, context);
           }
@@ -886,9 +891,9 @@ sectors1001(const BYTE t)
 }
 #endif
 
-BYTE diskCopyBuf[256];
+BYTE sectorBuf[256];
 
-#define IS_1541(dt) (dt == D1540 || dt == D1541 || dt == D1551 || dt == D1570 || dt == SD2IEC)
+#define IS_1541(dt) (dt == D1540 || dt == D1541 || dt == D1551 || dt == D1570 || dt == D2031 || dt == D8040 || dt == SD2IEC)
 
 BYTE
 maxTrack(BYTE dt)
@@ -931,7 +936,7 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
     }
   else
     {
-      textcolor(DC_COLOR_GRAY);
+      textcolor(DC_COLOR_GRAYBRIGHT);
     }
 
 #if defined(SFD1001)
@@ -946,7 +951,7 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
   if (IS_1541(dt))
     {
       if (t >= 35)
-        textcolor(DC_COLOR_GRAYBRIGHT);
+        textcolor(DC_COLOR_GRAY);
       if (t >= 40)
         t = 39;
     }
@@ -979,12 +984,13 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
 /**
  * disk sector copy from device @p deviceFrom to @p deviceTo.
  * based on version 1.0e, then heavily modified.
+ * @param optimized if true don't write sectors with only 0.
  * @return OK if copy was successful.
  * @return ERROR if copy failed or devices are incompatible.
  * @return ABORT if copy was aborted.
  */
 int
-doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
+doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 {
   int ret = OK;
   const BYTE dt = devicetype[deviceFrom];
@@ -992,7 +998,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
   BYTE i = devicetype[deviceTo];
   BYTE track = maxTrack(i);
 
-	sprintf(linebuffer, " Copy disk from device %d to %d? (Y/N)", deviceFrom, deviceTo);
+	sprintf(linebuffer, " %s diskcopy from %d to %d? (Y/N)", optimized ? "optimized" : "", deviceFrom, deviceTo);
   newscreen(linebuffer);
 
   if (max_track != track)
@@ -1070,22 +1076,22 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
 
   if ((i = cbm_open(9, deviceFrom, 5, "#")) != 0)
     {
-      sprintf(diskCopyBuf, "device %i: open data failed: %i", deviceFrom, i);
+      sprintf(sectorBuf, "device %i: open data failed: %i", deviceFrom, i);
       goto error;
     }
   if ((i = cbm_open(6, deviceFrom, 15, "")) != 0)
     {
-      sprintf(diskCopyBuf, "device %i: open cmd failed: %i", deviceFrom, i);
+      sprintf(sectorBuf, "device %i: open cmd failed: %i", deviceFrom, i);
       goto error;
     }
   if ((i = cbm_open(7, deviceTo,   5, "#")) != 0)
     {
-      sprintf(diskCopyBuf, "device %i: open data failed: %i", deviceTo, i);
+      sprintf(sectorBuf, "device %i: open data failed: %i", deviceTo, i);
       goto error;
     }
   if ((i = cbm_open(8, deviceTo,   15, "")) != 0)
     {
-      sprintf(diskCopyBuf, "device %i: open cmd failed: %i", deviceTo, i);
+      sprintf(sectorBuf, "device %i: open cmd failed: %i", deviceTo, i);
       goto error;
     }
 
@@ -1132,10 +1138,10 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
           ret = cbm_write(6, linebuffer, sprintf(linebuffer, "u1:5 0 %d %d", track + 1, sector));
           if (ret < 0)
             {
-              sprintf(diskCopyBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
+              sprintf(sectorBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
 #define SECTOR_ERROR                                    \
               textcolor(DC_COLOR_ERROR);                \
-              cputsxy(0,BOTTOM,diskCopyBuf);                \
+              cputsxy(0,BOTTOM,sectorBuf);                \
               printSecStatus(dt, track, sector, 'E');
               SECTOR_ERROR;
               continue;
@@ -1144,12 +1150,12 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
           ret = cbm_write(8, "b-p:5 0", 7);
           if (ret < 0)
             {
-              sprintf(diskCopyBuf, "setup buffer failed: %i", track+1, sector, _oserror);
+              sprintf(sectorBuf, "setup buffer failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR;
               continue;
             }
 
-          ret = cbm_read(9, diskCopyBuf, 256);
+          ret = cbm_read(9, sectorBuf, 256);
           if (ret != 256)
             {
               // check for expected failures at the end of a disk
@@ -1165,16 +1171,29 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
                   ret = OK;
                   goto success;
                 }
-              sprintf(diskCopyBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
+              sprintf(sectorBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR;
               continue;
             }
+          if (optimized)
+            {
+              // check all bytes read
+              int j = 0;
+              for(; j < 256; ++j)
+                {
+                  if (sectorBuf[j] != 0)
+                    goto write_sector;
+                }
+              // all bytes are 0, skip writing this sector
+              continue;
+            write_sector:;
+            }
 
           printSecStatus(dt, track, sector, 'W');
-          ret = cbm_write(7, diskCopyBuf, 256);
+          ret = cbm_write(7, sectorBuf, 256);
           if (ret != 256)
             {
-              sprintf(diskCopyBuf, "write %i/%i failed: %i", track+1, sector, _oserror);
+              sprintf(sectorBuf, "write %i/%i failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR;
               continue;
             }
@@ -1182,13 +1201,13 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
           ret = cbm_write(8, linebuffer, sprintf(linebuffer, "u2:5 0 %d %d", track + 1, sector));
           if (ret < 0)
             {
-              sprintf(diskCopyBuf, "write cmd %i/%i failed: %i", track+1, sector, _oserror);
+              sprintf(sectorBuf, "write cmd %i/%i failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR;
               continue;
             }
         }
 
-#if !defined(MACHINE_PET) && !defined(SFD1001)
+#if !defined(__PET__) && !defined(SFD1001) && !defined(__CBM610__)
       if (IS_1541(dt))
         {
           textcolor(DC_COLOR_EE);
@@ -1235,7 +1254,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo)
  error:
   ret = ERROR;
   textcolor(DC_COLOR_ERROR);
-  cputsxy(0,BOTTOM,diskCopyBuf);
+  cputsxy(0,BOTTOM,sectorBuf);
   cgetc();
 
  done:
@@ -1255,7 +1274,6 @@ doMakeImage(const BYTE device)
   int bam;
   int n;
   int i;
-  BYTE *buf;
   int answer_len;
 
 	sprintf(linebuffer, " Make Image on device %d", device);
@@ -1303,15 +1321,6 @@ doMakeImage(const BYTE device)
       return;
     }
 
-  buf = (BYTE*) malloc(256);
-  if (! buf)
-    {
-      cputsxy(0,6,"Can't alloc\n\r");
-      waitKey(0);
-      return;
-    }
-  memset(buf, 0, 256);
-
   sprintf(linebuffer, "%s,p", answer);
   if (cbm_open(7, device, CBM_WRITE, linebuffer) != 0)
     {
@@ -1325,7 +1334,7 @@ doMakeImage(const BYTE device)
       gotoxy(0,4);
       cprintf("write block %i/%i", i, n);
 
-      memset(buf, 0, 256);
+      memset(sectorBuf, 0, 256);
       if (dt == D1541 || dt == D1571)
         {
           if (i == bam ||
@@ -1335,18 +1344,18 @@ doMakeImage(const BYTE device)
               // https://ist.uwaterloo.ca/~schepers/formats/D64.TXT
 
               // track/sector of first directory block
-              buf[0] = 18;
-              buf[1] = 1;
+              sectorBuf[0] = 18;
+              sectorBuf[1] = 1;
 
-              buf[2] = 0x41; // DOS version
+              sectorBuf[2] = 0x41; // DOS version
 
               // https://ist.uwaterloo.ca/~schepers/formats/D71.TXT
               if (dt == D1571)
                 {
-                  buf[3] = 0x80;
+                  sectorBuf[3] = 0x80;
                   for(j = 0; j < 35; ++j)
                     {
-                      buf[0xDD + j] = maxSector(dt, j+35);
+                      sectorBuf[0xDD + j] = maxSector(dt, j+35);
                     }
                 }
 
@@ -1356,19 +1365,19 @@ doMakeImage(const BYTE device)
                 {
                   // first byte, sectors per track
                   BYTE max_sector = maxSector(dt, j);
-                  buf[4 + j*4] = max_sector;
+                  sectorBuf[4 + j*4] = max_sector;
 
                   // 21, 19, 18, 17 bits set for each free block per track
                   if (j == bam)
                     {
-                      buf[5 + j*4] = 0x3f;
+                      sectorBuf[5 + j*4] = 0x3f;
                     }
                   else
                     {
-                      buf[5 + j*4] = 0xff;
+                      sectorBuf[5 + j*4] = 0xff;
                     }
 
-                  buf[6 + j*4] = 0xff;
+                  sectorBuf[6 + j*4] = 0xff;
 
                   switch(max_sector)
                     {
@@ -1377,23 +1386,23 @@ doMakeImage(const BYTE device)
                     case 18: max_sector = 0x03; break;
                     case 17: max_sector = 0x01; break;
                     }
-                  buf[7 + j*4] = max_sector;
+                  sectorBuf[7 + j*4] = max_sector;
                 }
 
               // disk name
-              memset(&buf[0x90], 0xA0, 0xAB - 0x90);
-              memcpy(&buf[0x90], answer, answer_len-4);
+              memset(&sectorBuf[0x90], 0xA0, 0xAB - 0x90);
+              memcpy(&sectorBuf[0x90], answer, answer_len-4);
               // disk ID
-              buf[0xA2] = 'd';
-              buf[0xA3] = 'c';
+              sectorBuf[0xA2] = 'd';
+              sectorBuf[0xA3] = 'c';
               // DOS type
-              buf[0xA5] = '2';
-              buf[0xA6] = 'a';
+              sectorBuf[0xA5] = '2';
+              sectorBuf[0xA6] = 'a';
             }
           else if (i == bam+1)
             {
               // first directory sector
-              buf[1] = 0xff;
+              sectorBuf[1] = 0xff;
             }
         }
 
@@ -1405,20 +1414,20 @@ doMakeImage(const BYTE device)
           if (i == bam)
             {
               // track/sector of first directory sector
-              buf[0] = 40;
-              buf[1] = 3;
+              sectorBuf[0] = 40;
+              sectorBuf[1] = 3;
               // DOS type
-              buf[2] = 0x44;
+              sectorBuf[2] = 0x44;
               // disk name
-              memset(&buf[4], 0xA0, 0x1D-4);
-              memcpy(&buf[4], answer, answer_len - 4);
+              memset(&sectorBuf[4], 0xA0, 0x1D-4);
+              memcpy(&sectorBuf[4], answer, answer_len - 4);
               // disk ID
-              buf[0x16] = 'd';
-              buf[0x17] = 'c';
+              sectorBuf[0x16] = 'd';
+              sectorBuf[0x17] = 'c';
               // DOS version
-              buf[0x19] = '3';
+              sectorBuf[0x19] = '3';
               // disk version
-              buf[0x1a] = 'd';
+              sectorBuf[0x1a] = 'd';
             }
           // first BAM at 40/1
           // second BAM at 40/2
@@ -1429,23 +1438,23 @@ doMakeImage(const BYTE device)
               // next track/sector
               if (i == bam+1)
                 {
-                  buf[0] = 40;
-                  buf[1] = 2;
+                  sectorBuf[0] = 40;
+                  sectorBuf[1] = 2;
                 }
               else
                 {
-                  buf[1] = 0xff;
+                  sectorBuf[1] = 0xff;
                 }
               // version
-              buf[2] = 'd';
-              buf[3] = 0xBB;
+              sectorBuf[2] = 'd';
+              sectorBuf[3] = 0xBB;
               // disk ID
-              buf[4] = 'd';
-              buf[5] = 'c';
+              sectorBuf[4] = 'd';
+              sectorBuf[5] = 'c';
               // I/O byte
-              buf[6] = 0xC0;
+              sectorBuf[6] = 0xC0;
 
-              b = &buf[0x10];
+              b = &sectorBuf[0x10];
               for(t = 1; t <= 40; ++t)
                 {
                   if (i == bam+2 && t == 40)
@@ -1467,16 +1476,16 @@ doMakeImage(const BYTE device)
           // first directory sector at 40/3
           else if (i == bam+3)
             {
-              buf[1] = 0xff;
+              sectorBuf[1] = 0xff;
             }
         }
 
       if (i == n-1)
         {
-          strcpy(buf+220, "image created by dracopy " DRA_VERNUM);
+          strcpy(sectorBuf+220, "image created by dracopy " DRA_VERNUM);
         }
 
-      if (cbm_write(7, buf, 256) != 256)
+      if (cbm_write(7, sectorBuf, 256) != 256)
         {
           cputsxy(0,6,"write error\n\r");
           waitKey(0);
@@ -1499,7 +1508,6 @@ doMakeImage(const BYTE device)
 
  done:
   cbm_close(7);
-  free(buf);
 }
 
 // copied from version 1.0e
@@ -1508,17 +1516,8 @@ doRelabel(const BYTE device)
 {
   BYTE track, sector, name_offset, id_offset;
   int i;
-  BYTE *buf;
 	sprintf(linebuffer, " Change disk name of device %d", device);
   newscreen(linebuffer);
-
-	buf = malloc(256);
-  if (! buf)
-    {
-      cputs("can not malloc\n\r");
-      waitKey(0);
-      return;
-    }
 
   switch(devicetype[device])
     {
@@ -1563,7 +1562,7 @@ doRelabel(const BYTE device)
   cbm_open(4, device, 15, "");
 
   cbm_write(4, linebuffer, sprintf(linebuffer, "u1:5 0 %d %d", track, sector));
-  i = cbm_read(2, buf, 256);
+  i = cbm_read(2, sectorBuf, 256);
   if (i != 256)
     {
       cputsxy(0,6,"could not read BAM\n\r");
@@ -1574,7 +1573,7 @@ doRelabel(const BYTE device)
   // copy out disk name
   for(i = 0; i < 16; ++i)
     {
-      answer[i] = buf[name_offset + i];
+      answer[i] = sectorBuf[name_offset + i];
     }
   answer[i] = 0;
   // strip disk name
@@ -1588,8 +1587,8 @@ doRelabel(const BYTE device)
   if (i > 0)
     ++i;
   answer[i++] = ',';
-  answer[i++] = buf[id_offset];
-  answer[i++] = buf[id_offset + 1];
+  answer[i++] = sectorBuf[id_offset];
+  answer[i++] = sectorBuf[id_offset + 1];
   answer[i] = 0;
 
   cputsxy(0,2,"disk name: ");
@@ -1602,19 +1601,19 @@ doRelabel(const BYTE device)
           if (answer[i - 3] == ',')
             {
               // copy ID
-              buf[id_offset] = answer[i - 2];
-              buf[id_offset + 1] = answer[i - 1];
+              sectorBuf[id_offset] = answer[i - 2];
+              sectorBuf[id_offset + 1] = answer[i - 1];
               i -= 3;
             }
         }
 
       // fill up disk name with $A0
       memset(answer + i, 0xA0, 16-i);
-      memcpy(buf + name_offset, answer, 16);
+      memcpy(sectorBuf + name_offset, answer, 16);
 
       // write new BAM sector
       cbm_write(4, "b-p:5 0", 7);
-      i = cbm_write(2, buf, 256);
+      i = cbm_write(2, sectorBuf, 256);
       cbm_write(4, linebuffer, sprintf(linebuffer, "u2:5 0 %d %d", track, sector));
 
       if (i != 256)
@@ -1627,5 +1626,4 @@ doRelabel(const BYTE device)
  done:
   cbm_close(4);
   cbm_close(2);
-	free(buf);
 }

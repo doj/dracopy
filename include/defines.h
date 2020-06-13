@@ -155,7 +155,7 @@ extern BYTE DIR2H;
 #elif defined(__C128__)
 #define KBCHARS 842
 #define KBNUM 208
-#else
+#elif defined(__C64__)
 #define KBCHARS 631
 #define KBNUM 198
 #endif
