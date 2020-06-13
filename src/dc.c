@@ -522,7 +522,7 @@ doCopy(const BYTE context)
   const BYTE destdev = devices[context^1];
   Directory * cwd = GETCWD;
 
-  sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
+  sprintf(linebuffer,"Filecopy from %d to %d",srcdev,destdev);
   for(current = cwd->firstelement; current; current=current->next)
     {
       if (++cnt >= BOTTOM)
@@ -618,7 +618,7 @@ doDelete(const BYTE context)
       idx = 1;
     }
 
-  sprintf(linebuffer, "Delete %i files from device %d", idx, devices[context]);
+  sprintf(linebuffer, "Delete %i files from %d", idx, devices[context]);
   newscreen(linebuffer);
   if (! really())
     {
@@ -927,10 +927,12 @@ maxTrack(BYTE dt)
 {
   if (IS_1541(dt))
     return 35;//42;
+#if !defined(__PET__)
   if (dt == D1571)
     return 70;
   if (dt == D1581)
     return 80;
+#endif
 #if defined(SFD1001)
   if (dt == D1001)
     return 154;
@@ -943,10 +945,12 @@ maxSector(BYTE dt, BYTE t)
 {
   if (IS_1541(dt))
     return sectors1541[t];
+#if !defined(__PET__)
   if (dt == D1571)
     return sectors1571(t);
   if (dt == D1581)
     return 40;
+#endif
 #if defined(SFD1001)
   if (dt == D1001)
     return sectors1001(t);
@@ -981,6 +985,7 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
       if (t >= 40)
         t = 39;
     }
+#if !defined(__PET__)
 #if !defined(CHAR80)
   else if (dt == D1571 && t >= 35)
     {
@@ -1004,6 +1009,7 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
         }
       s >>= 1;
     }
+#endif // PET
   cputcxy(t, 3+s, st);
 }
 
@@ -1031,15 +1037,19 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 
   if (max_track != track)
     {
+#if !defined(__PET__)
       cprintf("\n\rcan't copy from %s (%i tracks)\n\rto %s (%i tracks)", type_from, max_track, type_to, track);
       cgetc();
+#endif
       return ERROR;
     }
 
   if (max_track == 0)
     {
+#if !defined(__PET__)
       cprintf("\n\rcan't copy drive type %s", type_from);
       cgetc();
+#endif
       return ERROR;
     }
 
@@ -1070,6 +1080,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
                 }
               max_s = sectors1541[track];
             }
+#if !defined(__PET__)
           else if (dt == D1571)
             {
 #if defined(CHAR80)
@@ -1088,6 +1099,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
                 break;
 #endif
             }
+#endif // PET
 
           textcolor(DC_COLOR_TEXT);
           cputcxy(track,1,((track+1)/10)+'0');
@@ -1101,22 +1113,30 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 
   if ((ret = cbm_open(9, deviceFrom, 5, "#")) != 0)
     {
+#if !defined(__PET__)
       sprintf(sectorBuf, "device %i: open data failed: %i", deviceFrom, ret);
+#endif
       goto error;
     }
   if ((ret = cbm_open(6, deviceFrom, 15, "")) != 0)
     {
+#if !defined(__PET__)
       sprintf(sectorBuf, "device %i: open cmd failed: %i", deviceFrom, ret);
+#endif
       goto error;
     }
   if ((ret = cbm_open(7, deviceTo,   5, "#")) != 0)
     {
+#if !defined(__PET__)
       sprintf(sectorBuf, "device %i: open data failed: %i", deviceTo, ret);
+#endif
       goto error;
     }
   if ((ret = cbm_open(8, deviceTo,   15, "")) != 0)
     {
+#if !defined(__PET__)
       sprintf(sectorBuf, "device %i: open cmd failed: %i", deviceTo, ret);
+#endif
       goto error;
     }
 
@@ -1203,12 +1223,14 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
           ret = cbm_write(6, linebuffer, sprintf(linebuffer, "u1:5 0 %d %d", track + 1, sector));
           if (ret < 0)
             {
+#if !defined(__PET__)
               sprintf(sectorBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
 #define SECTOR_ERROR                                    \
               textcolor(DC_COLOR_ERROR);                \
               cputsxy(0,BOTTOM,sectorBuf);                \
               printSecStatus(dt, track, sector, 'E');
               SECTOR_ERROR;
+#endif
               continue;
             }
 
@@ -1228,11 +1250,14 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
                   ret = OK;
                   goto success;
                 }
+#if !defined(__PET__)
               sprintf(sectorBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR;
+#endif
               continue;
             }
 
+#if !defined(__PET__)
           // check what the sector contains
           sectorContent = 'O';
           for(ret = 255; ret > 1; --ret)
@@ -1272,29 +1297,38 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
               // all bytes are 0, skip writing this sector
               continue;
             }
+#else
+          printSecStatus(dt, track, sector, 'W');
+#endif
 
           // write sector
           ret = cbm_write(8, "b-p:5 0", 7);
           if (ret < 0)
             {
+#if !defined(__PET__)
               sprintf(sectorBuf, "setup buffer failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR;
+#endif
               continue;
             }
 
           ret = cbm_write(7, sectorBuf, 256);
           if (ret != 256)
             {
+#if !defined(__PET__)
               sprintf(sectorBuf, "write %i/%i failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR;
+#endif
               continue;
             }
 
           ret = cbm_write(8, linebuffer, sprintf(linebuffer, "u2:5 0 %d %d", track + 1, sector));
           if (ret < 0)
             {
+#if !defined(__PET__)
               sprintf(sectorBuf, "write cmd %i/%i failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR;
+#endif
               continue;
             }
         }
@@ -1332,14 +1366,19 @@ doMakeImage(const BYTE device)
   sprintf(linebuffer, "Make Image on device %d", device);
   newscreen(linebuffer);
 
-  cputs("\n\rValid Image extensions: .d64 .d71 .d81\n\rImage name: ");
+#if !defined(__PET__)
+  cputs("\n\rValid Image extensions: .d64 .d71 .d81");
+#endif
+  cputs("\n\rImage name: ");
   answer_len = n = textInput(12,3,linebuffer2,16);
   if (n < 0)
     return;
   if (n > 0 && n < 5)
     {
+#if !defined(__PET__)
       cputsxy(0,6,"invalid image name\n\r");
       waitKey(0);
+#endif
       return;
     }
 
@@ -1369,24 +1408,29 @@ doMakeImage(const BYTE device)
     }
   if (dt == 0)
     {
+#if !defined(__PET__)
       cputsxy(0,6,"invalid image type\n\r");
       waitKey(0);
+#endif
       return;
     }
 
   sprintf(linebuffer, "%s,p", linebuffer2);
   if (cbm_open(7, device, CBM_WRITE, linebuffer) != 0)
     {
+#if !defined(__PET__)
       cputsxy(0,6,"Can't open output file\n\r");
       waitKey(0);
+#endif
       goto done;
     }
 
   for(i = 0; i < n; ++i)
     {
+#if !defined(__PET__)
       gotoxy(0,4);
       cprintf("write block %i/%i", i, n);
-
+#endif
       memset(sectorBuf, 0, 256);
       if (dt == D1541 || dt == D1571)
         {
@@ -1402,6 +1446,7 @@ doMakeImage(const BYTE device)
 
               sectorBuf[2] = 0x41; // DOS version
 
+#if !defined(__PET__)
               // https://ist.uwaterloo.ca/~schepers/formats/D71.TXT
               if (dt == D1571)
                 {
@@ -1411,6 +1456,7 @@ doMakeImage(const BYTE device)
                       sectorBuf[0xDD + j] = maxSector(dt, j+35);
                     }
                 }
+#endif
 
               // write BAM,
               // 35 objects of 4 bytes.
@@ -1459,6 +1505,7 @@ doMakeImage(const BYTE device)
             }
         }
 
+#if !defined(__PET__)
       if (dt == D1581)
         {
           // https://ist.uwaterloo.ca/~schepers/formats/D81.TXT
@@ -1532,6 +1579,7 @@ doMakeImage(const BYTE device)
               sectorBuf[1] = 0xff;
             }
         }
+#endif // PET
 
       if (i == n-1)
         {
@@ -1540,8 +1588,10 @@ doMakeImage(const BYTE device)
 
       if (cbm_write(7, sectorBuf, 256) != 256)
         {
+#if !defined(__PET__)
           cputsxy(0,6,"write error\n\r");
           waitKey(0);
+#endif
           goto done;
         }
 
@@ -1550,7 +1600,9 @@ doMakeImage(const BYTE device)
           char c = cgetc();
           if (c == CH_ESC || c == CH_LARROW)
             {
+#if !defined(__PET__)
               cputsxy(0,6,"abort");
+#endif
               cbm_close(7);
               sprintf(linebuffer, "s:%s", linebuffer2);
               cmd(device, linebuffer);
@@ -1586,6 +1638,7 @@ doRelabel(const BYTE device)
       id_offset = 0xA2;
       break;
 
+#if !defined(__PET__)
       // https://ist.uwaterloo.ca/~schepers/formats/D81.TXT
     case D1581:
       track = 40;
@@ -1593,6 +1646,7 @@ doRelabel(const BYTE device)
       name_offset = 0x04;
       id_offset = 0x16;
       break;
+#endif
 
       // https://ist.uwaterloo.ca/~schepers/formats/D80-D82.TXT
     case D1001:
@@ -1603,10 +1657,12 @@ doRelabel(const BYTE device)
       break;
 
     default:
+#if !defined(__PET__)
       cputs("unsupported device: ");
       cputs(drivetype[devicetype[device]]);
       cputs("\n\r");
       waitKey(0);
+#endif
       goto done;
     }
 
@@ -1618,8 +1674,10 @@ doRelabel(const BYTE device)
   i = cbm_read(2, sectorBuf, 256);
   if (i != 256)
     {
+#if !defined(__PET__)
       cputsxy(0,6,"could not read BAM\n\r");
       waitKey(0);
+#endif
       goto done;
     }
 
@@ -1671,8 +1729,10 @@ doRelabel(const BYTE device)
 
       if (i != 256)
         {
+#if !defined(__PET__)
           cputsxy(0,6,"relabel error\n\r");
           waitKey(0);
+#endif
         }
     }
 

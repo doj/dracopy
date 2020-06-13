@@ -40,9 +40,16 @@ DraCopy for C128
 ![c128](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png)
 
 DraCopy for CBM 610
-------------------------
+--------------------
 
 ![cbm 610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.png)
+
+DraCopy for PET
+----------------
+
+![pet 80 columns](https://raw.githubusercontent.com/doj/dracopy/master/images/dcpet80.png)
+
+![pet 40 columns](https://raw.githubusercontent.com/doj/dracopy/master/images/dcpet40.png)
 
 DraBrowse for C64
 ------------------

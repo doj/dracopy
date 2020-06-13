@@ -13,7 +13,7 @@
 CFLAGS+=-I include -O -Or -Os -r
 
 D64=dracopy10doj.d64
-TARGETS=dc64 db64 dc6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dcp4 dbp4 db610 dc610 dbpet8 dcpet8 dc510
+TARGETS=dc64 db64 dc6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dcp4 dbp4 db610 dc610 dbpet80 dcpet80 dbpet40 dcpet40 dc510 db510
 
 all:	$(TARGETS) $(D64)
 
@@ -57,7 +57,10 @@ dc510:	$(DC_SRC)
 dc610:	$(DC_SRC)
 	cl65 $(CFLAGS) -t cbm610 -DSFD1001 -DCHAR80 $^ -o $@
 
-dcpet8:	$(DC_SRC)
+dcpet40:	$(DC_SRC)
+	cl65 $(CFLAGS) -t pet -DSFD1001 $^ -o $@
+
+dcpet80:	$(DC_SRC)
 	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@
 
 DB_SRC=src/db.c $(COMMON_SRC)
@@ -78,10 +81,16 @@ dbp4:	$(DB_SRC)
 	cl65 $(CFLAGS) -t plus4 $^ -o $@.prg
 	-pucrunch -fc16 $@.prg $@
 
+db510:	$(DB_SRC)
+	cl65 $(CFLAGS) -t cbm510 -DSFD1001 $^ -o $@
+
 db610:	$(DB_SRC)
 	cl65 $(CFLAGS) -t cbm610 -DSFD1001 -DCHAR80 $^ -o $@
 
-dbpet8:	$(DB_SRC)
+dbpet40:	$(DB_SRC)
+	cl65 $(CFLAGS) -t pet -DSFD1001 $^ -o $@
+
+dbpet80:	$(DB_SRC)
 	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@
 
 clean:
@@ -143,14 +152,12 @@ x64:	$(D64) $(D81) $(D81_2) $(D64_9)
 	#$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 
 D82=8.d82
-$(D82):	dc64ieee
-	c1541 -format dc64ieee,dc d82 $@
-	c1541 $@ -write dc64ieee
+$(D82):	dc64ieee dcpet80 dcpet40
+	TYPE=d82 sh d64.sh 'dc64ieee,dc' $@ $^
 
 D82_2=8_2.d82
-$(D82_2):	dc64ieee80
-	c1541 -format dc64ieee80,dc d82 $@
-	c1541 $@ -write dc64ieee80
+$(D82_2):	dc64ieee80 dbpet80 dbpet40
+	TYPE=d82 sh d64.sh 'dc64ieee80,dc' $@ $^
 
 x64ieee:	$(D82) $(D82_2)
 	$(X64) -autostart dc64ieee -ieee488 -cartieee images/ieee-488-cartridge.bin -drive8type 1001 -8 $(D82) -drive9type 1001 -9 $(D82_2) -truedrive
@@ -177,31 +184,26 @@ xplus4:	dcp4 $(D64_9)
 	$(XPLUS4) -autostart dcp4 -drive8type 1551 -8 $(D64) -drive9type 1551 -9 $(D64_9) -truedrive
 
 D64PET=pet.d64
-$(D64PET):	dbpet8 dcpet8 test.prg
+$(D64PET):	dbpet80 dcpet80 dbpet40 dcpet40 test.prg
 	cp -f test.prg test
-	c1541 -format dbpet,dc d64 $@
-	c1541 $@ -write dbpet8
-	c1541 $@ -write dcpet8
-	c1541 $@ -write test.prg
-	c1541 $@ -write test
+	sh d64.sh 'dbpet,dc' $@ $^ test
 	rm test
 
 D80PET=pet.d80
-$(D80PET):	dcpet8 dbpet8
-	c1541 -format d80,dc d80 $@
-	c1541 $@ -write dbpet8
-	c1541 $@ -write dcpet8
+$(D80PET):	dcpet80 dbpet80 dbpet40 dcpet40
+	TYPE=d80 sh d64.sh 'd80,dc' $@ $^
 
 XPET?=xpet -autostartprgmode 1
-xpet:	$(D64PET) $(D82) $(D64)
-	$(XPET) -model 8296 -ramsize 32 -petram9 -petramA -autostart dbpet8 -drive8type 2031 -8 $(D64PET) -drive9type 2031 -9 $(D64) -drive10type 1001 -10 $(D82) -drive11type 1001 -truedrive
-	#$(XPET) -model 8296 -ramsize 32 -petram9 -petramA -autostart dcpet8 -drive8type 4040 -8 $(D64PET) -drive10type 4040 -10 $(D64) -truedrive
+xpet:	$(D64PET) $(D82) $(D64) $(D82_2)
+	#$(XPET) -model 3032B -ramsize 32 -petram9 -petramA -autostart dcpet40 -drive8type 3040 -8 $(D64PET) -drive10type 3040 -10 $(D64) -truedrive -CRTCdsize
+	#$(XPET) -model 4032 -ramsize 32 -petram9 -petramA -autostart dcpet40 -drive8type 3040 -8 $(D64PET) -drive10type 3040 -10 $(D64) -truedrive -CRTCdsize
+	#$(XPET) -model 8032 -ramsize 32 -petram9 -petramA -autostart dcpet80 -drive8type 4040 -8 $(D64PET) -drive10type 4040 -10 $(D64) -truedrive
+	$(XPET) -model 8096 -ramsize 32 -petram9 -petramA -autostart dcpet80 -drive8type 8250 -8 $(D82) -drive10type 8250 -10 $(D82_2) -truedrive
+	#$(XPET) -model 8296 -ramsize 32 -petram9 -petramA -autostart dcpet80 -drive8type 1001 -8 $(D82) -drive10type 1001 -10 $(D82_2) -truedrive
 
 D80CBM2=cbm2.d64
 $(D80CBM2):	dc610 db610
-	c1541 -format cbm2,dc d80 $@
-	c1541 $@ -write dc610
-	c1541 $@ -write db610
+	TYPE=d80 sh d64.sh 'cbm2,dc' $@ $^
 
 XCBM2?=xcbm2 -autostartprgmode 1
 xcbm2:	$(D80CBM2) $(D82) $(D80PET) $(D82_2)

@@ -98,7 +98,11 @@ typedef unsigned char BYTE;
 #define ERROR -1
 #define ABORT +1
 
+#if defined(__PET__)
+#define BUFFERSIZE 254
+#else
 #define BUFFERSIZE (4*254)
+#endif
 
 // height of sceen
 #define SCREENH 25

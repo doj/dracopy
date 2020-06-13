@@ -23,9 +23,10 @@ The [SFD-1001](https://www.c64-wiki.com/wiki/SFD-1001) floppy is supported with 
 | C64       | dc64, db64, dc64ieee | [dc6480](https://raw.githubusercontent.com/doj/dracopy/master/images/dc6480.png), dc64ieee80
 | C128      | dc128, db128 | [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280
 | Plus 4    | dcp4, dbp4
-| CBM 510   | dc510
+| CBM 510   | dc510, db510
 | CBM 610   | | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.png), db610
-| PET 8296  | | dcpet8, dbpet8
+| PET 3032B, 4032 | [dcpet40](https://raw.githubusercontent.com/doj/dracopy/master/images/dcpet40.png), dbpet40
+| PET 8032, 8096, 8296 | | [dcpet80](https://raw.githubusercontent.com/doj/dracopy/master/images/dcpet80.png), dbpet80
 
 Version Information and Download
 ---------------------------------
@@ -96,7 +97,6 @@ the following features can be implemented or bugs should be fixed:
   + rmdir https://wpguru.co.uk/2014/08/how-to-use-sd2iec-a-quick-command-reference/
     however regular scratch works on directories as well.
 - reduce memory use
-  + see if printf() can be replaced with regular string operations
   + check which variables should be "register" https://cc65.github.io/doc/cc65.html#s8
   + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize
 - copy features from 1.0e
@@ -110,13 +110,8 @@ the following features can be implemented or bugs should be fixed:
   + support tracks 36-42 for 1541 disk copy
   + graphical sector map for SFD-1001
 - device id: does it work with 1541? does it work with sd2iec?
-- pet
-  + disk access doesn't work
-  + remove stuff the pet won't use like 1581
-- dc610
-  + dc610 seems to be too big for memory, it won't even load
 - dc510
-  + execute keyboard buffer
+  + run PRG
 - support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
 - support vice without true drive emulation?
 - better program load for dc6480

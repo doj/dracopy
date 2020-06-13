@@ -209,6 +209,7 @@ mainLoop(void)
           break;
 
           // --- start / enter directory
+        case '7':
         case CH_F7:
         case CH_ENTER:
           cwd=GETCWD;
