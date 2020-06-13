@@ -138,9 +138,9 @@ $(D81_2):
 	$(RM) *.seq
 
 X64?=x64sc -autostartprgmode 1
-x64:	$(D64) $(D81) $(D81_2) # $(D64_9)
-	#$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -9 $(D64_9) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
-	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
+x64:	$(D64) $(D81) $(D81_2) $(D64_9)
+	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -9 $(D64_9) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
+	#$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 
 D82=8.d82
 $(D82):	dc64ieee

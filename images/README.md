@@ -42,7 +42,7 @@ DraCopy for C128
 DraCopy for CBM 610
 ------------------------
 
-![cbm 610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif)
+![cbm 610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.png)
 
 DraBrowse for C64
 ------------------

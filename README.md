@@ -24,7 +24,7 @@ The [SFD-1001](https://www.c64-wiki.com/wiki/SFD-1001) floppy is supported with 
 | C128      | dc128, db128 | [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280
 | Plus 4    | dcp4, dbp4
 | CBM 510   | dc510
-| CBM 610   | | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.gif), db610
+| CBM 610   | | [dc610](https://raw.githubusercontent.com/doj/dracopy/master/images/dc610.png), db610
 | PET 8296  | | dcpet8, dbpet8
 
 Version Information and Download
