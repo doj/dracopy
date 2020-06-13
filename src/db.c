@@ -57,12 +57,16 @@ updateMenu(void)
   cputsxy(MENUXT+1,++menuy,"F7 RUN");
   cputsxy(MENUXT+1,++menuy,"CR RUN/CD");
   cputsxy(MENUXT+1,++menuy,"BS DIR UP");
+  cputsxy(MENUXT+1,++menuy," \x5e PAR DIR");
+  cputsxy(MENUXT+1,++menuy," . ABOUT");
   cputsxy(MENUXT+1,++menuy," T TOP");
   cputsxy(MENUXT+1,++menuy," B BOTTOM");
   cputsxy(MENUXT+1,++menuy," S SORT");
   cputsxy(MENUXT+1,++menuy," @ DOScmd");
-  cputsxy(MENUXT+1,++menuy," . ABOUT");
   cputsxy(MENUXT+1,++menuy," Q QUIT");
+#ifdef CHAR80
+  cputsxy(MENUXT+1,++menuy," \xff SW WIN");
+#endif
 }
 
 void
@@ -74,15 +78,49 @@ mainLoop(void)
   BYTE lastpage = 0;
   BYTE nextpage = 0;
   BYTE context = 0;
+#ifdef CHAR80
+  const BYTE num_windows = 2;
+#else
+  const BYTE num_windows = 1;
+#endif
 
-  DIR1H = DIR2H = 23;
-  devices[0]=8;
-  devices[1]=9;
-  dirs[0]=readDir(NULL, devices[0], 0, sorted);
-  dirs[1]=NULL;
+  DIR1H = DIR2H = SCREENH-2;
+  dirs[0] = dirs[1] = NULL;
+  updateScreen(context, num_windows);
 
-  getDeviceType(devices[context]);
-  updateScreen(context, 1);
+  {
+    BYTE i = 7;
+    textcolor(DC_COLOR_HIGHLIGHT);
+    while(++i < 12)
+      {
+        devices[context] = i;
+        dirs[context] = readDir(NULL, devices[context], context, sorted);
+        if (dirs[context])
+          {
+            getDeviceType(devices[context]);
+            showDir(context, context);
+            goto found_upper_drive;
+          }
+      }
+
+  found_upper_drive:;
+#ifdef CHAR80
+    textcolor(DC_COLOR_TEXT);
+    while(++i < 12)
+      {
+        devices[1] = i;
+        dirs[1] = readDir(NULL, devices[1], 1, sorted);
+        if (dirs[1])
+          {
+            getDeviceType(devices[1]);
+            showDir(1, context);
+            goto found_lower_drive;
+          }
+      }
+  found_lower_drive:;
+#endif
+  }
+
   while(1)
     {
       switch (cgetc())
@@ -112,13 +150,13 @@ mainLoop(void)
         case '3':
         case CH_F3:
           cathex(devices[context],dirs[context]->selected->dirent.name);
-          updateScreen(context, 1);
+          updateScreen(context, num_windows);
           break;
 
         case '4':
         case CH_F4:
           catasc(devices[context],dirs[context]->selected->dirent.name);
-          updateScreen(context, 1);
+          updateScreen(context, num_windows);
           break;
 
         case 't':
@@ -155,12 +193,12 @@ mainLoop(void)
 
         case '.':
           about("DraBrowse");
-          updateScreen(context, 1);
+          updateScreen(context, num_windows);
           break;
 
         case '@':
           doDOScommand(context, sorted, 0);
-          updateScreen(context, 1);
+          updateScreen(context, num_windows);
           break;
 
         case CH_CURS_DOWN:
@@ -235,6 +273,18 @@ mainLoop(void)
 
         case CH_UARROW:
           changeDir(context, devices[context], NULL, sorted);
+          break;
+
+          // ----- switch context -----
+        case '0':
+        case CH_ESC:
+        case CH_LARROW:  // arrow left
+          {
+            const BYTE prev_context = context;
+            context = context ^ 1;
+            drawDirFrame(context, context);
+            drawDirFrame(prev_context, context);
+          }
           break;
         }
     }

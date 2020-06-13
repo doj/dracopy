@@ -13,7 +13,7 @@
 CFLAGS+=-I include -O -Or -Os -r
 
 D64=dracopy10doj.d64
-TARGETS=dc64 db64 dc6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dcp4 dbp4 dc510 db510 dc610 db610 dcpet80 dbpet80 dcpet40 dbpet40
+TARGETS=dc64 db64 dc6480 db6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dcp4 dbp4 dc510 db510 dc610 db610 dcpet80 dbpet80 dcpet40 dbpet40
 
 all:	$(TARGETS) $(D64)
 
@@ -67,6 +67,10 @@ DB_SRC=src/db.c $(COMMON_SRC)
 
 db64:	$(DB_SRC)
 	cl65 $(CFLAGS) -t c64 $^ -o $@.prg
+	-pucrunch -c64 $@.prg $@
+
+db6480:	$(DB_SRC)
+	cl65 $(CFLAGS) -DCHAR80 -t c64 -m $@.map $^ c64-soft80.o -o $@.prg
 	-pucrunch -c64 $@.prg $@
 
 db128:	$(DB_SRC)
@@ -149,7 +153,7 @@ $(D81_2):
 X64?=x64sc -autostartprgmode 1
 x64:	$(D64) $(D81) $(D81_2) $(D64_9)
 	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -9 $(D64_9) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
-	#$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
+	#$(X64) -autostart db64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 
 D82=8.d82
 $(D82):	dc64ieee dcpet80 dcpet40
@@ -177,7 +181,7 @@ x128:	$(D71) $(D71_2) $(D64) $(D64_9)
 
 x1280:	$(D71) $(D71_2)
 	#$(X128) -80col -autostart dc1280 -drive8type 1571 -8 $(D71) -drive9type 1571 -9 $(D71_2) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
-	$(X128) -80col -autostart dc1280 -drive8type 1571 -8 $(D71) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
+	$(X128) -80col -autostart db1280 -drive8type 1571 -8 $(D71) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 
 XPLUS4?=xplus4 -autostartprgmode 1
 xplus4:	dcp4 $(D64_9)

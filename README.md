@@ -20,7 +20,7 @@ The [SFD-1001](https://www.c64-wiki.com/wiki/SFD-1001) floppy is supported with 
 
 | Platforms | 40 columns | 80 columns |
 | --------- | ---------- | ---------- |
-| C64       | dc64, db64, dc64ieee | [dc6480](https://raw.githubusercontent.com/doj/dracopy/master/images/dc6480.png), dc64ieee80
+| C64       | dc64, db64, dc64ieee | [dc6480](https://raw.githubusercontent.com/doj/dracopy/master/images/dc6480.png), db6480, dc64ieee80
 | C128      | dc128, db128 | [dc1280](https://raw.githubusercontent.com/doj/dracopy/master/images/dc1280.png), db1280
 | Plus 4    | dcp4, dbp4
 | CBM 510   | dc510, db510
@@ -118,7 +118,6 @@ the following features can be implemented or bugs should be fixed:
 - use reu to load file for copy. This will allow to copy between directories on the same device.
 - order directory entries
 - add write protection to disk
-- drabrowse, use 2 windows in 80 columns mode
 
 Platform Notes
 ---------------
