@@ -39,6 +39,15 @@ Version Information and Download
 | 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy, 80 column mode for C64, create d64 image | doj |
 | 1.0doj | June 2020 | 80 column mode for C64, create d64 image, SFD-1001 support | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
 
+You can also download dracopy in alternate color schemes:
+
+| Scheme  | Download | Screenshot |
+| ------- | -------- | ---------- |
+| default | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip) | [dc64](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64.png)
+| blue    | [dracopy-1.0doj-BLUE.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-BLUE.zip) | [dc64](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-blue.png)
+| SX-64   | [dracopy-1.0doj-SX.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-SX.zip) | [dc64](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-sx.png)
+| C128    | [dracopy-1.0doj-128.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-128.zip) | [dc64](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-128.png)
+
 Keys
 -----
 The following key can be pressed to select a function.
@@ -103,7 +112,6 @@ the following features can be implemented or bugs should be fixed:
   + remove stuff the pet won't use like 1581
 - support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
 - support vice without true drive emulation?
-- check drabrowse and 80 columns mode again, do both windows work correctly?
 - better program load for dc6480
 - use reu to load file for copy. This will allow to copy between directories on the same device.
 - order directory entries

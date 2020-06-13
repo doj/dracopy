@@ -82,7 +82,7 @@ dbpet8:	$(DB_SRC)
 	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@
 
 clean:
-	$(RM) -rf d src/*.o src/*.s *.prg *.map *.seq *.d64 *.d71 *.d8[012] $(TARGETS) dracopy-1.0doj.zip
+	$(RM) -rf d src/*.o src/*.s *.prg *.map *.seq *.d64 *.d71 *.d8[012] $(TARGETS) *.zip
 	find . -name '*~' -delete
 
 zip:	dracopy-1.0doj.zip
@@ -127,7 +127,7 @@ $(D81_2):
 
 X64?=x64sc
 x64:	$(D64) $(D81) $(D81_2)
-	$(X64) -autostart dc6480.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive -autostart-handle-tde -autostart-warp
+	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive -autostart-handle-tde -autostart-warp
 
 D82=8.d82
 $(D82):	dc64ieee
