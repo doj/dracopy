@@ -118,6 +118,7 @@ the following features can be implemented or bugs should be fixed:
 - use reu to load file for copy. This will allow to copy between directories on the same device.
 - order directory entries
 - add write protection to disk
+- drabrowse, use 2 windows in 80 columns mode
 
 Platform Notes
 ---------------

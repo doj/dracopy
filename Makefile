@@ -13,7 +13,7 @@
 CFLAGS+=-I include -O -Or -Os -r
 
 D64=dracopy10doj.d64
-TARGETS=dc64 db64 dc6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dcp4 dbp4 db610 dc610 dbpet80 dcpet80 dbpet40 dcpet40 dc510 db510
+TARGETS=dc64 db64 dc6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dcp4 dbp4 dc510 db510 dc610 db610 dcpet80 dbpet80 dcpet40 dbpet40
 
 all:	$(TARGETS) $(D64)
 
