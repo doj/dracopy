@@ -10,10 +10,10 @@
 # define CBM_T_FREE 100
 
 typedef struct direlement {
-	struct cbm_dirent dirent;
-	struct direlement * next;
-	struct direlement * prev;
-	unsigned char flags;
+        struct cbm_dirent dirent;
+        struct direlement * next;
+        struct direlement * prev;
+        unsigned char flags;
 } DirElement;
 
 
@@ -238,18 +238,18 @@ int main()
       i = myCbmReadDir(device, &(de->dirent));
       cprintf("read %i\n\r", i);
       if (i < 0)
-	break;
+        break;
       if (i != 0)
-	{
-	  cgetc();
-	}
+        {
+          cgetc();
+        }
       cprintf("%s %u %u %u\n\r", de->dirent.name, de->dirent.size, de->dirent.type, de->dirent.access);
       //cgetc();
       if (++cnt == 8)
-	{
-	  clrscr();
-	  cnt=0;
-	}
+        {
+          clrscr();
+          cnt=0;
+        }
     }
 
   return 0;

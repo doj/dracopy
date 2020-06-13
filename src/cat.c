@@ -38,39 +38,39 @@
 int
 cathex(BYTE device, char *filename)
 {
-	unsigned int c;
-	BYTE pchar = 0;
-	BYTE cnt = 0;
-	int offset = 0;
-	unsigned int len;
-	char buffer[8];
+  unsigned int c;
+  BYTE pchar = 0;
+  BYTE cnt = 0;
+  int offset = 0;
+  unsigned int len;
+  char buffer[8];
 
-	if( cbm_open (6,device,CBM_READ,filename) != 0)
-	{
-		cputs("Can't open input file!\n");
+  if( cbm_open (6,device,CBM_READ,filename) != 0)
+  {
+    cputs("Can't open input file!\n");
     return -1;
-	}
+  }
 
   clrscr();
   do
-		{
-			if (cnt==0)
+    {
+      if (cnt==0)
         {
           clrscr();
         }
-			len = cbm_read (6, buffer, sizeof(buffer));
-			cputhex16(offset);
-			cputc(' ');
-			for (c=0; c<len; ++c)
+      len = cbm_read (6, buffer, sizeof(buffer));
+      cputhex16(offset);
+      cputc(' ');
+      for (c=0; c<len; ++c)
         {
           cputhex8(buffer[c]);
           cputc(' ');
         }
-			for (; c<len; ++c)
+      for (; c<len; ++c)
         {
           cputs("   ");
         }
-			for (c=0; c<len; ++c)
+      for (c=0; c<len; ++c)
         {
           textcolor(DC_COLOR_TEXT);
           pchar=buffer[c];
@@ -83,11 +83,11 @@ cathex(BYTE device, char *filename)
         }
       textcolor(DC_COLOR_TEXT);
 
-			cputc(13);
-			cputc(10);
-			cnt++;
-			offset+=sizeof(buffer);
-			if (cnt==BOTTOM || (len!=sizeof(buffer)))
+      cputc(13);
+      cputc(10);
+      cnt++;
+      offset+=sizeof(buffer);
+      if (cnt==BOTTOM || (len!=sizeof(buffer)))
         {
           cnt=0;
           gotoxy(0,BOTTOM);
@@ -101,30 +101,30 @@ cathex(BYTE device, char *filename)
   while(len == sizeof(buffer));
 
   cbm_close (6);
-	return 0;
+  return 0;
 }
 
 int
 catasc(BYTE device, char *filename)
 {
-	unsigned int c;
-	BYTE pchar = 0;
-	BYTE cnt = 0;
-	int offset = 0;
-	unsigned int len;
-	char buffer[8];
+  unsigned int c;
+  BYTE pchar = 0;
+  BYTE cnt = 0;
+  int offset = 0;
+  unsigned int len;
+  char buffer[8];
 
-	if( cbm_open (6,device,CBM_READ,filename) != 0)
-	{
-		cputs("Can't open input file!\n");
+  if( cbm_open (6,device,CBM_READ,filename) != 0)
+  {
+    cputs("Can't open input file!\n");
     return -1;
-	}
+  }
 
   clrscr();
   do
-		{
-			len = cbm_read (6, buffer, sizeof(buffer));
-			for (c=0;c<len;c++)
+    {
+      len = cbm_read (6, buffer, sizeof(buffer));
+      for (c=0;c<len;c++)
         {
           textcolor(DC_COLOR_TEXT);
           pchar=buffer[c];
@@ -140,8 +140,8 @@ catasc(BYTE device, char *filename)
           textcolor(DC_COLOR_TEXT);
         }
 
-			offset+=sizeof(buffer);
-			if (wherey() >= BOTTOM || (len!=sizeof(buffer)))
+      offset+=sizeof(buffer);
+      if (wherey() >= BOTTOM || (len!=sizeof(buffer)))
         {
           gotoxy(0,BOTTOM);
           c=waitKey(1);
@@ -155,7 +155,7 @@ catasc(BYTE device, char *filename)
   while(len == sizeof(buffer));
 
   cbm_close (6);
-	return 0;
+  return 0;
 }
 
 BYTE filterchar(BYTE pchar)
@@ -165,21 +165,21 @@ BYTE filterchar(BYTE pchar)
       textcolor(DC_COLOR_DIM);
       cputc(0xba);
     }
-	else if (! ( (pchar==13) ||
+  else if (! ( (pchar==13) ||
                (pchar==10) ||
                (pchar >= 0x20 && pchar <= 0x7f) ||
                (pchar >= 0xA0) ) )
   {
     textcolor(DC_COLOR_DIM);
-		pchar = '.';
-	}
-	if ( pchar>=65 && pchar<=90)
-	{
-		pchar = pchar+32;
-	}
-	else if (pchar>=97 && pchar <=122 )
-	{
-		pchar = pchar-32;
-	}
-	return pchar;
+    pchar = '.';
+  }
+  if ( pchar>=65 && pchar<=90)
+  {
+    pchar = pchar+32;
+  }
+  else if (pchar>=97 && pchar <=122 )
+  {
+    pchar = pchar-32;
+  }
+  return pchar;
 }

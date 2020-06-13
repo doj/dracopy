@@ -43,97 +43,97 @@ static BYTE sorted = 0;
 void
 updateMenu(void)
 {
-	BYTE menuy=MENUY;
+  BYTE menuy=MENUY;
 
-	revers(0);
-	textcolor(DC_COLOR_TEXT);
-	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,NULL);
+  revers(0);
+  textcolor(DC_COLOR_TEXT);
+  drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,NULL);
 
-	++menuy;
-	cputsxy(MENUXT+1,++menuy,"F1 DIR");
-	cputsxy(MENUXT+1,++menuy,"F2 DEVICE");
-	cputsxy(MENUXT+1,++menuy,"F3 HEX");
-	cputsxy(MENUXT+1,++menuy,"F4 ASC");
-	cputsxy(MENUXT+1,++menuy,"F7 RUN");
-	cputsxy(MENUXT+1,++menuy,"CR RUN/CD");
-	cputsxy(MENUXT+1,++menuy,"BS DIR UP");
-	cputsxy(MENUXT+1,++menuy," T TOP");
-	cputsxy(MENUXT+1,++menuy," B BOTTOM");
-	cputsxy(MENUXT+1,++menuy," S SORT");
-	cputsxy(MENUXT+1,++menuy," @ DOScmd");
-	cputsxy(MENUXT+1,++menuy," . ABOUT");
-	cputsxy(MENUXT+1,++menuy," Q QUIT");
+  ++menuy;
+  cputsxy(MENUXT+1,++menuy,"F1 DIR");
+  cputsxy(MENUXT+1,++menuy,"F2 DEVICE");
+  cputsxy(MENUXT+1,++menuy,"F3 HEX");
+  cputsxy(MENUXT+1,++menuy,"F4 ASC");
+  cputsxy(MENUXT+1,++menuy,"F7 RUN");
+  cputsxy(MENUXT+1,++menuy,"CR RUN/CD");
+  cputsxy(MENUXT+1,++menuy,"BS DIR UP");
+  cputsxy(MENUXT+1,++menuy," T TOP");
+  cputsxy(MENUXT+1,++menuy," B BOTTOM");
+  cputsxy(MENUXT+1,++menuy," S SORT");
+  cputsxy(MENUXT+1,++menuy," @ DOScmd");
+  cputsxy(MENUXT+1,++menuy," . ABOUT");
+  cputsxy(MENUXT+1,++menuy," Q QUIT");
 }
 
 void
 mainLoop(void)
 {
-	Directory * cwd = NULL;
-	DirElement * current = NULL;
-	unsigned int pos = 0;
-	BYTE lastpage = 0;
-	BYTE nextpage = 0;
+  Directory * cwd = NULL;
+  DirElement * current = NULL;
+  unsigned int pos = 0;
+  BYTE lastpage = 0;
+  BYTE nextpage = 0;
   BYTE context = 0;
 
   DIR1H = DIR2H = 23;
-	devices[0]=8;
-	devices[1]=9;
-	dirs[0]=readDir(NULL, devices[0], 0, sorted);
-	dirs[1]=NULL;
+  devices[0]=8;
+  devices[1]=9;
+  dirs[0]=readDir(NULL, devices[0], 0, sorted);
+  dirs[1]=NULL;
 
   getDeviceType(devices[context]);
-	updateScreen(context, 1);
-	while(1)
+  updateScreen(context, 1);
+  while(1)
     {
-    	switch (cgetc())
-      	{
+      switch (cgetc())
+        {
         case 's':
           sorted = ! sorted;
           // fallthrough
         case '1':
         case CH_F1:
           textcolor(DC_COLOR_HIGHLIGHT);
-					dirs[context]=readDir(dirs[context], devices[context], context, sorted);
-					showDir(context, context);
-					break;
+          dirs[context]=readDir(dirs[context], devices[context], context, sorted);
+          showDir(context, context);
+          break;
 
         case '2':
         case CH_F2:
-					if (++devices[context] > 11)
+          if (++devices[context] > 11)
             devices[context]=8;
-					freeDir(&dirs[context]);
+          freeDir(&dirs[context]);
           if (! devicetype[devices[context]])
             {
               getDeviceType(devices[context]);
             }
-					showDir(context, context);
-					break;
+          showDir(context, context);
+          break;
 
         case '3':
         case CH_F3:
-					cathex(devices[context],dirs[context]->selected->dirent.name);
-					updateScreen(context, 1);
-					break;
+          cathex(devices[context],dirs[context]->selected->dirent.name);
+          updateScreen(context, 1);
+          break;
 
         case '4':
         case CH_F4:
-					catasc(devices[context],dirs[context]->selected->dirent.name);
-					updateScreen(context, 1);
-					break;
-
-		    case 't':
-        case CH_HOME:
-					cwd=GETCWD;
-					cwd->selected=cwd->firstelement;
-					cwd->pos=0;
-					printDir(context, DIRX+1, DIRY);
+          catasc(devices[context],dirs[context]->selected->dirent.name);
+          updateScreen(context, 1);
           break;
 
-		    case 'b':
-					cwd=GETCWD;
-					current = cwd->firstelement;
-					pos=0;
-					while (1)
+        case 't':
+        case CH_HOME:
+          cwd=GETCWD;
+          cwd->selected=cwd->firstelement;
+          cwd->pos=0;
+          printDir(context, DIRX+1, DIRY);
+          break;
+
+        case 'b':
+          cwd=GETCWD;
+          current = cwd->firstelement;
+          pos=0;
+          while (1)
             {
               if (current->next!=NULL)
                 {
@@ -145,16 +145,16 @@ mainLoop(void)
                   break;
                 }
             }
-					cwd->selected=current;
-					cwd->pos=pos;
-					printDir(context, DIRX+1, DIRY);
-					break;
+          cwd->selected=current;
+          cwd->pos=pos;
+          printDir(context, DIRX+1, DIRY);
+          break;
 
-		    case 'q':
+        case 'q':
           goto done;
 
         case '.':
-					about("DraBrowse");
+          about("DraBrowse");
           updateScreen(context, 1);
           break;
 
@@ -163,9 +163,9 @@ mainLoop(void)
           updateScreen(context, 1);
           break;
 
-    		case CH_CURS_DOWN:
-					cwd=GETCWD;
-					if (cwd->selected!=NULL && cwd->selected->next!=NULL)
+        case CH_CURS_DOWN:
+          cwd=GETCWD;
+          if (cwd->selected!=NULL && cwd->selected->next!=NULL)
             {
               cwd->selected=cwd->selected->next;
               pos=cwd->pos;
@@ -186,9 +186,9 @@ mainLoop(void)
             }
           break;
 
-    		case CH_CURS_UP:
-					cwd=GETCWD;
-					if (cwd->selected!=NULL && cwd->selected->prev!=NULL)
+        case CH_CURS_UP:
+          cwd=GETCWD;
+          if (cwd->selected!=NULL && cwd->selected->prev!=NULL)
             {
               cwd->selected=cwd->selected->prev;
               pos=cwd->pos;
@@ -210,27 +210,27 @@ mainLoop(void)
 
           // --- start / enter directory
         case CH_F7:
-		    case CH_ENTER:
-					cwd=GETCWD;
-					if (cwd->selected && cwd->selected->dirent.type==CBM_T_PRG)
+        case CH_ENTER:
+          cwd=GETCWD;
+          if (cwd->selected && cwd->selected->dirent.type==CBM_T_PRG)
             {
               execute(dirs[context]->selected->dirent.name,devices[context]);
             }
-					// else fallthrough to CURS_RIGHT
+          // else fallthrough to CURS_RIGHT
 
-    		case CH_CURS_RIGHT:
-					cwd=GETCWD;
-					if (cwd->selected)
+        case CH_CURS_RIGHT:
+          cwd=GETCWD;
+          if (cwd->selected)
             {
               changeDir(context, devices[context], cwd->selected->dirent.name, sorted);
             }
-					break;
+          break;
 
           // --- leave directory
         case CH_DEL:
-    		case CH_CURS_LEFT:
+        case CH_CURS_LEFT:
           changeDir(context, devices[context], "\xff", sorted);
-					break;
+          break;
 
         case CH_UARROW:
           changeDir(context, devices[context], NULL, sorted);

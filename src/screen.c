@@ -45,22 +45,22 @@ clearArea(const BYTE xpos, const BYTE ypos, const BYTE xsize, const BYTE ysize)
 void
 newscreen(const char *title)
 {
-	BYTE i;
+  BYTE i;
 
   BYTE len = SCREENW;
   len -= strlen(title);
   len /= 2;
 
-	clrscr();
-	revers(1);
+  clrscr();
+  revers(1);
   for(i = 0; i < len; ++i)
     cputc(' ');
-	for (; *title && i < SCREENW; ++i)
+  for (; *title && i < SCREENW; ++i)
     cputc(*title++);
-	for (; i < SCREENW; ++i)
+  for (; i < SCREENW; ++i)
     cputc(' ');
-	revers(0);
-	gotoxy(0,1);
+  revers(0);
+  gotoxy(0,1);
 }
 
 void

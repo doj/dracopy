@@ -120,12 +120,12 @@ BYTE
 dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cmd)
 {
   int res;
-	if (cbm_open(lfn, drive, sec_addr, cmd) != 0)
+  if (cbm_open(lfn, drive, sec_addr, cmd) != 0)
     {
       return _oserror;
     }
 
-	if (lfn != 15)
+  if (lfn != 15)
     {
       if (cbm_open(15, drive, 15, "") != 0)
         {
@@ -134,14 +134,14 @@ dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cm
         }
     }
 
-	DOSstatus[0] = 0;
-	res = cbm_read(15, DOSstatus, sizeof(DOSstatus));
+  DOSstatus[0] = 0;
+  res = cbm_read(15, DOSstatus, sizeof(DOSstatus));
 
-	if(lfn != 15)
+  if(lfn != 15)
     {
       cbm_close(15);
     }
-	cbm_close(lfn);
+  cbm_close(lfn);
 
   if (res < 1)
     {
@@ -151,7 +151,7 @@ dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cm
 #if 0
   cputsxy(0,BOTTOM,DOSstatus);
 #endif
-	return (DOSstatus[0] - 48) * 10 + DOSstatus[1] - 48;
+  return (DOSstatus[0] - 48) * 10 + DOSstatus[1] - 48;
 }
 
 int
@@ -165,19 +165,19 @@ execute(char * prg, BYTE device)
 {
 #if defined(__C64__) && defined(CHAR80)
   BYTE len = sprintf(KBCHARS, "lO\"%s\",%d", prg, device);
-	*((unsigned char *)KBCHARS + len) = 13;  ++len;
-	*((unsigned char *)KBCHARS + len) = 'r'; ++len;
-	*((unsigned char *)KBCHARS + len) = 'U'; ++len;
-	*((unsigned char *)KBCHARS + len) = 13;  ++len;
+  *((unsigned char *)KBCHARS + len) = 13;  ++len;
+  *((unsigned char *)KBCHARS + len) = 'r'; ++len;
+  *((unsigned char *)KBCHARS + len) = 'U'; ++len;
+  *((unsigned char *)KBCHARS + len) = 13;  ++len;
   *((unsigned char *)KBNUM) = len;
 #else
   // prepare the screen with the basic command to load the next program
-	exitScreen();
+  exitScreen();
 
   gotoxy(0,2);
-	cprintf("load\"%s\",%d,1", prg, device);
+  cprintf("load\"%s\",%d,1", prg, device);
   gotoxy(0,7);
-	cputs("run");
+  cputs("run");
 
 #if !defined(__PET__)
   gotoxy(14,BOTTOM-1);
@@ -188,13 +188,13 @@ execute(char * prg, BYTE device)
 
 #if defined(KBCHARS)
   // put two CR in keyboard buffer
-	*((unsigned char *)KBCHARS)=13;
-	*((unsigned char *)KBCHARS+1)=13;
-	*((unsigned char *)KBNUM)=2;
+  *((unsigned char *)KBCHARS)=13;
+  *((unsigned char *)KBCHARS+1)=13;
+  *((unsigned char *)KBNUM)=2;
 #endif
 
   // exit DraCopy, which will execute the BASIC LOAD above
-	gotoxy(0,0);
+  gotoxy(0,0);
 #endif
   exit(0);
 }
@@ -203,8 +203,8 @@ void
 updateScreen(const BYTE context, BYTE num_dirs)
 {
   clrscr();
-	updateMenu();
-	showDir(context, context);
+  updateMenu();
+  showDir(context, context);
   if (num_dirs > 1)
     {
       const BYTE other_context = context^1;
@@ -327,8 +327,8 @@ about(const char *progname)
   sprintf(linebuffer, "About %s " DRA_VER, progname);
   newscreen(linebuffer);
 
-	textcolor(DC_COLOR_DIM);
-	cputs("Copyright 2009 by Draco and others\n\r"
+  textcolor(DC_COLOR_DIM);
+  cputs("Copyright 2009 by Draco and others\n\r"
         "https://github.com/doj/dracopy\n\r"
         "\n\r"
         "THIS PROGRAM IS DISTRIBUTED IN THE HOPE\n\r"
@@ -368,7 +368,7 @@ about(const char *progname)
 {
   sprintf(linebuffer, "About %s " DRA_VER, progname);
   newscreen(linebuffer);
-	cputs("Copyright 2009 by Draco and others\n\r"
+  cputs("Copyright 2009 by Draco and others\n\r"
         "https://github.com/doj/dracopy\n\r");
   cgetc();
 }
@@ -377,20 +377,20 @@ about(const char *progname)
 void
 clrDir(BYTE context)
 {
-	clearArea(DIRX+1, DIRY+1, DIRW, DIRH);
+  clearArea(DIRX+1, DIRY+1, DIRW, DIRH);
 }
 
 void
 refreshDir(const BYTE context, const BYTE sorted, const BYTE mycontext)
 {
-	Directory * cwd = dirs[context];
+  Directory * cwd = dirs[context];
   textcolor(DC_COLOR_HIGHLIGHT);
-	cwd = readDir(cwd, devices[context], context, sorted);
-	dirs[context]=cwd;
-	cwd->selected=cwd->firstelement;
-	showDir(context, mycontext);
+  cwd = readDir(cwd, devices[context], context, sorted);
+  dirs[context]=cwd;
+  cwd->selected=cwd->firstelement;
+  showDir(context, mycontext);
 #if 0
-	if (devices[0]==devices[1])
+  if (devices[0]==devices[1])
     {
       // refresh also other dir if it's the same drive
       const BYTE other_context = context^1;
@@ -427,7 +427,7 @@ fileTypeToStr(BYTE ft)
 static void
 printElementPriv(const BYTE context, const Directory *dir, const DirElement *current, const BYTE xpos, const BYTE ypos)
 {
-	Directory * cwd = GETCWD;
+  Directory * cwd = GETCWD;
   gotoxy(xpos,ypos);
   if ((current == dir->selected) && (cwd == dir))
     {
@@ -451,15 +451,15 @@ void
 printDir(const BYTE context, const BYTE xpos, const BYTE ypos)
 {
   const Directory *dir = GETCWD;
-	DirElement * current;
-	int selidx = 0;
-	int page = 0;
-	int skip = 0;
-	int pos = 0;
-	int idx = 0;
+  DirElement * current;
+  int selidx = 0;
+  int page = 0;
+  int skip = 0;
+  int pos = 0;
+  int idx = 0;
   const char *typestr = NULL;
 
-	if (dir==NULL)
+  if (dir==NULL)
     {
       clrDir(context);
       return;
@@ -510,14 +510,14 @@ printDir(const BYTE context, const BYTE xpos, const BYTE ypos)
 void
 printElement(const BYTE context, const Directory *dir, const BYTE xpos, const BYTE ypos)
 {
-	const DirElement *current;
+  const DirElement *current;
 
-	int page = 0;
-	int idx = 0;
-	int pos = 0;
-	int yoff=0;
+  int page = 0;
+  int idx = 0;
+  int pos = 0;
+  int yoff=0;
 
-	if (dir==NULL || dir->firstelement == NULL)
+  if (dir==NULL || dir->firstelement == NULL)
     {
       return;
     }
@@ -545,12 +545,12 @@ drawDirFrame(BYTE context, const BYTE mycontext)
   const Directory *dir = GETCWD;
   const char *dt = drivetype[devicetype[devices[context]]];
   sprintf(linebuffer, " %02i:%s", (int)devices[context], dir ? dir->name : "");
-	if(mycontext==context)
+  if(mycontext==context)
     {
       linebuffer[0] = '>';
       textcolor(DC_COLOR_HIGHLIGHT);
     }
-	else
+  else
     {
       textcolor(DC_COLOR_TEXT);
     }
@@ -560,15 +560,15 @@ drawDirFrame(BYTE context, const BYTE mycontext)
       sprintf(linebuffer2, "%s>%u bl free<", dt, dir->free);
       dt = linebuffer2;
     }
-	drawFrame(linebuffer, DIRX, DIRY, DIRW+2, DIRH+2, dt);
-	textcolor(DC_COLOR_TEXT);
+  drawFrame(linebuffer, DIRX, DIRY, DIRW+2, DIRH+2, dt);
+  textcolor(DC_COLOR_TEXT);
 }
 
 void
 showDir(BYTE context, const BYTE mycontext)
 {
   drawDirFrame(context, mycontext);
-	printDir(context, DIRX+1, DIRY);
+  printDir(context, DIRX+1, DIRY);
 }
 
 int
@@ -685,13 +685,13 @@ debugu(const unsigned u)
 int
 textInput(const BYTE xpos, const BYTE ypos, char *str, const BYTE size)
 {
-	register BYTE idx = strlen(str);
-	register BYTE c;
+  register BYTE idx = strlen(str);
+  register BYTE c;
 
-	cursor(1);
-	cputsxy(xpos, ypos, str);
+  cursor(1);
+  cputsxy(xpos, ypos, str);
 
-	while(1)
+  while(1)
     {
       c = cgetc();
       switch (c)

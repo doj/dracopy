@@ -49,7 +49,7 @@ static const char progressRev[4] = { 0,    0,    1,    1 };
 Directory*
 readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted)
 {
-	DirElement * previous = NULL;
+  DirElement * previous = NULL;
 
   BYTE cnt = 0xff;
   const BYTE y = DIRY;
@@ -59,13 +59,13 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
 
   //cbm_close(device);
   //cbm_closedir(device);
-	if (cbm_opendir(device, device) != 0)
+  if (cbm_opendir(device, device) != 0)
     {
       cbm_closedir(device);
       return NULL;
     }
 
-	while(1)
+  while(1)
     {
       DirElement * de = (DirElement *) calloc(1, sizeof(DirElement));
       if (! de)
@@ -178,14 +178,14 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
     }
 
  stop:
-	cbm_closedir(device);
-	revers(0);
+  cbm_closedir(device);
+  revers(0);
 
   if (dir)
     {
       dir->selected = dir->firstelement;
     }
-	return dir;
+  return dir;
 }
 
 /**
@@ -381,8 +381,8 @@ myCbmReadDir(const BYTE device, struct cbm_dirent* l_dirent)
 void freeDir(Directory * * dir)
 {
   DirElement * next;
-	DirElement * acurrent;
-	if (*dir==NULL)
+  DirElement * acurrent;
+  if (*dir==NULL)
     return;
 
   acurrent = (*dir)->firstelement;
@@ -394,7 +394,7 @@ void freeDir(Directory * * dir)
     }
 
   free(*dir);
-	*dir=NULL;
+  *dir=NULL;
 }
 
 
@@ -403,7 +403,7 @@ void freeDir(Directory * * dir)
  */
 void removeFromDir(DirElement * current)
 {
- 	if (current == NULL)
+  if (current == NULL)
     return;
 
   if (current->prev)

@@ -111,9 +111,9 @@ typedef unsigned char BYTE;
 #define MENUY 0
 
 #ifdef CHAR80
-	#define SCREENW 80
+  #define SCREENW 80
 // x position of menu
-	#define MENUX 58
+  #define MENUX 58
 // x position of menu items
   #define MENUXT MENUX+2
 // width of menu frame

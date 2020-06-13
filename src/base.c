@@ -28,14 +28,14 @@
 
 BYTE waitKey(BYTE flag)
 {
-	revers(1);
-	textcolor(DC_COLOR_WAITKEY);
-	cputs("PRESS A KEY");
-	if (flag)
-	{
-		cputs(" (RUNSTOP or Q to stop)");
-	}
-	textcolor(DC_COLOR_TEXT);
-	revers(0);
-	return cgetc();
+  revers(1);
+  textcolor(DC_COLOR_WAITKEY);
+  cputs("PRESS A KEY");
+  if (flag)
+  {
+    cputs(" (RUNSTOP or Q to stop)");
+  }
+  textcolor(DC_COLOR_TEXT);
+  revers(0);
+  return cgetc();
 }

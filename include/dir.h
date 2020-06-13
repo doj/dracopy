@@ -29,10 +29,10 @@
 #include <cbm.h>
 
 typedef struct direlement {
-	struct cbm_dirent dirent;
-	struct direlement * next;
-	struct direlement * prev;
-	unsigned char flags;
+  struct cbm_dirent dirent;
+  struct direlement * next;
+  struct direlement * prev;
+  unsigned char flags;
 } DirElement;
 
 

@@ -92,59 +92,59 @@ nextWindowState(const BYTE context)
 void
 updateMenu(void)
 {
-	BYTE menuy=MENUY;
+  BYTE menuy=MENUY;
 
-	revers(0);
-	textcolor(DC_COLOR_TEXT);
-	drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,NULL);
+  revers(0);
+  textcolor(DC_COLOR_TEXT);
+  drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,NULL);
 
-	cputsxy(MENUXT,++menuy,"F1 READ DIR");
-	cputsxy(MENUXT,++menuy,"F2 DEVICE");
-	cputsxy(MENUXT,++menuy,"F3 VIEW HEX");
-	cputsxy(MENUXT,++menuy,"F4 VIEW ASC");
-	cputsxy(MENUXT,++menuy,"F5 COPY");
-	cputsxy(MENUXT,++menuy,"F6 DELETE");
-	cputsxy(MENUXT,++menuy,"F7 RUN");
-	cputsxy(MENUXT,++menuy,"F8 DISKCOPY");
-	cputsxy(MENUXT,++menuy,"CR CHG DIR");
-	cputsxy(MENUXT,++menuy,"BS DIR UP");
+  cputsxy(MENUXT,++menuy,"F1 READ DIR");
+  cputsxy(MENUXT,++menuy,"F2 DEVICE");
+  cputsxy(MENUXT,++menuy,"F3 VIEW HEX");
+  cputsxy(MENUXT,++menuy,"F4 VIEW ASC");
+  cputsxy(MENUXT,++menuy,"F5 COPY");
+  cputsxy(MENUXT,++menuy,"F6 DELETE");
+  cputsxy(MENUXT,++menuy,"F7 RUN");
+  cputsxy(MENUXT,++menuy,"F8 DISKCOPY");
+  cputsxy(MENUXT,++menuy,"CR CHG DIR");
+  cputsxy(MENUXT,++menuy,"BS DIR UP");
 #ifdef __PLUS4__
-	cputsxy(MENUXT,++menuy,"EC SWITCH W");
+  cputsxy(MENUXT,++menuy,"EC SWITCH W");
 #else
-	cputsxy(MENUXT,++menuy," \xff SWITCH W");
+  cputsxy(MENUXT,++menuy," \xff SWITCH W");
 #endif
-	cputsxy(MENUXT,++menuy,"SP SELECT");
-	cputsxy(MENUXT,++menuy," * INV SEL");
-	cputsxy(MENUXT,++menuy," S SORT DIR");
-	cputsxy(MENUXT,++menuy," R RENAME");
-	cputsxy(MENUXT,++menuy," M MAKE DIR");
-	cputsxy(MENUXT,++menuy," F FORMAT");
-	cputsxy(MENUXT,++menuy," L RELABEL");
-	cputsxy(MENUXT,++menuy," \xfc DEV ID");
-	cputsxy(MENUXT,++menuy," @ DOS CMD");
-	cputsxy(MENUXT,++menuy," I MAKE IMG");
+  cputsxy(MENUXT,++menuy,"SP SELECT");
+  cputsxy(MENUXT,++menuy," * INV SEL");
+  cputsxy(MENUXT,++menuy," S SORT DIR");
+  cputsxy(MENUXT,++menuy," R RENAME");
+  cputsxy(MENUXT,++menuy," M MAKE DIR");
+  cputsxy(MENUXT,++menuy," F FORMAT");
+  cputsxy(MENUXT,++menuy," L RELABEL");
+  cputsxy(MENUXT,++menuy," \xfc DEV ID");
+  cputsxy(MENUXT,++menuy," @ DOS CMD");
+  cputsxy(MENUXT,++menuy," I MAKE IMG");
 #if defined(CHAR80)
-	cputsxy(MENUXT,++menuy," . HELP");
+  cputsxy(MENUXT,++menuy," . HELP");
 #else
-	cputsxy(MENUXT,++menuy," W WIN SIZE");
+  cputsxy(MENUXT,++menuy," W WIN SIZE");
 #endif
 }
 
 void
 mainLoop(void)
 {
-	Directory * cwd = NULL;
-	DirElement * current = NULL;
+  Directory * cwd = NULL;
+  DirElement * current = NULL;
   unsigned int pos = 0;
-	BYTE lastpage = 0;
-	BYTE nextpage = 0;
+  BYTE lastpage = 0;
+  BYTE nextpage = 0;
   BYTE context = 0;
   BYTE key_pressed;
 
   initDirWindowHeight();
 
   dirs[0] = dirs[1] = NULL;
-	updateScreen(context, 2);
+  updateScreen(context, 2);
 
   {
     BYTE i = 7;
@@ -181,7 +181,7 @@ mainLoop(void)
   }
 
  found_lower_drive:
-	while(1)
+  while(1)
     {
 #if 0 //!defined(__PET__)
       {
@@ -206,47 +206,47 @@ mainLoop(void)
       }
 
       key_pressed = cgetc();
-    	switch (key_pressed)
-      	{
+      switch (key_pressed)
+        {
         case 's':
           sorted = ! sorted;
           // fallthrough
         case '1':
         case CH_F1:
           textcolor(DC_COLOR_HIGHLIGHT);
-					dirs[context] = readDir(dirs[context], devices[context], context, sorted);
-					showDir(context, context);
-					break;
+          dirs[context] = readDir(dirs[context], devices[context], context, sorted);
+          showDir(context, context);
+          break;
 
         case '2':
         case CH_F2:
           // cycle through devices until we find the next one, not
           // used by the other context.
-					do
+          do
             {
               if (++devices[context] > 11)
                 devices[context] = 8;
             }
-					while(devices[context] == devices[context^1]);
-					freeDir(&dirs[context]);
+          while(devices[context] == devices[context^1]);
+          freeDir(&dirs[context]);
           if (! devicetype[devices[context]])
             {
               getDeviceType(devices[context]);
             }
-					showDir(context, context);
-					break;
+          showDir(context, context);
+          break;
 
         case '3':
         case CH_F3:
-					cathex(devices[context],dirs[context]->selected->dirent.name);
-					updateScreen(context, 2);
-					break;
+          cathex(devices[context],dirs[context]->selected->dirent.name);
+          updateScreen(context, 2);
+          break;
 
         case '4':
         case CH_F4:
-					catasc(devices[context],dirs[context]->selected->dirent.name);
-					updateScreen(context, 2);
-					break;
+          catasc(devices[context],dirs[context]->selected->dirent.name);
+          updateScreen(context, 2);
+          break;
 
         case '5':
         case CH_F5:
@@ -259,22 +259,22 @@ mainLoop(void)
             dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
             showDir(other_context, context);
           }
-					break;
+          break;
 
         case '6':
         case CH_F6:
-					doDelete(context);
-					break;
+          doDelete(context);
+          break;
 
         case '7':
         case CH_F7:
         execute_prg:
-					cwd = GETCWD;
-					if (cwd->selected && cwd->selected->dirent.type == CBM_T_PRG)
+          cwd = GETCWD;
+          if (cwd->selected && cwd->selected->dirent.type == CBM_T_PRG)
             {
               execute(cwd->selected->dirent.name, devices[context]);
             }
-					break;
+          break;
 
         case '8':
         case CH_F8:
@@ -286,29 +286,29 @@ mainLoop(void)
             updateScreen(context, 2);
             refreshDir(other_context, sorted, context);
           }
-					break;
+          break;
 
           // ----- switch context -----
         case '0':
         case CH_ESC:
-		    case CH_LARROW:  // arrow left
+        case CH_LARROW:  // arrow left
           {
             const BYTE prev_context = context;
             context = context ^ 1;
             drawDirFrame(context, context);
             drawDirFrame(prev_context, context);
           }
-					break;
-
-        case 't':
-		    case CH_HOME:
-					cwd=GETCWD;
-					cwd->selected=cwd->firstelement;
-					cwd->pos=0;
-					printDir(context, DIRX+1, DIRY);
           break;
 
-		    case 'b':
+        case 't':
+        case CH_HOME:
+          cwd=GETCWD;
+          cwd->selected=cwd->firstelement;
+          cwd->pos=0;
+          printDir(context, DIRX+1, DIRY);
+          break;
+
+        case 'b':
           cwd = GETCWD;
           current = cwd->firstelement;
           while (1)
@@ -326,7 +326,7 @@ mainLoop(void)
           cwd->selected=current;
           cwd->pos=pos;
           printDir(context, DIRX+1, DIRY);
-					break;
+          break;
 
         case 'n':
           cwd = GETCWD;
@@ -337,7 +337,7 @@ mainLoop(void)
             }
           cwd->pos += pos;
           cwd->selected = current;
-					printDir(context, DIRX+1, DIRY);
+          printDir(context, DIRX+1, DIRY);
           break;
 
         case 'p':
@@ -350,24 +350,24 @@ mainLoop(void)
           assert(cwd->pos >= pos);
           cwd->pos -= pos;
           cwd->selected = current;
-					printDir(context, DIRX+1, DIRY);
+          printDir(context, DIRX+1, DIRY);
           break;
 
-		    case 'q':
-					goto done;
+        case 'q':
+          goto done;
           break;
 
         case ' ':
-					cwd=GETCWD;
-					cwd->selected->flags=!cwd->selected->flags;
+          cwd=GETCWD;
+          cwd->selected->flags=!cwd->selected->flags;
 
-					// go to next entry
-					if (cwd->selected->next!=NULL)
+          // go to next entry
+          if (cwd->selected->next!=NULL)
             {
               cwd->selected=cwd->selected->next;
               cwd->pos++;
             }
-					showDir(context, context);
+          showDir(context, context);
           break;
 
         case 'f':
@@ -377,7 +377,7 @@ mainLoop(void)
           break;
 
         case 'r':
-					doRenameOrCopy(context, 0);
+          doRenameOrCopy(context, 0);
           break;
 
         case 'm':
@@ -387,11 +387,11 @@ mainLoop(void)
           break;
 
         case '*':
-					doToggleAll(context);
+          doToggleAll(context);
           break;
 
         case '.':
-					about("DraCopy");
+          about("DraCopy");
           updateScreen(context, 2);
           break;
 
@@ -401,7 +401,7 @@ mainLoop(void)
           break;
 
         case 'c':
-					doRenameOrCopy(context, 1);
+          doRenameOrCopy(context, 1);
           break;
 
         case 'i':
@@ -421,9 +421,9 @@ mainLoop(void)
           updateScreen(context, 2);
           break;
 
-    		case CH_CURS_DOWN:
-					cwd=GETCWD;
-					if (cwd->selected!=NULL && cwd->selected->next!=NULL)
+        case CH_CURS_DOWN:
+          cwd=GETCWD;
+          if (cwd->selected!=NULL && cwd->selected->next!=NULL)
             {
               cwd->selected=cwd->selected->next;
               pos=cwd->pos;
@@ -444,9 +444,9 @@ mainLoop(void)
             }
           break;
 
-    		case CH_CURS_UP:
-					cwd=GETCWD;
-					if (cwd->selected!=NULL && cwd->selected->prev!=NULL)
+        case CH_CURS_UP:
+          cwd=GETCWD;
+          if (cwd->selected!=NULL && cwd->selected->prev!=NULL)
             {
               cwd->selected=cwd->selected->prev;
               pos=cwd->pos;
@@ -467,10 +467,10 @@ mainLoop(void)
           break;
 
           // --- enter directory
-    		case CH_ENTER:
-    		case CH_CURS_RIGHT:
-					cwd=GETCWD;
-					if (cwd->selected)
+        case CH_ENTER:
+        case CH_CURS_RIGHT:
+          cwd=GETCWD;
+          if (cwd->selected)
             {
               if (changeDir(context, devices[context], cwd->selected->dirent.name, sorted) != 0)
                 {
@@ -481,18 +481,18 @@ mainLoop(void)
                     }
                 }
             }
-					break;
+          break;
 
           // --- leave directory
-    		case CH_DEL:
-    		case CH_CURS_LEFT:
+        case CH_DEL:
+        case CH_CURS_LEFT:
           {
             char buf[2];
             buf[0] = CH_LARROW; // arrow left
             buf[1] = 0;
             changeDir(context, devices[context], buf, sorted);
           }
-					break;
+          break;
 
         case CH_UARROW:
           changeDir(context, devices[context], NULL, sorted);
@@ -517,12 +517,12 @@ doCopy(const BYTE context)
 {
   BYTE flag = 0;
   BYTE cnt = 0xf0;
-	DirElement * current;
-	const BYTE srcdev = devices[context];
-	const BYTE destdev = devices[context^1];
-	Directory * cwd = GETCWD;
+  DirElement * current;
+  const BYTE srcdev = devices[context];
+  const BYTE destdev = devices[context^1];
+  Directory * cwd = GETCWD;
 
-	sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
+  sprintf(linebuffer,"Filecopy from device %d to device %d",srcdev,destdev);
   for(current = cwd->firstelement; current; current=current->next)
     {
       if (++cnt >= BOTTOM)
@@ -566,13 +566,13 @@ doCopy(const BYTE context)
 void
 doToggleAll(const BYTE context)
 {
-	DirElement * current;
-	if (dirs[context]==NULL)
+  DirElement * current;
+  if (dirs[context]==NULL)
     {
       //cputs("no directory");
       return;
     }
-	else
+  else
     {
       current = dirs[context]->firstelement;
       while (current!=NULL)
@@ -587,23 +587,23 @@ doToggleAll(const BYTE context)
 BYTE
 really(void)
 {
-	char c;
-	cputs("Really (Y/N)? ");
-	c = cgetc();
-	cputc(c);
-	cputs("\n\r");
-	return (c=='y' || c=='Y');
+  char c;
+  cputs("Really (Y/N)? ");
+  c = cgetc();
+  cputc(c);
+  cputs("\n\r");
+  return (c=='y' || c=='Y');
 }
 
 void
 doDelete(const BYTE context)
 {
-	DirElement * current;
-	int idx = 0;
-	Directory * cwd = GETCWD;
+  DirElement * current;
+  int idx = 0;
+  Directory * cwd = GETCWD;
   int ret;
 
-	if (dirs[context]==NULL)
+  if (dirs[context]==NULL)
     return;
 
   for(current = dirs[context]->firstelement; current; current=current->next)
@@ -681,10 +681,10 @@ doDelete(const BYTE context)
 void
 doRenameOrCopy(const BYTE context, const BYTE mode)
 {
-	int n;
-	Directory * cwd = GETCWD;
+  int n;
+  Directory * cwd = GETCWD;
 
-	if (cwd->selected == NULL)
+  if (cwd->selected == NULL)
     return;
 
   sprintf(linebuffer,
@@ -719,12 +719,12 @@ doRenameOrCopy(const BYTE context, const BYTE mode)
 int
 copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE destdevice, BYTE type)
 {
-	int length=0;
+  int length=0;
   int ret = OK;
   unsigned long total_length = 0;
   BYTE xpos, ypos;
 
-	BYTE *buf = (BYTE*) malloc(BUFFERSIZE);
+  BYTE *buf = (BYTE*) malloc(BUFFERSIZE);
   if (! buf)
     {
       cputs("Can't alloc\n\r");
@@ -748,27 +748,27 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
       goto done;
     }
 
-	sprintf(linebuffer, "%s,%c", srcfile, type);
-	if (cbm_open(6, srcdevice, CBM_READ, linebuffer) != 0)
+  sprintf(linebuffer, "%s,%c", srcfile, type);
+  if (cbm_open(6, srcdevice, CBM_READ, linebuffer) != 0)
     {
       cputs("Can't open input file!\n\r");
       ret = ERROR;
       goto done;
     }
 
-	// create destination string with filetype like "FILE,P"
-	sprintf(linebuffer, "%s,%c", destfile, type);
-	if (cbm_open(7, destdevice, CBM_WRITE, linebuffer) != 0)
+  // create destination string with filetype like "FILE,P"
+  sprintf(linebuffer, "%s,%c", destfile, type);
+  if (cbm_open(7, destdevice, CBM_WRITE, linebuffer) != 0)
     {
       cputs("Can't open output file\n\r");
       ret = ERROR;
       goto done;
     }
 
-	cprintf("%-16s:",srcfile);
+  cprintf("%-16s:",srcfile);
   xpos = wherex();
   ypos = wherey();
-	while(1)
+  while(1)
     {
       if (kbhit())
         {
@@ -780,7 +780,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
             }
         }
 
-	  	cputsxy(xpos, ypos, "R");
+      cputsxy(xpos, ypos, "R");
       length = cbm_read (6, buf, BUFFERSIZE);
       if (length < 0)
         {
@@ -831,10 +831,10 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
     }
 
  done:
-	free(buf);
-	cbm_close(6);
-	cbm_close(7);
-	return ret;
+  free(buf);
+  cbm_close(6);
+  cbm_close(7);
+  return ret;
 }
 
 /*
@@ -852,7 +852,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
   }
   cbm_close(15);
   }
-  if (	sscanf(buf, "%hhu, %[^,], %hhu, %hhu", &e, msg, &t, &s) != 4) {
+  if (  sscanf(buf, "%hhu, %[^,], %hhu, %hhu", &e, msg, &t, &s) != 4) {
   puts("parse error");
   puts(buf);
   return(2);
@@ -1026,7 +1026,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   BYTE track = maxTrack(ret);
   BYTE sectorContent;
 
-	sprintf(linebuffer, "%s diskcopy from %d to %d? (Y/N)", optimized ? " optimized" : "", deviceFrom, deviceTo);
+  sprintf(linebuffer, "%s diskcopy from %d to %d? (Y/N)", optimized ? " optimized" : "", deviceFrom, deviceTo);
   newscreen(linebuffer);
 
   if (max_track != track)
@@ -1329,7 +1329,7 @@ doMakeImage(const BYTE device)
   int i;
   int answer_len;
 
-	sprintf(linebuffer, "Make Image on device %d", device);
+  sprintf(linebuffer, "Make Image on device %d", device);
   newscreen(linebuffer);
 
   cputs("\n\rValid Image extensions: .d64 .d71 .d81\n\rImage name: ");
@@ -1569,7 +1569,7 @@ doRelabel(const BYTE device)
 {
   BYTE track, sector, name_offset, id_offset;
   int i;
-	sprintf(linebuffer, "Change disk name of device %d", device);
+  sprintf(linebuffer, "Change disk name of device %d", device);
   newscreen(linebuffer);
 
   switch(devicetype[device])
@@ -1608,7 +1608,7 @@ doRelabel(const BYTE device)
       cputs("\n\r");
       waitKey(0);
       goto done;
-		}
+    }
 
   // read BAM sector
   cbm_open(2, device, 5, "#");
@@ -1674,7 +1674,7 @@ doRelabel(const BYTE device)
           cputsxy(0,6,"relabel error\n\r");
           waitKey(0);
         }
-		}
+    }
 
  done:
   cbm_close(4);
