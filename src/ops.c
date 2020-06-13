@@ -44,7 +44,6 @@ Directory* dirs[] = {NULL,NULL};
 BYTE devices[] = {8,9};
 char linebuffer[SCREENW+1];
 char linebuffer2[SCREENW+1];
-char answer[40];
 
 BYTE DIR1H;
 BYTE DIR2H;
@@ -69,9 +68,8 @@ const char* drivetype[LAST_DRIVE_E] = {"", "1540", "1541", "1551", "1570", "1571
 BYTE devicetype[12];
 
 const char*
-getDeviceType(BYTE context)
+getDeviceType(const BYTE device)
 {
-  const BYTE device = devices[context];
   BYTE idx;
   if (device > sizeof(devicetype))
     {
@@ -206,11 +204,11 @@ updateScreen(const BYTE context, BYTE num_dirs)
 {
   clrscr();
 	updateMenu();
-	showDir(context, dirs[context], context);
+	showDir(context, context);
   if (num_dirs > 1)
     {
       const BYTE other_context = context^1;
-      showDir(other_context, dirs[other_context], context);
+      showDir(other_context, context);
     }
 }
 
@@ -267,8 +265,6 @@ main(void)
 }
 
 #if !defined(__PET__)
-#pragma charmap (0xff, 0x5f);
-#pragma charmap (0xfc, 0x5c);
 
 static const char* helpcontent[] = {
   "F1", "read dir",
@@ -280,38 +276,45 @@ static const char* helpcontent[] = {
   "F7", "execute PRG",
   "F8", "disk copy",
 
+  "","",
   "0", "switch win",
-  "\xff",  "switch win", // CH_LARROW
+  "\xff", "switch win", // CH_LARROW
   "w", "window size",
 
   "CR", "change dir",
   "DL", "parent dir",
   "\x5e", "parent dir", // CH_UARROW
-  "","",
 
   // middle column
   "m", "make dir",
-  "f", "format disk",
-  "l", "relabel dsk",
-  "i", "disk image",
-  "r", "rename file",
-  "c", "copy on same device",
+  "", "",
 
   "@", "DOS command",
-  "\xfc", "change dev id", // CH_POUND
+  "\xfc", "chg dev id", // CH_POUND
+  "", "",
+  "", "",
+  "", "",
 
+  "i", "disk image",
+  "f", "format disk",
+  "l", "relabel disk",
+  "d", "optimized diskcopy",
+  "r", "rename file",
+  "c", "copy file on same dev",
+  "SP", "select file",
+  "*", "invert selection",
+
+  // right column
   "HO", "goto top",
   "t", "goto top",
-  "b", "goto bottom",
+  "b", "goto bott",
   "n", "next page",
   "p", "prev page",
 
-  "*", "invert selection",
-  "SP", "select file",
+  "", "",
 
-  // right column
-  "q", "quit",
   ".", "help",
+  "q", "quit",
   NULL
 };
 
@@ -321,7 +324,7 @@ about(const char *progname)
   BYTE x = 0;
   BYTE y = 10;
   const char* *h = helpcontent;
-  sprintf(linebuffer, " About %s " DRA_VER, progname);
+  sprintf(linebuffer, "About %s " DRA_VER, progname);
   newscreen(linebuffer);
 
 	textcolor(DC_COLOR_DIM);
@@ -363,7 +366,7 @@ about(const char *progname)
 void
 about(const char *progname)
 {
-  sprintf(linebuffer, " About %s " DRA_VER, progname);
+  sprintf(linebuffer, "About %s " DRA_VER, progname);
   newscreen(linebuffer);
 	cputs("Copyright 2009 by Draco and others\n\r"
         "https://github.com/doj/dracopy\n\r");
@@ -385,14 +388,14 @@ refreshDir(const BYTE context, const BYTE sorted, const BYTE mycontext)
 	cwd = readDir(cwd, devices[context], context, sorted);
 	dirs[context]=cwd;
 	cwd->selected=cwd->firstelement;
-	showDir(context, cwd, mycontext);
+	showDir(context, mycontext);
 #if 0
 	if (devices[0]==devices[1])
     {
       // refresh also other dir if it's the same drive
       const BYTE other_context = context^1;
       dirs[other_context] = readDir(dirs[other_context], devices[other_context], other_context, sorted);
-      showDir(other_context, cwd, mycontext);
+      showDir(other_context, mycontext);
     }
 #endif
 }
@@ -445,8 +448,9 @@ printElementPriv(const BYTE context, const Directory *dir, const DirElement *cur
 }
 
 void
-printDir(const BYTE context, const Directory *dir, const BYTE xpos, const BYTE ypos)
+printDir(const BYTE context, const BYTE xpos, const BYTE ypos)
 {
+  const Directory *dir = GETCWD;
 	DirElement * current;
 	int selidx = 0;
 	int page = 0;
@@ -536,8 +540,10 @@ printElement(const BYTE context, const Directory *dir, const BYTE xpos, const BY
 }
 
 void
-drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext)
+drawDirFrame(BYTE context, const BYTE mycontext)
 {
+  const Directory *dir = GETCWD;
+  const char *dt = drivetype[devicetype[devices[context]]];
   sprintf(linebuffer, " %02i:%s", (int)devices[context], dir ? dir->name : "");
 	if(mycontext==context)
     {
@@ -551,26 +557,24 @@ drawDirFrame(BYTE context, const Directory *dir, const BYTE mycontext)
 
   if (dir)
     {
-      sprintf(linebuffer2, "%s>%u bl free<", dir->device_type, dir->free);
+      sprintf(linebuffer2, "%s>%u bl free<", dt, dir->free);
+      dt = linebuffer2;
     }
-  else
-    {
-      linebuffer2[0] = 0;
-    }
-	drawFrame(linebuffer, DIRX, DIRY, DIRW+2, DIRH+2, linebuffer2);
+	drawFrame(linebuffer, DIRX, DIRY, DIRW+2, DIRH+2, dt);
 	textcolor(DC_COLOR_TEXT);
 }
 
 void
-showDir(BYTE context, const Directory * dir, const BYTE mycontext)
+showDir(BYTE context, const BYTE mycontext)
 {
-  drawDirFrame(context, dir, mycontext);
-	printDir(context, dir, DIRX+1, DIRY);
+  drawDirFrame(context, mycontext);
+	printDir(context, DIRX+1, DIRY);
 }
 
-void
+int
 changeDir(const BYTE context, const BYTE device, const char *dirname, const BYTE sorted)
 {
+  int ret;
   if (dirname)
     {
       BYTE mount = 0;
@@ -604,15 +608,17 @@ changeDir(const BYTE context, const BYTE device, const char *dirname, const BYTE
     {
       strcpy(linebuffer, "cd//");
     }
-  cmd(device, linebuffer);
+  ret = cmd(device, linebuffer);
+  debugu(ret);
   refreshDir(context, sorted, context);
+  return ret;
 }
 
 void
 changeDeviceID(BYTE device)
 {
   int i;
-  newscreen(" change device ID");
+  newscreen("change device ID");
   cprintf("\n\rchange device ID %i to (0-255): ", device);
   sprintf(linebuffer, "%i", device);
   i = textInput(31, 2, linebuffer, 3);
@@ -776,7 +782,7 @@ doDOScommand(const BYTE context, const BYTE sorted, const BYTE use_linebuffer)
 {
   int i;
   const BYTE device = devices[context];
-  newscreen(" DOS command");
+  newscreen("DOS command");
 #if !defined(__PET__)
   cprintf("\n\rsend DOS command to device %i:", device);
 #endif

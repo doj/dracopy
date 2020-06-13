@@ -108,7 +108,6 @@ the following features can be implemented or bugs should be fixed:
   + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
   + graphical sector map for SFD-1001
-  + detect disk size of PET drives like 8031, 8050
 - device id: does it work with 1541? does it work with sd2iec?
 - pet
   + disk access doesn't work
@@ -122,6 +121,7 @@ the following features can be implemented or bugs should be fixed:
 - better program load for dc6480
 - use reu to load file for copy. This will allow to copy between directories on the same device.
 - order directory entries
+- add write protection to disk
 
 Platform Notes
 ---------------
@@ -131,6 +131,22 @@ If you use disks with many directory entries, you could run out of memory on the
 
 The [vice](https://vice-emu.sourceforge.io/) emulator needs to enable
 the _True Drive Emulation_ to support all operations.
+
+Diskcopy
+---------
+The program prints the status of reading/writing every sector during the diskcopy operation.
+
+| Char | Description |
+| ---- | ----------- |
+| r    | reading an odd sector, if the track has more than 25 sectors
+| R    | reading a sector, reading even sector if the track has more than 25 sectors
+| w    | writing an odd sector, if the track has more than 25 sectors
+| W    | writing a sector, writing even sector if the track has more than 25 sectors
+| o (lowercase o) | the sector data contains only 0 bytes, the sector is written
+| O (uppercase O) | the sector contains only 0 bytes, the sector is not written in optimized diskcopy
+| E    | error while reading or writing the sector
+| 0..9 | sector is partially used 0-99%
+| !    | sector with an invalid link to the next sector (next sector track too large)
 
 Contact
 --------

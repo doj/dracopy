@@ -34,7 +34,6 @@
 #include "ops.h"
 #include "version.h"
 
-/* definitions */
 extern BYTE devices[];
 extern char linebuffer[];
 extern Directory* dirs[];
@@ -110,7 +109,7 @@ mainLoop(void)
         case CH_F1:
           textcolor(DC_COLOR_HIGHLIGHT);
 					dirs[context]=readDir(dirs[context], devices[context], context, sorted);
-					showDir(context, dirs[context], context);
+					showDir(context, context);
 					break;
 
         case '2':
@@ -118,7 +117,7 @@ mainLoop(void)
 					if (++devices[context] > 11)
             devices[context]=8;
 					freeDir(&dirs[context]);
-					showDir(context, dirs[context], context);
+					showDir(context, context);
 					break;
 
         case '3':
@@ -138,7 +137,7 @@ mainLoop(void)
 					cwd=GETCWD;
 					cwd->selected=cwd->firstelement;
 					cwd->pos=0;
-					printDir(context, cwd, DIRX+1, DIRY);
+					printDir(context, DIRX+1, DIRY);
           break;
 
 		    case 'b':
@@ -159,7 +158,7 @@ mainLoop(void)
             }
 					cwd->selected=current;
 					cwd->pos=pos;
-					printDir(context, cwd, DIRX+1, DIRY);
+					printDir(context, DIRX+1, DIRY);
 					break;
 
 		    case 'q':
@@ -186,7 +185,7 @@ mainLoop(void)
               if (lastpage!=nextpage)
                 {
                   cwd->pos++;
-                  printDir(context, cwd, DIRX+1, DIRY);
+                  printDir(context, DIRX+1, DIRY);
                 }
               else
                 {
@@ -209,7 +208,7 @@ mainLoop(void)
               if (lastpage!=nextpage)
                 {
                   cwd->pos--;
-                  printDir(context, cwd, DIRX+1, DIRY);
+                  printDir(context, DIRX+1, DIRY);
                 }
               else
                 {

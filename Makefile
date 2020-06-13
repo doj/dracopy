@@ -102,10 +102,15 @@ test.prg:	src/test.c
 
 D64_9=9.d64
 $(D64_9):	dc510 test.prg
-	for i in `perl -e 'for(1..141){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
+	for i in `perl -e 'for(1..140){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
 	cp -f test.prg test
-	sh d64.sh 'number nine,n9' $@ dc510 test README.md *.seq
+	dd if=/dev/zero of=x1 bs=2048 count=1
+	sh d64.sh 'number nine,n9' $@ dc510 test README.md x1 *.seq
 	$(RM) *.seq test
+	dd if=/dev/urandom of=x1 bs=1 count=10000
+	dd if=$@ of=x2 bs=1 skip=10000
+	cat x1 x2 > $@
+	rm x1 x2
 
 D71=10.d71
 $(D71):	dc128 dc1280 db128 db1280
@@ -113,7 +118,7 @@ $(D71):	dc128 dc1280 db128 db1280
 	TYPE=d71 sh d64.sh 'test,71' $@ dc128 dc1280 db128 db1280 *.seq
 	$(RM) *.seq
 
-D71_2=10_2.d71
+D71_2=11.d71
 $(D71_2):
 	for i in `perl -e 'for(1..140){print "$$_ "}'` ; do echo $$i > $$i.seq ; done
 	TYPE=d71 sh d64.sh 'test2,71' $@ dc128 dc1280 *.seq
@@ -132,9 +137,10 @@ $(D81_2):
 	TYPE=d81 sh d64.sh 'test2,81' $@ *.seq
 	$(RM) *.seq
 
-X64?=x64sc
-x64:	$(D64) $(D81) $(D81_2)
-	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive -autostart-handle-tde -autostart-warp
+X64?=x64sc -autostartprgmode 1
+x64:	$(D64) $(D81) $(D81_2) $(D64_9)
+	#$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -9 $(D64_9) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
+	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 
 D82=8.d82
 $(D82):	dc64ieee
@@ -158,7 +164,7 @@ x64_71:	dc64 $(D71) $(D71_2)
 x64_81:	dc64 $(D81) $(D81_2)
 	$(X64) -autostart dc64 -drive8type 1581 -8 $(D81) -drive9type 1581 -9 $(D81_2)
 
-X128?=x128
+X128?=x128 # -autostartprgmode 1
 x128:	$(D71) $(D71_2) $(D64) $(D64_9)
 	$(X128) -autostart dc128 -drive8type 1541 -8 $(D64) -drive9type 1542 -9 $(D64_9) -drive10type 1571 -10 $(D71) -drive11type 1571 -11 $(D71_2) -truedrive
 
@@ -166,7 +172,7 @@ x1280:	$(D71) $(D71_2)
 	#$(X128) -80col -autostart dc1280 -drive8type 1571 -8 $(D71) -drive9type 1571 -9 $(D71_2) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 	$(X128) -80col -autostart dc1280 -drive8type 1571 -8 $(D71) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81) -truedrive
 
-XPLUS4?=xplus4
+XPLUS4?=xplus4 -autostartprgmode 1
 xplus4:	dcp4 $(D64_9)
 	$(XPLUS4) -autostart dcp4 -drive8type 1551 -8 $(D64) -drive9type 1551 -9 $(D64_9) -truedrive
 
@@ -186,7 +192,7 @@ $(D80PET):	dcpet8 dbpet8
 	c1541 $@ -write dbpet8
 	c1541 $@ -write dcpet8
 
-XPET?=xpet
+XPET?=xpet -autostartprgmode 1
 xpet:	$(D64PET) $(D82) $(D64)
 	$(XPET) -model 8296 -ramsize 32 -petram9 -petramA -autostart dbpet8 -drive8type 2031 -8 $(D64PET) -drive9type 2031 -9 $(D64) -drive10type 1001 -10 $(D82) -drive11type 1001 -truedrive
 	#$(XPET) -model 8296 -ramsize 32 -petram9 -petramA -autostart dcpet8 -drive8type 4040 -8 $(D64PET) -drive10type 4040 -10 $(D64) -truedrive
@@ -197,10 +203,10 @@ $(D80CBM2):	dc610 db610
 	c1541 $@ -write dc610
 	c1541 $@ -write db610
 
-XCBM2?=xcbm2
+XCBM2?=xcbm2 -autostartprgmode 1
 xcbm2:	$(D80CBM2) $(D82) $(D80PET) $(D82_2)
 	$(XCBM2) -autostart dc610 -drive8type 8050 -8 $(D80CBM2) -drive9type 8050 -9 $(D80PET) -drive10type 1001 -10 $(D82) -drive11type 1001 -11 $(D82_2) -truedrive
 
-XCBM510?=xcbm5x0
+XCBM510?=xcbm5x0 -autostartprgmode 1
 xcbm510:	$(D64) $(D64_9)
 	$(XCBM510) -autostart dc510 -drive8type 2031 -8 $(D64_9) -drive9type 2031 -9 $(D64) -truedrive

@@ -33,9 +33,9 @@ static unsigned char screen_borderc;
 static unsigned char screen_textc;
 
 void
-clearArea(BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize)
+clearArea(const BYTE xpos, const BYTE ypos, const BYTE xsize, const BYTE ysize)
 {
-  int y = ypos;
+  BYTE y = ypos;
   for (; y < (ypos+ysize); ++y)
     {
       cclearxy(xpos,y,xsize);
@@ -43,25 +43,28 @@ clearArea(BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize)
 }
 
 void
-newscreen(char * title)
+newscreen(const char *title)
 {
 	BYTE i;
+
+  BYTE len = SCREENW;
+  len -= strlen(title);
+  len /= 2;
+
 	clrscr();
 	revers(1);
-	for (i=0; *title && i < SCREENW; ++i)
-    {
-      cputc(*title++);
-    }
+  for(i = 0; i < len; ++i)
+    cputc(' ');
+	for (; *title && i < SCREENW; ++i)
+    cputc(*title++);
 	for (; i < SCREENW; ++i)
-    {
-      cputc(' ');
-    }
+    cputc(' ');
 	revers(0);
 	gotoxy(0,1);
 }
 
 void
-drawFrame(char * title, BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize, char *subtitle)
+drawFrame(const char *title, const BYTE xpos, const BYTE ypos, const BYTE xsize, const BYTE ysize, const char *subtitle)
 {
   // top
   gotoxy(xpos,ypos);
@@ -100,7 +103,7 @@ drawFrame(char * title, BYTE xpos, BYTE ypos, BYTE xsize, BYTE ysize, char *subt
 
 /* initialize screen mode */
 void
-initScreen(unsigned char border, unsigned char bg, unsigned char text)
+initScreen(const BYTE border, const BYTE bg, const BYTE text)
 {
   screen_borderc = bordercolor(border);
   screen_bgc = bgcolor(bg);
@@ -110,7 +113,7 @@ initScreen(unsigned char border, unsigned char bg, unsigned char text)
 
 /* restore basic screen mode */
 void
-exitScreen(void)
+exitScreen()
 {
   bordercolor(screen_borderc);
   bgcolor(screen_bgc);

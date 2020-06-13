@@ -44,7 +44,6 @@ typedef struct {
   unsigned char name[16+1+2+1];
   struct direlement * firstelement;
   struct direlement * selected;
-  const char *device_type;
   /// current cursor position
   unsigned int pos;
   /// number of free blocks

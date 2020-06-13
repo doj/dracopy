@@ -39,11 +39,11 @@ static const char progressBar[4] = { 0xA5, 0xA1, 0xA7, ' ' };
 static const char progressRev[4] = { 0,    0,    1,    1 };
 
 /**
- * read directory of device @p device and print information to window @p context.
+ * read directory of device @p device.
  * @param[in,out] dir pointer to Directory object, if dir!=NULL it will be freed.
  * @param device CBM device number
- * @param context window ID, must be 0 or 1.
  * @param sorted if true, return directory entries sorted.
+ * @param context window context.
  * @return new allocated Directory object.
  */
 Directory*
@@ -54,8 +54,6 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
   BYTE cnt = 0xff;
   const BYTE y = DIRY;
   BYTE x = 0;
-
-  const char *device_type = getDeviceType(context);
 
   freeDir(&dir);
 
@@ -185,7 +183,6 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
 
   if (dir)
     {
-      dir->device_type = device_type;
       dir->selected = dir->firstelement;
     }
 	return dir;

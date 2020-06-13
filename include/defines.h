@@ -162,14 +162,14 @@ extern BYTE DIR2H;
 
 // define function keys to something on PET
 #ifdef __PET__
-#define CH_F1 0xf1
-#define CH_F2 0xf2
-#define CH_F3 0xf3
-#define CH_F4 0xf4
-#define CH_F5 0xf5
-#define CH_F6 0xf6
-#define CH_F7 0xf7
-#define CH_F8 0xf8
+#define CH_F1 0xe1
+#define CH_F2 0xe2
+#define CH_F3 0xe3
+#define CH_F4 0xe4
+#define CH_F5 0xe5
+#define CH_F6 0xe6
+#define CH_F7 0xe7
+#define CH_F8 0xe8
 #endif
 
 #define DIRTYPE 6
@@ -177,5 +177,8 @@ extern BYTE DIR2H;
 #define CH_LARROW 0x5f
 #define CH_UARROW 0x5e
 #define CH_POUND  0x5c
+
+#pragma charmap (0xff, 0x5f);
+#pragma charmap (0xfc, 0x5c);
 
 #endif
