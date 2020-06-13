@@ -7,7 +7,7 @@ DraCopy - a simple copy program.
 
 DraBrowse  - a simple file browser.
 
-![drabro screenshot](https://raw.githubusercontent.com/doj/dracopy/master/images/db64.png)
+![drabrowse screenshot](https://raw.githubusercontent.com/doj/dracopy/master/images/db64.png)
 
 Created 2009 by Sascha Bader.
 
