@@ -273,7 +273,7 @@ static const char* helpcontent[] = {
   "F4", "view ASCII",
   "F5", "copy files",
   "F6", "delete file",
-  "F7", "execute PRG",
+  "F7", "run PRG",
   "F8", "disk copy",
 
   "","",
@@ -281,7 +281,7 @@ static const char* helpcontent[] = {
   "\xff", "switch win", // CH_LARROW
   "w", "window size",
 
-  "CR", "change dir",
+  "CR", "chg dir/run",
   "DL", "parent dir",
   "\x5e", "parent dir", // CH_UARROW
 
@@ -595,7 +595,8 @@ changeDir(const BYTE context, const BYTE device, const char *dirname, const BYTE
             }
         }
       if (mount ||
-          (l == 1 && dirname[0]==CH_LARROW))
+          (l == 1 && dirname[0]==CH_LARROW) ||
+          devicetype[device] == VICE)
         {
           sprintf(linebuffer, "cd:%s", dirname);
         }
@@ -609,8 +610,10 @@ changeDir(const BYTE context, const BYTE device, const char *dirname, const BYTE
       strcpy(linebuffer, "cd//");
     }
   ret = cmd(device, linebuffer);
-  debugu(ret);
-  refreshDir(context, sorted, context);
+  if (ret == 0)
+    {
+      refreshDir(context, sorted, context);
+    }
   return ret;
 }
 

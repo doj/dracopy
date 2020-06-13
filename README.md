@@ -63,12 +63,13 @@ See the TODO section below for some functions that may have issues.
 | F4, 4 | view current file as ASCII text
 | F5, 5 | copy all selected files from current window
 | F6, 6 | delete all selected file in current window
-| F7, 7 | execute selected program
+| F7, 7 | run the selected program
 | F8, 8 | [copy disk](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-diskcopy.png) from current window to the other device
 | d | optimized disk copy, only write sectors which are not all 0 bytes.
 | ←, ESC, 0 | switch window
 | w | [enlarge or shrink](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-windowsize.png) current window
-| Return, right | enter directory
+| Return    | enter directory or run the selected program
+| right     | enter directory
 | DEL, left | go to parent directory
 | ↑ | go to root directory
 | s | show directory entries sorted
@@ -77,14 +78,14 @@ See the TODO section below for some functions that may have issues.
 | HOME, t | move cursor to top row of first page in current window
 | n | go to the next page in current window
 | p | go to the previous page in current window
-| b | go to bottom (last) page in current window
+| b | go to bottom page in current window
 | c | copy current file on the same device
 | r | rename current file
 | f | format device in current window
 | l | change disk name, relabel
 | i | create a D64, D71, D81 image file
-| @ | send DOS command to device in current window
-| £ | change device ID of current device
+| @ | send a DOS command to the device in current window
+| £ | change the device ID of the current device
 | . | show about/help information
 | q | quit program to BASIC
 

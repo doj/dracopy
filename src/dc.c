@@ -229,7 +229,10 @@ mainLoop(void)
             }
 					while(devices[context] == devices[context^1]);
 					freeDir(&dirs[context]);
-          getDeviceType(devices[context]);
+          if (! devicetype[devices[context]])
+            {
+              getDeviceType(devices[context]);
+            }
 					showDir(context, context);
 					break;
 
@@ -265,9 +268,11 @@ mainLoop(void)
 
         case '7':
         case CH_F7:
-					if (dirs[context]->selected)
+        execute_prg:
+					cwd = GETCWD;
+					if (cwd->selected && cwd->selected->dirent.type == CBM_T_PRG)
             {
-              execute(dirs[context]->selected->dirent.name,devices[context]);
+              execute(cwd->selected->dirent.name, devices[context]);
             }
 					break;
 
@@ -467,7 +472,14 @@ mainLoop(void)
 					cwd=GETCWD;
 					if (cwd->selected)
             {
-              changeDir(context, devices[context], cwd->selected->dirent.name, sorted);
+              if (changeDir(context, devices[context], cwd->selected->dirent.name, sorted) != 0)
+                {
+                  if (key_pressed == CH_ENTER)
+                    {
+                      // enter directory failed, try to execute a PRG
+                      goto execute_prg;
+                    }
+                }
             }
 					break;
 

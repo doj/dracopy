@@ -54,17 +54,15 @@ updateMenu(void)
 	cputsxy(MENUXT+1,++menuy,"F2 DEVICE");
 	cputsxy(MENUXT+1,++menuy,"F3 HEX");
 	cputsxy(MENUXT+1,++menuy,"F4 ASC");
+	cputsxy(MENUXT+1,++menuy,"F7 RUN");
 	cputsxy(MENUXT+1,++menuy,"CR RUN/CD");
 	cputsxy(MENUXT+1,++menuy,"BS DIR UP");
 	cputsxy(MENUXT+1,++menuy," T TOP");
 	cputsxy(MENUXT+1,++menuy," B BOTTOM");
+	cputsxy(MENUXT+1,++menuy," S SORT");
+	cputsxy(MENUXT+1,++menuy," @ DOScmd");
 	cputsxy(MENUXT+1,++menuy," . ABOUT");
 	cputsxy(MENUXT+1,++menuy," Q QUIT");
-	cputsxy(MENUXT+1,++menuy," @ DOScmd");
-	cputsxy(MENUXT+1,++menuy," S SORT");
-	++menuy;
-	gotoxy(MENUXT+1,++menuy);
-	cprintf("Device:%02d",devices[0]);
 }
 
 void
@@ -73,34 +71,21 @@ mainLoop(void)
 	Directory * cwd = NULL;
 	DirElement * current = NULL;
 	unsigned int pos = 0;
-	BYTE c;
 	BYTE lastpage = 0;
 	BYTE nextpage = 0;
   BYTE context = 0;
 
-  DIR1H = 23;
-  DIR2H = 23;
+  DIR1H = DIR2H = 23;
 	devices[0]=8;
 	devices[1]=9;
 	dirs[0]=readDir(NULL, devices[0], 0, sorted);
 	dirs[1]=NULL;
 
+  getDeviceType(devices[context]);
 	updateScreen(context, 1);
 	while(1)
     {
-#if 0
-      {
-        // TODO: find out where a file is left open, then remove this workaround block
-        BYTE i;
-        for(i = 0; i < 16; ++i)
-          {
-            cbm_close(i);
-            cbm_closedir(i);
-          }
-      }
-#endif
-      c = cgetc();
-    	switch (c)
+    	switch (cgetc())
       	{
         case 's':
           sorted = ! sorted;
@@ -117,6 +102,10 @@ mainLoop(void)
 					if (++devices[context] > 11)
             devices[context]=8;
 					freeDir(&dirs[context]);
+          if (! devicetype[devices[context]])
+            {
+              getDeviceType(devices[context]);
+            }
 					showDir(context, context);
 					break;
 
@@ -220,6 +209,7 @@ mainLoop(void)
           break;
 
           // --- start / enter directory
+        case CH_F7:
 		    case CH_ENTER:
 					cwd=GETCWD;
 					if (cwd->selected && cwd->selected->dirent.type==CBM_T_PRG)
@@ -239,12 +229,7 @@ mainLoop(void)
           // --- leave directory
         case CH_DEL:
     		case CH_CURS_LEFT:
-          {
-            char buf[2];
-            buf[0] = CH_LARROW;
-            buf[1] = 0;
-            changeDir(context, devices[context], buf, sorted);
-          }
+          changeDir(context, devices[context], "\xff", sorted);
 					break;
 
         case CH_UARROW:
