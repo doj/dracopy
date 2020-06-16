@@ -127,8 +127,10 @@ If you use disks with many directory entries, you could run out of memory on the
 The [vice](https://vice-emu.sourceforge.io/) emulator needs to enable
 the _True Drive Emulation_ to support all operations.
 
-Diskcopy
----------
+Feature Description
+--------------------
+
+### Diskcopy
 The program prints the status of reading/writing every sector during the diskcopy operation.
 
 | Char | Description |
@@ -146,6 +148,24 @@ The program prints the status of reading/writing every sector during the diskcop
 When the optimized diskcopy is used (key 'D') sectors which are all
 zero bytes will not be written to the target disk. This will decrease
 the copy time by only writing sectors with data.
+
+### Format
+
+Use a disk name of up to 16 characters. Only giving a disk name will
+quick format the disk, only writing the BAM and and empty
+directory. Add a 2 character disk ID separated by a comma character
+for a full format, writing all disk sectors with 0 bytes.
+
+### Relabel
+
+Use a disk name of up to 16 characters. The 2 character disk ID can be
+changed, by appending it with a comma character to the disk name.
+
+### Disk Image
+
+Give the disk image file name and the disk image type. Valid disk
+image types are ".d64", ".d71", ".d81". The image file name + image
+type name must be <= 16 characters.
 
 Contact
 --------
