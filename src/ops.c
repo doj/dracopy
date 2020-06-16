@@ -37,6 +37,9 @@
 #if defined(__PET__)
 #include <peekpoke.h>
 #endif
+#if defined(REU)
+#include <em.h>
+#endif
 
 const char *value2hex = "0123456789abcdef";
 
@@ -258,6 +261,10 @@ main(void)
   _heapadd((void *) 0x0400, 0x0400);
 #endif
 
+#if defined(REU)
+  em_load_driver(REU);
+#endif
+
   initScreen(DC_COLOR_BORDER, DC_COLOR_BG, DC_COLOR_TEXT);
   mainLoop();
   exitScreen();
@@ -292,8 +299,13 @@ static const char* helpcontent[] = {
   "@", "DOS command",
   "\xfc", "chg dev id", // CH_POUND
   "", "",
+#if defined(REU)
+  "z", "load to REU",
+  "x", "save fr REU",
+#else
   "", "",
   "", "",
+#endif
 
   "i", "disk image",
   "f", "format disk",

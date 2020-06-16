@@ -36,6 +36,13 @@
 #include "defines.h"
 #include "version.h"
 #include "ops.h"
+#if defined(REU)
+#include <em.h>
+void readFile(const BYTE context);
+BYTE writeFile(const BYTE context);
+static unsigned long cachedFileSize = 0;
+static char cachedFileName[16+2+1];
+#endif
 
 /* declarations */
 BYTE really(void);
@@ -47,6 +54,8 @@ int doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 int copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE destdevice, BYTE type);
 void doMakeImage(const BYTE device);
 void doRelabel(const BYTE device);
+void nextWindowState(const BYTE context);
+void updateMenu();
 
 extern BYTE devices[];
 extern char linebuffer[];
@@ -90,7 +99,7 @@ nextWindowState(const BYTE context)
 }
 
 void
-updateMenu(void)
+updateMenu()
 {
   BYTE menuy=MENUY;
 
@@ -195,7 +204,7 @@ mainLoop(void)
       }
 #endif
       {
-        const size_t s = _heapmemavail();
+        size_t s = _heapmemavail();
         if (s < 0x1000)
           {
             gotoxy(MENUXT,BOTTOM);
@@ -203,6 +212,16 @@ mainLoop(void)
             cprintf("lowmem:%04x",s);
             textcolor(DC_COLOR_TEXT);
           }
+#ifdef REU
+        else
+          {
+            s = em_pagecount();
+            gotoxy(MENUXT,BOTTOM);
+            textcolor(DC_COLOR_HIGHLIGHT);
+            cprintf("REU:%lu/%lu", cachedFileSize/1024ul, s*256ul/1024ul);
+            textcolor(DC_COLOR_TEXT);
+          }
+#endif
       }
 
       key_pressed = cgetc();
@@ -501,6 +520,20 @@ mainLoop(void)
         case 'w':
           nextWindowState(context);
           break;
+
+#if defined(REU)
+        case 'z':
+          readFile(context);
+          updateScreen(context, 2);
+          break;
+        case 'x':
+          if (writeFile(context))
+            {
+              updateScreen(context, 2);
+              refreshDir(context, sorted, context);
+            }
+          break;
+#endif
         }
     }
 
@@ -1771,3 +1804,153 @@ doRelabel(const BYTE device)
   cbm_close(4);
   cbm_close(2);
 }
+
+#if defined(REU)
+void
+readFile(const BYTE context)
+{
+  int i;
+  unsigned page = 0;
+  const BYTE device = devices[context];
+  Directory *cwd = GETCWD;
+  if (cwd->selected == NULL)
+    return;
+  strcpy(cachedFileName, cwd->selected->dirent.name);
+  sprintf(linebuffer, "read %s into REU", cachedFileName);
+  newscreen(linebuffer);
+  i = strlen(cachedFileName);
+  cachedFileName[i] = ',';
+  ++i;
+  switch(cwd->selected->dirent.type)
+    {
+    case _CBM_T_SEQ:
+      cachedFileName[i] = 's';
+      break;
+    case _CBM_T_PRG:
+      cachedFileName[i] = 'p';
+      break;
+    case _CBM_T_USR:
+      cachedFileName[i] = 'u';
+      break;
+    default:
+      cputs("unsupported file type\n\r");
+      goto error;
+    }
+  cachedFileName[++i] = 0;
+  cachedFileSize = 0;
+
+  i = cbm_open(device, device, CBM_READ, cachedFileName);
+  if (i != 0)
+    {
+      cprintf("could not open %s: %i\n\r", cachedFileName, i);
+      goto error;
+    }
+  while(1)
+    {
+      void *p = em_use(page++);
+      if (page > em_pagecount())
+        {
+          cputs("REU too small\n\r");
+          goto error;
+        }
+      if (! p)
+        {
+          cputs("em map error\n\r");
+          goto error;
+        }
+      i = cbm_read(device, p, 256);
+      if (i < 0)
+        {
+          cprintf("read error: %i\n\r", i);
+          goto error;
+        }
+      assert(i <= 256);
+      em_commit();
+      cachedFileSize += i;
+      if (i < 256)
+        break;
+      cprintf("\rread %lu ", cachedFileSize);
+
+      if (kbhit())
+        {
+          char c = cgetc();
+          if (c == CH_ESC || c == CH_LARROW)
+            {
+              cputs("abort");
+              goto abort;
+            }
+        }
+    }
+  goto done;
+
+ error:
+  waitKey(0);
+ abort:
+  cachedFileSize = 0;
+ done:
+  cbm_close(device);
+}
+
+BYTE
+writeFile(const BYTE context)
+{
+  int i, w;
+  unsigned page = 0;
+  unsigned long size = cachedFileSize;
+  const BYTE device = devices[context];
+  if (size == 0)
+    return 0;
+  i = strlen(cachedFileName);
+  if (i < 3)
+    return 0;
+
+  sprintf(linebuffer, "write %s from REU to %i", cachedFileName, device);
+  newscreen(linebuffer);
+
+  i = cbm_open(device, device, CBM_WRITE, cachedFileName);
+  if (i != 0)
+    {
+      cprintf("can't open file: %i\n\r", i);
+      goto error;
+    }
+
+  while(size)
+    {
+      void *p = em_map(page++);
+      if (! p)
+        {
+          cputs("em map error\n\r");
+          goto error;
+        }
+      if (size > 256)
+        i = 256;
+      else
+        i = size;
+      w = cbm_write(device, p, i);
+      if (w != i)
+        {
+          cprintf("write error: %i\n\r", w);
+          goto error;
+        }
+      size -= i;
+      cprintf("\rwrite %lu          ", size);
+
+      if (kbhit())
+        {
+          char c = cgetc();
+          if (c == CH_ESC || c == CH_LARROW)
+            {
+              cputs("abort");
+              goto done;
+            }
+        }
+    }
+
+  goto done;
+ error:
+  waitKey(0);
+ done:
+  cbm_close(device);
+  return 1;
+}
+#endif

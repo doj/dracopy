@@ -39,7 +39,7 @@ Version Information and Download
 | 1.0d | 12 Dec 2010 | implemented disk copy | Sascha Bader | https://csdb.dk/release/?id=98664
 | 1.0e | 2018        | single window, REU, many other improvements | rbm | [freeforums.net](https://c-128.freeforums.net/thread/568/new-drabrowse-copy-file-browser) [csdb.dk](https://csdb.dk/release/?id=165305)
 | 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy | doj |
-| 1.0doj | June 2020 | 80 column mode for C64, create d64 image, SFD-1001 support | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
+| 1.0doj | June 2020 | 80 column mode for C64, create d64 image, SFD-1001 support, REU | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
 
 You can also download dracopy in alternate color schemes:
 
@@ -82,6 +82,8 @@ See the TODO section below for some functions that may have issues.
 | b | go to bottom page in current window
 | c | copy current file on the same device
 | r | rename current file
+| z | read current file into REU
+| x | write file in REU to disk
 | f | format device in current window
 | l | change disk name, relabel
 | i | create a D64, D71, D81 image file
@@ -114,7 +116,6 @@ the following features can be implemented or bugs should be fixed:
 - support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
 - support vice without true drive emulation?
 - better program load for dc6480
-- use reu to load file for copy. This will allow to copy between directories on the same device.
 - order directory entries
 - add write protection to disk
 
@@ -166,6 +167,22 @@ changed, by appending it with a comma character to the disk name.
 Give the disk image file name and the disk image type. Valid disk
 image types are ".d64", ".d71", ".d81". The image file name + image
 type name must be <= 16 characters.
+
+### REU support
+
+A number of RAM expansion cards are supported with the cc65 compiler
+and DraCopy. If the RAM expansion is detected you can load a single
+file into the REU with the 'z' key. The file can then be written to
+disk multiple times with the 'x' key.
+
+This feature is useful to either write a file multiple times, or to
+copy a file between directories on the same device. If you want to
+copy a file a single time between 2 different devices use the regular
+copy feature.
+
+REU support for DraCopy needs to be compiled, by uncommenting the name
+of the REU driver in the Makefile. The corresponding *.emd driver file
+needs to be present on the device from where DraCopy is started.
 
 Contact
 --------

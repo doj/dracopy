@@ -185,4 +185,8 @@ extern BYTE DIR2H;
 #pragma charmap (0xff, 0x5f);
 #pragma charmap (0xfc, 0x5c);
 
+#if !defined(__C64__)
+#undef REU
+#endif
+
 #endif
