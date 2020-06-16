@@ -52,7 +52,7 @@ BYTE DIR1H;
 BYTE DIR2H;
 
 void
-initDirWindowHeight()
+initDirWindowHeight(void)
 {
 #ifdef CHAR80
   DIR1H = 23;

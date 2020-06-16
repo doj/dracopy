@@ -113,7 +113,7 @@ initScreen(const BYTE border, const BYTE bg, const BYTE text)
 
 /* restore basic screen mode */
 void
-exitScreen()
+exitScreen(void)
 {
   bordercolor(screen_borderc);
   bgcolor(screen_bgc);

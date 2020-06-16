@@ -29,5 +29,5 @@ void clearArea(const BYTE xpos, const BYTE ypos, const BYTE xsize, const BYTE ys
 void newscreen(const char *title);
 void drawFrame(const char *title, const BYTE xpos, const BYTE ypos, const BYTE xsize, const BYTE ysize, const char *subtitle);
 void initScreen(const BYTE border, const BYTE bg, const BYTE text);
-void exitScreen();
+void exitScreen(void);
 #endif

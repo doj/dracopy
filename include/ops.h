@@ -46,7 +46,7 @@ int changeDir(const BYTE context, const BYTE device, const char *dirname, const 
 void changeDeviceID(BYTE device);
 void drawDirFrame(BYTE context, const BYTE mycontext);
 const char* getDeviceType(const BYTE device);
-void initDirWindowHeight();
+void initDirWindowHeight(void);
 int textInput(const BYTE xpos, const BYTE ypos, char *str, const BYTE size);
 void doDOScommand(const BYTE context, const BYTE sorted, const BYTE use_linebuffer);
 
