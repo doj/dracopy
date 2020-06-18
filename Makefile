@@ -11,15 +11,20 @@
 #CFLAGS+=-DCOLOR_SCHEME_128
 
 # C64 256K memory expansion
-#c64-c256k.emd
+#REU=c64-c256k.emd
 # Berkeley Softworks GeoRam
-#c64-georam.emd
+#REU=c64-georam.emd
 # RamCart 64/128
-#c64-ramcart.emd
+#REU=c64-ramcart.emd
 # CBM REU
-REU=c64-reu.emd
+#REU=c64-reu.emd
 # C64 D2TV
-#REU==dtv-himem.emd
+#REU=dtv-himem.emd
+# Kerberos MIDI interface
+#REU=c64-kerberos.emd
+
+# enable this flags to build DraCopy with built in support for the Kerberos MIDI interface SRAM.
+CFLAGS+=-DKERBEROS
 
 ##############################################################################
 # building
@@ -28,7 +33,6 @@ CFLAGS+=-I include -O -Or -Os -r
 
 ifneq ($(REU),)
 C64CFLAGS+=-DREU=\"$(REU)\"
-REU_FILE=$(CC65_HOME)/target/c64/drv/emd/$(REU)
 endif
 
 C64CFLAGS+=$(CFLAGS)
@@ -38,8 +42,8 @@ TARGETS=dc64 db64 dc6480 db6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dc
 
 all:	$(TARGETS) $(D64)
 
-$(D64):	$(TARGETS)
-	sh d64.sh 'dracopy 1.0doj,dj' $(D64) dc64 db64 dc6480 dc128 db128 dc1280 db1280 dcp4 dbp4 $(REU_FILE)
+$(D64):	$(TARGETS) $(REU)
+	sh d64.sh 'dracopy 1.0doj,dj' $(D64) dc64 db64 dc6480 dc128 db128 dc1280 db1280 dcp4 dbp4 $(REU)
 
 COMMON_SRC=src/screen.c src/cat.c src/dir.c src/base.c src/ops.c
 DC_SRC=src/dc.c $(COMMON_SRC)
@@ -119,17 +123,20 @@ dbpet80:	$(DB_SRC)
 	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@
 
 clean:
-	$(RM) -rf d src/*.o src/*.s *.prg *.map *.seq *.d64 *.d71 *.d8[012] $(TARGETS) *.zip
+	$(RM) -rf d src/*.o src/*.s *.prg *.map *.seq *.d64 *.d71 *.d8[012] $(TARGETS) *.zip *.emd
 	find . -name '*~' -delete
 
 zip:	dracopy-1.0doj.zip
 	[ -d ../doj/c64/ ] && cp $< ../doj/c64/
 
-dracopy-1.0doj.zip:	$(TARGETS)
+dracopy-1.0doj.zip:	$(TARGETS) $(REU)
 	zip -9 $@ $^ README.md
 
 test.prg:	src/test.c
 	cl65 $(CFLAGS) -t pet $^ -o $@
+
+$(REU):
+	cp -f $(CC65_HOME)/target/c64/drv/emd/$(REU) $@
 
 ##############################################################################
 # testing
@@ -171,10 +178,13 @@ $(D81_2):
 	TYPE=d81 sh d64.sh 'test2,81' $@ *.seq
 	$(RM) *.seq
 
-X64?=x64sc -autostartprgmode 1 -reu -reusize 128 -truedrive
+X64?=x64sc -autostartprgmode 1 -reu -reusize 2048 -truedrive
 x64:	$(D64) $(D81) $(D81_2) $(D64_9)
 	#$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -9 $(D64_9) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81)
 	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81)
+
+x6480:	$(D64) $(D81) $(D81_2) $(D64_9)
+	$(X64) -autostart dc6480.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81)
 
 D82=8.d82
 $(D82):	dc64ieee dcpet80 dcpet40

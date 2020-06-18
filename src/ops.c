@@ -183,10 +183,8 @@ execute(char * prg, BYTE device)
   cputs("run");
 
 #if !defined(__PET__)
-  gotoxy(14,BOTTOM-1);
-  cputs("this program was loaded by");
-  gotoxy(14,BOTTOM);
-  cputs("DraCopy " DRA_VER);
+  gotoxy(6,BOTTOM);
+  cputs("this program was loaded by DraCopy");
 #endif
 
 #if defined(KBCHARS)
@@ -299,7 +297,7 @@ static const char* helpcontent[] = {
   "@", "DOS command",
   "\xfc", "chg dev id", // CH_POUND
   "", "",
-#if defined(REU)
+#if defined(REU) || defined(KERBEROS)
   "z", "load to REU",
   "x", "save fr REU",
 #else
@@ -336,7 +334,7 @@ about(const char *progname)
   BYTE x = 0;
   BYTE y = 10;
   const char* *h = helpcontent;
-  sprintf(linebuffer, "About %s " DRA_VER, progname);
+  sprintf(linebuffer, "%s " DRA_VER, progname);
   newscreen(linebuffer);
 
   textcolor(DC_COLOR_DIM);
@@ -378,7 +376,7 @@ about(const char *progname)
 void
 about(const char *progname)
 {
-  sprintf(linebuffer, "About %s " DRA_VER, progname);
+  sprintf(linebuffer, "%s " DRA_VER, progname);
   newscreen(linebuffer);
   cputs("Copyright 2009 by Draco and others\n\r"
         "https://github.com/doj/dracopy\n\r");

@@ -41,7 +41,7 @@ Version Information and Download
 | 1.0doj | May 2020  | based on the source code of version 1.0c, reimplemented the disk copy | doj |
 | 1.0doj | June 2020 | 80 column mode for C64, create d64 image, SFD-1001 support, REU | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
 
-You can also download dracopy in alternate color schemes:
+DraCopy builds in alternate color schemes:
 
 | Scheme  | Download | Screenshot |
 | ------- | -------- | ---------- |
@@ -49,6 +49,13 @@ You can also download dracopy in alternate color schemes:
 | blue    | [dracopy-1.0doj-BLUE.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-BLUE.zip) | [dc64-blue](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-blue.png)
 | SX-64   | [dracopy-1.0doj-SX.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-SX.zip) | [dc64-sx](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-sx.png)
 | C128    | [dracopy-1.0doj-128.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-128.zip) | [dc64-128](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-128.png)
+
+The following special builds of dracopy are available for download:
+
+| build | Download |
+| ----- | -------- |
+| Commodore REU | [dracopy-1.0doj-reu.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-reu.zip)
+| Kerberos MIDI | [dracopy-1.0doj-kerberos.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-kerberos.zip)
 
 Keys
 -----
@@ -123,7 +130,11 @@ Platform Notes
 ---------------
 The Commodore 128 has less memory available than the C64.
 This results from the memory layout of the [cc65](https://cc65.github.io/) compiler.
-If you use disks with many directory entries, you could run out of memory on the C128.
+Disks with many directory entries could run out of memory on the C128.
+
+The PET needs to have at least 32KB of RAM to run DraCopy. There is
+not much memory left, disks with many directory entried may run out of
+memory.
 
 The [vice](https://vice-emu.sourceforge.io/) emulator needs to enable
 the _True Drive Emulation_ to support all operations.
@@ -137,17 +148,18 @@ The program prints the status of reading/writing every sector during the diskcop
 | Char | Description |
 | ---- | ----------- |
 | r    | reading an odd sector, if the track has more than 25 sectors
-| R    | reading a sector, reading even sector if the track has more than 25 sectors
+| R    | reading a sector or reading even sector if the track has more than 25 sectors
 | w    | writing an odd sector, if the track has more than 25 sectors
-| W    | writing a sector, writing even sector if the track has more than 25 sectors
-| o (lowercase o) | the sector data contains only 0 bytes, the sector is written
-| O (uppercase O) | the sector contains only 0 bytes, the sector is not written in optimized diskcopy
-| E    | error while reading or writing the sector
-| 0..9 | sector is partially used 0-99%
-| !    | sector with an invalid link to the next sector (track too large)
+| W    | writing a sector or writing even sector if the track has more than 25 sectors
+| o (lowercase o) | the sector data (254 bytes) contains only 0 bytes
+| O (uppercase O) | the whole sector (256 bytes) contains only 0 bytes
+| e    | error while reading the sector
+| E    | error while writing the sector
+| 0..9 | sector was written and is only partially used, 0% - 99%
+| !    | sector was written and contains an invalid link to the next sector (track too large)
 
 When the optimized diskcopy is used (key 'D') sectors which are all
-zero bytes will not be written to the target disk. This will decrease
+zero bytes (status char uppercase 'O') will not be written to the target disk. This will decrease
 the copy time by only writing sectors with data.
 
 ### Format
@@ -171,18 +183,23 @@ type name must be <= 16 characters.
 ### REU support
 
 A number of RAM expansion cards are supported with the cc65 compiler
-and DraCopy. If the RAM expansion is detected you can load a single
-file into the REU with the 'z' key. The file can then be written to
+and DraCopy. If the RAM expansion is detected a single file can be
+loaded into the REU with the 'z' key. The file can then be written to
 disk multiple times with the 'x' key.
 
 This feature is useful to either write a file multiple times, or to
-copy a file between directories on the same device. If you want to
-copy a file a single time between 2 different devices use the regular
-copy feature.
+copy a file between directories on the same device.
 
-REU support for DraCopy needs to be compiled, by uncommenting the name
-of the REU driver in the Makefile. The corresponding *.emd driver file
-needs to be present on the device from where DraCopy is started.
+The Download section contains a link to a pre-built version of DraCopy
+for the [Commodore REU](https://www.c64-wiki.com/wiki/Commodore_REU)
+cartridges. Support for other RAM expansion hardware needs to be
+custom compiled, by uncommenting the name of the REU driver in the
+Makefile. All REU versions of DraCopy require the corresponding *.emd
+driver file to be present on the device from where DraCopy is started.
+
+When a REU is used the amount of used and total memory in KB is
+displayed on the bottom of the menu window. Note that ~4 disk blocks
+are 1KB.
 
 Contact
 --------
@@ -211,7 +228,7 @@ The code was tested to build on a unix system (Linux and OsX) with GNU
 make and the [cc65](https://cc65.github.io/) C compiler for Commodore
 8 bit computers.
 
-You can use pucrunch to compress the compiled dracopy program.
+pucrunch can be used to compress the compiled dracopy program.
 See http://a1bert.kapsi.fi/Dev/pucrunch/ or https://github.com/mist64/pucrunch
 for the source code.
 

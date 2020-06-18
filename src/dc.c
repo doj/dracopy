@@ -38,10 +38,37 @@
 #include "ops.h"
 #if defined(REU)
 #include <em.h>
+#endif
+
+#if defined(KERBEROS)
+#include <peekpoke.h>
+#define REU 1
+#define em_pagecount() 512u
+static void*
+em_use(unsigned page)
+{
+  POKEW(0xDE3E,page);
+  return (void*)0xDF00;
+}
+static void*
+em_map(unsigned page)
+{
+  POKEW(0xDE3E,page);
+  return (void*)0xDF00;
+}
+#define em_commit()
+#endif
+
+#if defined(REU)
 void readFile(const BYTE context);
 BYTE writeFile(const BYTE context);
 static unsigned long cachedFileSize = 0;
 static char cachedFileName[16+2+1];
+#ifdef CHAR80
+#define REUMENUX MENUXT-1
+#else
+#define REUMENUX MENUXT
+#endif
 #endif
 
 /* declarations */
@@ -212,13 +239,13 @@ mainLoop(void)
             cprintf("lowmem:%04x",s);
             textcolor(DC_COLOR_TEXT);
           }
-#ifdef REU
+#if defined(REU)
         else
           {
-            s = em_pagecount();
-            gotoxy(MENUXT,BOTTOM);
-            textcolor(DC_COLOR_HIGHLIGHT);
-            cprintf("REU:%lu/%lu", cachedFileSize/1024ul, s*256ul/1024ul);
+            gotoxy(REUMENUX,BOTTOM);
+            if (cachedFileSize)
+              textcolor(DC_COLOR_HIGHLIGHT);
+            cprintf("REU:%lu/%lu", cachedFileSize/1024ul, em_pagecount()*256ul/1024ul);
             textcolor(DC_COLOR_TEXT);
           }
 #endif
@@ -997,6 +1024,7 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
   switch(st)
     {
     case '!':
+    case 'e':
     case 'E': textcolor(DC_COLOR_ERROR); break;
     case 'O': textcolor(DC_COLOR_GRAY); break;
     default: textcolor(DC_COLOR_GRAYBRIGHT);
@@ -1289,11 +1317,11 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
             {
 #if !defined(__PET__)
               sprintf(sectorBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
-#define SECTOR_ERROR                                    \
-              textcolor(DC_COLOR_ERROR);                \
+#define SECTOR_ERROR(ch)                                  \
+              textcolor(DC_COLOR_ERROR);                  \
               cputsxy(0,BOTTOM,sectorBuf);                \
-              printSecStatus(dt, track, sector, 'E');
-              SECTOR_ERROR;
+              printSecStatus(dt, track, sector, ch);
+              SECTOR_ERROR('e');
 #endif
               continue;
             }
@@ -1316,7 +1344,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
                 }
 #if !defined(__PET__)
               sprintf(sectorBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
-              SECTOR_ERROR;
+              SECTOR_ERROR('e');
 #endif
               continue;
             }
@@ -1371,7 +1399,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
             {
 #if !defined(__PET__)
               sprintf(sectorBuf, "setup buffer failed: %i", track+1, sector, _oserror);
-              SECTOR_ERROR;
+              SECTOR_ERROR('E');
 #endif
               continue;
             }
@@ -1381,7 +1409,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
             {
 #if !defined(__PET__)
               sprintf(sectorBuf, "write %i/%i failed: %i", track+1, sector, _oserror);
-              SECTOR_ERROR;
+              SECTOR_ERROR('E');
 #endif
               continue;
             }
@@ -1391,7 +1419,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
             {
 #if !defined(__PET__)
               sprintf(sectorBuf, "write cmd %i/%i failed: %i", track+1, sector, _oserror);
-              SECTOR_ERROR;
+              SECTOR_ERROR('E');
 #endif
               continue;
             }
