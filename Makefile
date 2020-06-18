@@ -24,7 +24,7 @@
 #REU=c64-kerberos.emd
 
 # enable this flags to build DraCopy with built in support for the Kerberos MIDI interface SRAM.
-CFLAGS+=-DKERBEROS
+#CFLAGS+=-DKERBEROS
 
 ##############################################################################
 # building
@@ -131,6 +131,9 @@ zip:	dracopy-1.0doj.zip
 
 dracopy-1.0doj.zip:	$(TARGETS) $(REU)
 	zip -9 $@ $^ README.md
+
+dc64.zip:	$(TARGETS) $(REU)
+	zip -9 $@ dc64 dc6480 dc64ieee dc64ieee80 $(REU) README.md
 
 test.prg:	src/test.c
 	cl65 $(CFLAGS) -t pet $^ -o $@

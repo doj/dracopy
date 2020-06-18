@@ -13,12 +13,12 @@ done
 
 # REU versions
 make clean
-CFLAGS=-DKERBEROS make zip
-mv dracopy-1.0doj.zip ../doj/c64/dracopy-1.0doj-kerberos.zip
+CFLAGS=-DKERBEROS make dc64.zip
+mv dc64.zip ../doj/c64/dracopy-1.0doj-kerberos.zip
 
 make clean
-REU=c64-reu.emd make zip
-mv dracopy-1.0doj.zip ../doj/c64/dracopy-1.0doj-reu.zip
+REU=c64-reu.emd make dc64.zip
+mv dc64.zip ../doj/c64/dracopy-1.0doj-reu.zip
 
 # build the default version
 make clean

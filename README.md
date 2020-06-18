@@ -54,8 +54,8 @@ The following special builds of dracopy are available for download:
 
 | build | Download |
 | ----- | -------- |
-| Commodore REU | [dracopy-1.0doj-reu.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-reu.zip)
-| Kerberos MIDI | [dracopy-1.0doj-kerberos.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-kerberos.zip)
+| Commodore REU for dc64 | [dracopy-1.0doj-reu.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-reu.zip)
+| Kerberos MIDI for dc64 | [dracopy-1.0doj-kerberos.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj-kerberos.zip)
 
 Keys
 -----
@@ -122,7 +122,8 @@ the following features can be implemented or bugs should be fixed:
   + run PRG
 - support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
 - support vice without true drive emulation?
-- better program load for dc6480
+- dc6480 is crashing when running a PRG with filename > 6 or 7 characters.
+  Maybe setup a small assembly program which is started after the reset to BASIC?
 - order directory entries
 - add write protection to disk
 
