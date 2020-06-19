@@ -183,8 +183,15 @@ mainLoop(void)
   updateScreen(context, 2);
 
   {
-    BYTE i = 7;
+    BYTE i;
+    for(i = 0; i < 16; ++i)
+      {
+        cbm_close(i);
+        cbm_closedir(i);
+      }
+
     textcolor(DC_COLOR_HIGHLIGHT);
+    i = 7;
     while(++i < 12)
       {
         devices[context] = i;
@@ -219,17 +226,6 @@ mainLoop(void)
  found_lower_drive:
   while(1)
     {
-#if 0 //!defined(__PET__)
-      {
-        // TODO: find out where a file is left open, then remove this workaround block
-        BYTE i;
-        for(i = 0; i < 16; ++i)
-          {
-            cbm_close(i);
-            cbm_closedir(i);
-          }
-      }
-#endif
       {
         size_t s = _heapmemavail();
         if (s < 0x1000)
@@ -1711,8 +1707,8 @@ doMakeImage(const BYTE device)
 void
 doRelabel(const BYTE device)
 {
-  BYTE track, sector, name_offset, id_offset;
-  int i;
+  BYTE track, sector, name_offset, id_offset, id_len;
+  int i, j;
   sprintf(linebuffer, "Change disk name of device %d", device);
   newscreen(linebuffer);
 
@@ -1723,11 +1719,13 @@ doRelabel(const BYTE device)
     case D1541:
     case D1551:
     case D1570:
+      // https://ist.uwaterloo.ca/~schepers/formats/D71.TXT
     case D1571:
       track = 18;
       sector = 0;
       name_offset = 0x90;
       id_offset = 0xA2;
+      id_len = 5;
       break;
 
 #if !defined(__PET__)
@@ -1737,6 +1735,7 @@ doRelabel(const BYTE device)
       sector = 0;
       name_offset = 0x04;
       id_offset = 0x16;
+      id_len = 2;
       break;
 #endif
 
@@ -1746,6 +1745,7 @@ doRelabel(const BYTE device)
       sector = 0;
       name_offset = 6;
       id_offset = 0x18;
+      id_len = 5;
       break;
 
     default:
@@ -1759,15 +1759,46 @@ doRelabel(const BYTE device)
     }
 
   // read BAM sector
-  cbm_open(2, device, 5, "#");
-  cbm_open(4, device, 15, "");
+  i = cbm_open(2, device, 5, "#");
+  if (i != 0)
+    {
+#if !defined(__PET__)
+      gotoxy(0,6);
+      cprintf("could not open 2: %i\n\r", i);
+      waitKey(0);
+#endif
+      goto done;
+    }
 
-  cbm_write(4, linebuffer, sprintf(linebuffer, "u1:5 0 %d %d", track, sector));
+  i = cbm_open(4, device, 15, "");
+  if (i != 0)
+    {
+#if !defined(__PET__)
+      gotoxy(0,6);
+      cprintf("could not open 4: %i\n\r", i);
+      waitKey(0);
+#endif
+      goto done;
+    }
+
+  j = sprintf(linebuffer, "u1:5 0 %d %d", track, sector);
+  i = cbm_write(4, linebuffer, j);
+  if (i != j)
+    {
+#if !defined(__PET__)
+      gotoxy(0,6);
+      cprintf("could not write u1: %i\n\r", i);
+      waitKey(0);
+#endif
+      goto done;
+    }
+
   i = cbm_read(2, sectorBuf, 256);
   if (i != 256)
     {
 #if !defined(__PET__)
-      cputsxy(0,6,"could not read BAM\n\r");
+      gotoxy(0,6);
+      cprintf("could not read BAM: %i\n\r", i);
       waitKey(0);
 #endif
       goto done;
@@ -1790,23 +1821,29 @@ doRelabel(const BYTE device)
   if (i > 0)
     ++i;
   linebuffer2[i++] = ',';
-  linebuffer2[i++] = sectorBuf[id_offset];
-  linebuffer2[i++] = sectorBuf[id_offset + 1];
+  for(j = 0; j < id_len; ++j)
+    {
+      linebuffer2[i++] = sectorBuf[id_offset + j];
+    }
   linebuffer2[i] = 0;
 
   cputsxy(0,2,"disk name: ");
-  i = textInput(10,2, linebuffer2, 19);
+  i = textInput(10,2, linebuffer2, 16+1+id_len);
   if (i >= 0)
     {
       // check if disk ID was given
-      if (i >= 3)
+      for(j = i-1; j >= 0; --j)
         {
-          if (linebuffer2[i - 3] == ',')
+          if (linebuffer2[j] == ',')
             {
               // copy ID
-              sectorBuf[id_offset] = linebuffer2[i - 2];
-              sectorBuf[id_offset + 1] = linebuffer2[i - 1];
-              i -= 3;
+              BYTE k;
+              for(k = 0; k < id_len && linebuffer2[j+k+1]; ++k)
+                {
+                  sectorBuf[id_offset + k] = linebuffer2[j + k + 1];
+                }
+              i = j;
+              break;
             }
         }
 
@@ -1831,6 +1868,9 @@ doRelabel(const BYTE device)
  done:
   cbm_close(4);
   cbm_close(2);
+
+  // reset the device, so it will read the updated BAM
+  cmd(device, "ui");
 }
 
 #if defined(REU)

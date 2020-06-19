@@ -89,8 +89,15 @@ mainLoop(void)
   updateScreen(context, num_windows);
 
   {
-    BYTE i = 7;
+    BYTE i;
+    for(i = 0; i < 16; ++i)
+      {
+        cbm_close(i);
+        cbm_closedir(i);
+      }
+
     textcolor(DC_COLOR_HIGHLIGHT);
+    i = 7;
     while(++i < 12)
       {
         devices[context] = i;

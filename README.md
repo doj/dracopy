@@ -248,3 +248,7 @@ Links
 IEEE-488 drives like SFD-1001:
 http://www.zimmers.net/anonftp/pub/cbm/schematics/cartridges/c64/ieee-488/index.html
 https://www.lemon64.com/forum/viewtopic.php?t=65199&sid=720fd316d9a3227e0820c1465f4e042b
+
+[C64 utilities](https://sta.c64.org/c64utils.html) has 2 d64 images
+with various disk, file and development utilities for the
+Commodore 64.
