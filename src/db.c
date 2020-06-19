@@ -34,10 +34,6 @@
 #include "ops.h"
 #include "version.h"
 
-extern BYTE devices[];
-extern char linebuffer[];
-extern Directory* dirs[];
-
 static BYTE sorted = 0;
 
 void

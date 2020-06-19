@@ -33,7 +33,10 @@
 #include "defines.h"
 #include "ops.h"
 
-# define CBM_T_FREE 100
+#define CBM_T_FREE 100
+
+#define DISK_ID_LEN 5
+#define disk_id_buf linebuffer2
 
 static const char progressBar[4] = { 0xA5, 0xA1, 0xA7, ' ' };
 static const char progressRev[4] = { 0,    0,    1,    1 };
@@ -56,9 +59,8 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
   BYTE x = 0;
 
   freeDir(&dir);
+  memset(disk_id_buf, 0, DISK_ID_LEN);
 
-  //cbm_close(device);
-  //cbm_closedir(device);
   if (cbm_opendir(device, device) != 0)
     {
       cbm_closedir(device);
@@ -67,12 +69,15 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
 
   while(1)
     {
+      BYTE ret;
       DirElement * de = (DirElement *) calloc(1, sizeof(DirElement));
       if (! de)
         goto stop;
 
-      if (myCbmReadDir(device, &(de->dirent)) != 0)
+      ret = myCbmReadDir(device, &(de->dirent));
+      if (ret != 0)
         {
+          debugu(ret);
           free(de);
           goto stop;
         }
@@ -104,11 +109,13 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
             goto stop;
           if (de->dirent.type == _CBM_T_HEADER)
             {
-              memcpy(dir->name, de->dirent.name, 16);
-              dir->name[16] = ',';
-              dir->name[17] = de->dirent.size & 255;
-              dir->name[18] = de->dirent.size >> 8;
-              dir->name[19] = 0;
+              BYTE i;
+              for(i = 0; de->dirent.name[i]; ++i)
+                {
+                  dir->name[i] = de->dirent.name[i];
+                }
+              dir->name[i++] = ',';
+              memcpy(&dir->name[i], disk_id_buf, DISK_ID_LEN);
             }
           else
             {
@@ -189,26 +196,26 @@ readDir(Directory *dir, const BYTE device, const BYTE context, const BYTE sorted
 }
 
 /**
+ * @param l_dirent pointer to cbm_dirent object, must be memset to 0.
  * @return 0 upon success, @p l_dirent was set.
  * @return >0 upon error.
  */
 unsigned char
 myCbmReadDir(const BYTE device, struct cbm_dirent* l_dirent)
 {
-  unsigned char byte, i, byte2, byte3;
+  BYTE b, len;
+  BYTE i = 0;
 
+  // check that device is ready
   if (cbm_k_chkin (device) != 0)
     {
       cbm_k_clrch();
       return 1;
     }
-
   if (cbm_k_readst() != 0)
     {
       return 7;
     }
-
-  l_dirent->access = 0;
 
   // skip next basic line: 0x01, 0x01
   cbm_k_basin();
@@ -218,75 +225,82 @@ myCbmReadDir(const BYTE device, struct cbm_dirent* l_dirent)
   l_dirent->size = cbm_k_basin();
   l_dirent->size |= (cbm_k_basin()) << 8;
 
-  i = 0;
-  byte = cbm_k_basin();
-
-  // handle "B" BLOCKS FREE
-  if (byte == 'b')
+  // read line into linebuffer
+  memset(linebuffer, 0, sizeof(linebuffer));
+  //cclearxy(0,BOTTOM,SCREENW);//debug
+  while(1)
     {
-      l_dirent->type = CBM_T_FREE;
-      l_dirent->name[i++] = byte;
-      while ((byte = cbm_k_basin()) != '\"'  )
+      // read byte
+      b = cbm_k_basin();
+      // EOL?
+      if (b == 0)
         {
-          if (cbm_k_readst() != 0)
-            {
-              cbm_k_clrch();
-              l_dirent->name[i] = '\0';
-              return 0;
-            }
-          if (i < sizeof (l_dirent->name) - 1)
-            {
-              l_dirent->name[i] = byte;
-              ++i;
-            }
+          break;
         }
-      l_dirent->name[i] = '\0';
-      return 0;
-    }
-
-  // read file name
-  if (byte != '\"')
-    {
-      while (cbm_k_basin() != '\"')
+      // append to linebuffer
+      if (i < sizeof(linebuffer))
         {
-          if (cbm_k_readst() != 0)
-            {
-              cbm_k_clrch();
-              return 3;
-            }
+          linebuffer[i++] = b;
+          //cputcxy(i,BOTTOM,b);//debug
         }
-    }
-
-  while ((byte = cbm_k_basin()) != '\"'  )
-    {
+      // return if reading had error
       if (cbm_k_readst() != 0)
         {
           cbm_k_clrch();
-          return 4;
-        }
-
-      if (i < sizeof (l_dirent->name) - 1)
-        {
-          l_dirent->name[i] = byte;
-          ++i;
+          return 2;
         }
     }
-  l_dirent->name[i] = '\0';
+  cbm_k_clrch();
+  //cputcxy(i,BOTTOM,'?');//debug
 
-  // read file type
-  while ((byte=cbm_k_basin()) == ' ')
+  // handle "B" BLOCKS FREE
+  if (linebuffer[0] == 'b')
     {
-      if (cbm_k_readst())
-        {
-          cbm_k_clrch();
-          return 5;
-        }
+      l_dirent->type = CBM_T_FREE;
+      return 0;
     }
 
-  byte2 = cbm_k_basin();
-  byte3 = cbm_k_basin();
+  // check that we have a minimum amount of characters to work with
+  if (i < 5)
+    {
+      return 3;
+    }
 
-#define X(a,b,c) byte==a && byte2==b && byte3==c
+  // strip whitespace from right part of line
+  for(len = i; len > 0; --len)
+    {
+      b = linebuffer[len];
+      if (b == 0 ||
+          b == ' ' ||
+          b == 0xA0)
+        {
+          linebuffer[len] = 0;
+          continue;
+        }
+      ++len;
+      break;
+    }
+
+  //cputcxy(len,BOTTOM,'!');//debug
+  //cgetc();//debug
+
+  // parse file name
+
+  // skip until first "
+  for(i = 0; i < sizeof(linebuffer) && linebuffer[i] != '"'; ++i)
+    {
+      // do nothing
+    }
+
+  // copy filename, until " or max size
+  b = 0;
+  for(++i; i < sizeof(linebuffer) && linebuffer[i] != '"' && b < 16; ++i)
+    {
+      l_dirent->name[b++] = linebuffer[i];
+    }
+
+  // check file type
+#define X(a,b,c) linebuffer[len-3]==a && linebuffer[len-2]==b && linebuffer[len-1]==c
 
   if (X('p','r','g'))
     {
@@ -324,54 +338,47 @@ myCbmReadDir(const BYTE device, struct cbm_dirent* l_dirent)
     {
       l_dirent->type = CBM_T_LNK;
     }
-  else if (byte == '2' && byte2 == 'a')
-    {
-      // a directory line with an empty ID
-      l_dirent->size = ' ' | (' '<<8);
-      l_dirent->type = _CBM_T_HEADER;
-      cbm_k_clrch();
-      return 0;
-    }
-  else if (byte3 == ' ')
-    {
-      // reading the disk name line
-      l_dirent->size = byte | (byte2 << 8);
-      l_dirent->type = _CBM_T_HEADER;
-
-      while (cbm_k_basin() != 0)
-        {
-          if (cbm_k_readst() != 0)
-            {
-              cbm_k_clrch();
-              return 8;
-            }
-        }
-
-      cbm_k_clrch();
-      return 0;
-    }
   else
     {
-      l_dirent->type = CBM_T_OTHER;
-    }
+      // parse header
+      l_dirent->type = _CBM_T_HEADER;
 
-  // read access
-  byte = cbm_k_basin();
-  l_dirent->access = (byte == 0x3C) ? CBM_A_RO : CBM_A_RW;
-
-  if (byte != 0)
-    {
-      while (cbm_k_basin() != 0)
+      // skip one character which should be "
+      if (linebuffer[i] == '"')
         {
-          if (cbm_k_readst() != 0)
-            {
-              cbm_k_clrch();
-              return 6;
-            }
+          ++i;
         }
+      // skip one character which should be space
+      if (linebuffer[i] == ' ')
+        {
+          ++i;
+        }
+
+      // copy disk ID
+      for(b = 0; i < sizeof(linebuffer) && b < DISK_ID_LEN; ++i, ++b)
+        {
+          disk_id_buf[b] = linebuffer[i];
+        }
+
+      // strip disk name
+      for(b = 15; b > 0; --b)
+        {
+          if (l_dirent->name[b] == 0 ||
+              l_dirent->name[b] == ' ' ||
+              l_dirent->name[b] == 0xA0)
+            {
+              l_dirent->name[b] = 0;
+              continue;
+            }
+          break;
+        }
+
+      return 0;
     }
 
-  cbm_k_clrch();
+  // parse read-only
+  l_dirent->access = (linebuffer[i-4] == 0x3C) ? CBM_A_RO : CBM_A_RW;
+
   return 0;
 }
 

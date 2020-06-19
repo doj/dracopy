@@ -554,22 +554,13 @@ drawDirFrame(BYTE context, const BYTE mycontext)
 {
   const Directory *dir = GETCWD;
   const char *dt = drivetype[devicetype[devices[context]]];
-  sprintf(linebuffer, " %02i:%s", (int)devices[context], dir ? dir->name : "");
-  if(mycontext==context)
-    {
-      linebuffer[0] = '>';
-      textcolor(DC_COLOR_HIGHLIGHT);
-    }
-  else
-    {
-      textcolor(DC_COLOR_TEXT);
-    }
-
+  sprintf(linebuffer, "%i:%s", (int)devices[context], dir ? dir->name : "");
   if (dir)
     {
       sprintf(linebuffer2, "%s>%u bl free<", dt, dir->free);
       dt = linebuffer2;
     }
+  textcolor((mycontext==context) ? DC_COLOR_HIGHLIGHT : DC_COLOR_TEXT);
   drawFrame(linebuffer, DIRX, DIRY, DIRW+2, DIRH+2, dt);
   textcolor(DC_COLOR_TEXT);
 }

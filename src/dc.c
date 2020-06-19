@@ -84,11 +84,6 @@ void doRelabel(const BYTE device);
 void nextWindowState(const BYTE context);
 void updateMenu();
 
-extern BYTE devices[];
-extern char linebuffer[];
-extern char linebuffer2[];
-extern Directory* dirs[];
-
 /* definitions */
 static BYTE windowState = 0;
 static BYTE sorted = 0;
@@ -693,7 +688,7 @@ doDelete(const BYTE context)
 
       sprintf(linebuffer2,
               "%s:%s",
-              (current->dirent.type==DIRTYPE) ? "rd" : "s", // TODO: when is rd required?
+              (current->dirent.type==CBM_T_DIR) ? "rd" : "s", // TODO: when is rd required?
               current->dirent.name);
       ret = cmd(devices[context], linebuffer2);
       cputc(' ');
@@ -1707,7 +1702,8 @@ doMakeImage(const BYTE device)
 void
 doRelabel(const BYTE device)
 {
-  BYTE track, sector, name_offset, id_offset, id_len;
+  BYTE track, sector, name_offset, id_offset;
+#define id_len 5
   int i, j;
   sprintf(linebuffer, "Change disk name of device %d", device);
   newscreen(linebuffer);
@@ -1725,7 +1721,6 @@ doRelabel(const BYTE device)
       sector = 0;
       name_offset = 0x90;
       id_offset = 0xA2;
-      id_len = 5;
       break;
 
 #if !defined(__PET__)
@@ -1735,7 +1730,6 @@ doRelabel(const BYTE device)
       sector = 0;
       name_offset = 0x04;
       id_offset = 0x16;
-      id_len = 2;
       break;
 #endif
 
@@ -1745,7 +1739,6 @@ doRelabel(const BYTE device)
       sector = 0;
       name_offset = 6;
       id_offset = 0x18;
-      id_len = 5;
       break;
 
     default:

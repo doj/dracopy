@@ -176,8 +176,6 @@ extern BYTE DIR2H;
 #define CH_F8 0xe8
 #endif
 
-#define DIRTYPE 6
-
 #define CH_LARROW 0x5f
 #define CH_UARROW 0x5e
 #define CH_POUND  0x5c

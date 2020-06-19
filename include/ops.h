@@ -54,6 +54,10 @@ enum drive_e {NONE=0, D1540, D1541, D1551, D1570, D1571, D1581, D1001, D2031, D8
 
 extern BYTE devicetype[];
 extern const char* drivetype[];
+extern char linebuffer[SCREENW+1];
+extern BYTE devices[];
+extern char linebuffer2[];
+extern Directory* dirs[];
 
 void debugs(const char *s);
 void debugu(const unsigned u);

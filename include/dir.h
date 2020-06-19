@@ -39,9 +39,9 @@ typedef struct direlement {
 typedef struct {
   /// 16 characters name
   /// 1 comma
-  /// 2 characters ID
+  /// 5 characters ID
   /// NUL
-  unsigned char name[16+1+2+1];
+  unsigned char name[16+1+5+1];
   struct direlement * firstelement;
   struct direlement * selected;
   /// current cursor position
