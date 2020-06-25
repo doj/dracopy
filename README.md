@@ -126,6 +126,8 @@ the following features can be implemented or bugs should be fixed:
   Maybe setup a small assembly program which is started after the reset to BASIC?
 - order directory entries
 - add write protection to disk
+- use SDOS https://csdb.dk/release/?id=150525
+- for C128 use https://sites.google.com/site/h2obsession/CBM/C128/JiffySoft128
 
 Platform Notes
 ---------------

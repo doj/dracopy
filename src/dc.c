@@ -573,7 +573,7 @@ doCopy(const BYTE context)
   const BYTE destdev = devices[context^1];
   Directory * cwd = GETCWD;
 
-  sprintf(linebuffer,"Filecopy from %d to %d",srcdev,destdev);
+  sprintf(linebuffer,"Filecopy from %i to %i",srcdev,destdev);
   for(current = cwd->firstelement; current; current=current->next)
     {
       if (++cnt >= BOTTOM)
@@ -669,7 +669,7 @@ doDelete(const BYTE context)
       idx = 1;
     }
 
-  sprintf(linebuffer, "Delete %i files from %d", idx, devices[context]);
+  sprintf(linebuffer, "Delete %i files from %i", idx, devices[context]);
   newscreen(linebuffer);
   if (! really())
     {
@@ -739,7 +739,7 @@ doRenameOrCopy(const BYTE context, const BYTE mode)
     return;
 
   sprintf(linebuffer,
-          "%s file %s on device %d",
+          "%s file %s on device %i",
           mode ? "Copy" : "Rename",
           cwd->selected->dirent.name,devices[context]);
   newscreen(linebuffer);
@@ -1104,7 +1104,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   BYTE track = maxTrack(ret);
   BYTE sectorContent;
 
-  sprintf(linebuffer, "%s diskcopy from %d to %d? (Y/N)", optimized ? " optimized" : "", deviceFrom, deviceTo);
+  sprintf(linebuffer, "%s diskcopy from %i to %i? (Y/N)", optimized ? " optimized" : "", deviceFrom, deviceTo);
   newscreen(linebuffer);
 
   if (max_track != track)
@@ -1303,7 +1303,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 
           // read sector
           printSecStatus(dt, track, sector, 'R');
-          ret = cbm_write(6, linebuffer, sprintf(linebuffer, "u1:5 0 %d %d", track + 1, sector));
+          ret = cbm_write(6, linebuffer, sprintf(linebuffer, "u1:5 0 %i %i", track + 1, sector));
           if (ret < 0)
             {
 #if !defined(__PET__)
@@ -1405,7 +1405,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
               continue;
             }
 
-          ret = cbm_write(8, linebuffer, sprintf(linebuffer, "u2:5 0 %d %d", track + 1, sector));
+          ret = cbm_write(8, linebuffer, sprintf(linebuffer, "u2:5 0 %i %i", track + 1, sector));
           if (ret < 0)
             {
 #if !defined(__PET__)
@@ -1446,7 +1446,7 @@ doMakeImage(const BYTE device)
   int i;
   int answer_len;
 
-  sprintf(linebuffer, "Make Image on device %d", device);
+  sprintf(linebuffer, "Make Image on device %i", device);
   newscreen(linebuffer);
 
 #if !defined(__PET__)
@@ -1705,7 +1705,7 @@ doRelabel(const BYTE device)
   BYTE track, sector, name_offset, id_offset;
 #define id_len 5
   int i, j;
-  sprintf(linebuffer, "Change disk name of device %d", device);
+  sprintf(linebuffer, "Change disk name of device %i", device);
   newscreen(linebuffer);
 
   switch(devicetype[device])
@@ -1774,7 +1774,7 @@ doRelabel(const BYTE device)
       goto done;
     }
 
-  j = sprintf(linebuffer, "u1:5 0 %d %d", track, sector);
+  j = sprintf(linebuffer, "u1:5 0 %i %i", track, sector);
   i = cbm_write(4, linebuffer, j);
   if (i != j)
     {
@@ -1847,7 +1847,7 @@ doRelabel(const BYTE device)
       // write new BAM sector
       cbm_write(4, "b-p:5 0", 7);
       i = cbm_write(2, sectorBuf, 256);
-      cbm_write(4, linebuffer, sprintf(linebuffer, "u2:5 0 %d %d", track, sector));
+      cbm_write(4, linebuffer, sprintf(linebuffer, "u2:5 0 %i %i", track, sector));
 
       if (i != 256)
         {

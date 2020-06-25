@@ -167,7 +167,7 @@ void
 execute(char * prg, BYTE device)
 {
 #if defined(__C64__) && defined(CHAR80)
-  BYTE len = sprintf(KBCHARS, "lO\"%s\",%d", prg, device);
+  BYTE len = sprintf(KBCHARS, "lO\"%s\",%i", prg, device);
   *((unsigned char *)KBCHARS + len) = 13;  ++len;
   *((unsigned char *)KBCHARS + len) = 'r'; ++len;
   *((unsigned char *)KBCHARS + len) = 'U'; ++len;
@@ -178,7 +178,7 @@ execute(char * prg, BYTE device)
   exitScreen();
 
   gotoxy(0,2);
-  cprintf("load\"%s\",%d,1", prg, device);
+  cprintf("load\"%s\",%i,1", prg, device);
   gotoxy(0,7);
   cputs("run");
 
@@ -444,7 +444,19 @@ printElementPriv(const BYTE context, const Directory *dir, const DirElement *cur
       revers(1);
     }
 
-  cprintf("%4d %-16s %s", current->dirent.size, current->dirent.name, fileTypeToStr(current->dirent.type));
+  // if blocks are >= 10000 shorten the file type to 2 characters
+  strcpy(linebuffer2, fileTypeToStr(current->dirent.type));
+  if (current->dirent.size >= 10000 &&
+      strlen(current->dirent.name) == 16)
+    {
+      linebuffer2[0] = linebuffer2[1];
+      linebuffer2[1] = linebuffer2[2];
+      linebuffer2[2] = 0;
+    }
+  cprintf((current->dirent.size < 10000) ? "%4u %-16s %s" : "%u %-15s %s",
+          current->dirent.size,
+          current->dirent.name,
+          linebuffer2);
 
   if (current->flags!=0)
     {
