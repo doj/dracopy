@@ -254,3 +254,34 @@ https://www.lemon64.com/forum/viewtopic.php?t=65199&sid=720fd316d9a3227e0820c146
 [C64 utilities](https://sta.c64.org/c64utils.html) has 2 d64 images
 with various disk, file and development utilities for the
 Commodore 64.
+
+[CBM-Command](https://github.com/CINJ/CBM-Command) an orthodox file
+manager, similar to DraCopy. See also
+https://www.c64-wiki.com/wiki/CBM-Command
+
+1581 Partitions
+----------------
+
+Information from https://www.youtube.com/watch?v=Fgtl8g1Gfog
+
+### create a 1581 partition
+
+OPEN 1,8,15
+PRINT#15,"/0:PARTNAME,"+CHR$(start track)+CHR$(0)+CHR$(number of
+blocks LO)+CHR$(number of blocks HI)+",C"
+CLOSE 1
+
+number of blocks should be a multiple of 40 (40 sectors per track).
+
+### changing into a 1581 partition
+
+@/0:PARTNAME
+
+You would also need to format the partition after changing into it for
+the first time:
+
+@N0:PARTNAME,ID
+
+To change to the root directory:
+
+@/

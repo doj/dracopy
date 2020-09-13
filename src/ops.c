@@ -158,7 +158,7 @@ dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cm
 }
 
 int
-cmd(unsigned char device, const char *cmd)
+cmd(const BYTE device, const char *cmd)
 {
   return dosCommand(15, device, 15, cmd);
 }

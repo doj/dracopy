@@ -29,7 +29,7 @@
 #include "defines.h"
 #include "dir.h"
 
-int cmd(unsigned char lfn, const char *cmd);
+int cmd(const BYTE device, const char *cmd);
 void execute(char * prg, BYTE device);
 void updateScreen(const BYTE context, BYTE num_dirs);
 void updateMenu(void);
