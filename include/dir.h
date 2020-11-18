@@ -41,7 +41,7 @@ typedef struct {
   /// 1 comma
   /// 5 characters ID
   /// NUL
-  unsigned char name[16+1+5+1];
+  char name[16+1+5+1];
   struct direlement * firstelement;
   struct direlement * selected;
   /// current cursor position
