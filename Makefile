@@ -127,7 +127,6 @@ clean:
 	find . -name '*~' -delete
 
 zip:	dracopy-1.0doj.zip
-	[ -d ../doj/c64/ ] && cp $< ../doj/c64/
 
 dracopy-1.0doj.zip:	$(TARGETS) $(REU)
 	zip -9 $@ $^ README.md
