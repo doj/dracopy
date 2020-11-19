@@ -1498,12 +1498,9 @@ doMakeImage(const BYTE device)
       return;
     }
 
-  if (devicetype[device] == U64)
-    {
-      sprintf(linebuffer,"%s,s", linebuffer2);
-    } else {
-      sprintf(linebuffer, "%s,p", linebuffer2);
-    }
+  sprintf(linebuffer, "%s,%c",
+          linebuffer2,
+          (devicetype[device] == U64) ? 's' : 'p');
   if (cbm_open(7, device, CBM_WRITE, linebuffer) != 0)
     {
 #if !defined(__PET__)
