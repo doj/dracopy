@@ -260,7 +260,11 @@ main(void)
 #endif
 
 #if defined(REU)
-  em_load_driver(REU);
+  if (em_load_driver(REU) != 0)
+    {
+      printf("could not load %s\n", REU);
+      return 1;
+    }
 #endif
 
   initScreen(DC_COLOR_BORDER, DC_COLOR_BG, DC_COLOR_TEXT);

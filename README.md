@@ -117,6 +117,8 @@ the following features can be implemented or bugs should be fixed:
   + support 1571 disk copy with sd2iec
   + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
+  + if REU is detected and large enough, copy disk to REU, then copy
+    from REU to target drive.
 - device id: does it work with 1541? does it work with sd2iec?
 - dc510
   + run PRG
@@ -136,7 +138,7 @@ This results from the memory layout of the [cc65](https://cc65.github.io/) compi
 Disks with many directory entries could run out of memory on the C128.
 
 The PET needs to have at least 32KB of RAM to run DraCopy. There is
-not much memory left, disks with many directory entried may run out of
+not much memory left, disks with many directory entries may run out of
 memory.
 
 The [vice](https://vice-emu.sourceforge.io/) emulator needs to enable
@@ -258,6 +260,9 @@ Commodore 64.
 [CBM-Command](https://github.com/CINJ/CBM-Command) an orthodox file
 manager, similar to DraCopy. See also
 https://www.c64-wiki.com/wiki/CBM-Command
+
+[Advanced optimizations in CC65](https://github.com/ilmenit/CC65-Advanced-Optimizations)
+a good article how to write efficient cc65 C code.
 
 1581 Partitions
 ----------------
