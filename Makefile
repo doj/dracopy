@@ -38,7 +38,8 @@ endif
 C64CFLAGS+=$(CFLAGS)
 
 D64=dracopy10doj.d64
-TARGETS=dc64 db64 dc6480 db6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280 dcp4 dbp4 dc510 db510 dc610 db610 dcpet80 dbpet80 dcpet40 dbpet40
+TARGETS_C64=dc64 db64 dc6480 db6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280
+TARGETS=$(TARGETS_C64) dcp4 dbp4 dc510 db510 dc610 db610 dcpet80 dbpet80 dcpet40 dbpet40
 
 all:	$(TARGETS) $(D64)
 
@@ -131,8 +132,8 @@ zip:	dracopy-1.0doj.zip
 dracopy-1.0doj.zip:	$(TARGETS) $(REU)
 	zip -9 $@ $^ README.md
 
-dc64.zip:	$(TARGETS) $(REU)
-	zip -9 $@ dc64 dc6480 dc64ieee dc64ieee80 $(REU) README.md
+dc64.zip:	$(TARGETS_C64) $(REU)
+	zip -9 $@ $^ README.md
 
 test.prg:	src/test.c
 	cl65 $(CFLAGS) -t pet $^ -o $@
