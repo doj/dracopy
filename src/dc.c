@@ -1106,6 +1106,13 @@ diskImageSize(const BYTE dt)
 
 static char * optimized_str = "optimized";
 
+// the 128KB RAM of the Kerberos interface is too small for a disk image.
+// If the Kerberos emd driver is used, the REU feature for diskcopy would
+// still be enabled.
+#if defined(REU) && !defined(KERBEROS)
+#define USE_REU_DISKCOPY 1
+#endif
+
 /**
  * disk sector copy from device @p deviceFrom to @p deviceTo.
  * based on version 1.0e, then heavily modified.
@@ -1124,7 +1131,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   const char *type_to = drivetype[ret];
   BYTE track = maxTrack(ret);
   BYTE sectorContent;
-#if defined(REU)
+#if defined(USE_REU_DISKCOPY)
   struct em_copy emc;
   unsigned page = 0;
   const BYTE use_reu = cachedFileSize == diskImageSize(dt);
@@ -1169,7 +1176,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 
   sprintf(linebuffer2, "%s -> %s", type_from, type_to);
 
-#if defined(REU)
+#if defined(USE_REU_DISKCOPY)
   if (! use_reu)
     {
       cachedFileSize = 0;
@@ -1347,7 +1354,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
                   cputsxy(0,BOTTOM,sectorBuf);            \
                   printSecStatus(dt, track, sector, ch);
 
-#if defined(REU)
+#if defined(USE_REU_DISKCOPY)
           if (use_reu &&
               page < em_pagecount())
             {
@@ -1392,9 +1399,9 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 #endif
                   continue;
                 }
-            } // if REU
+            } // if USE_REU_DISKCOPY
 
-#if defined(REU)
+#if defined(USE_REU_DISKCOPY)
           if (! use_reu &&
               page < em_pagecount())
             {
