@@ -117,8 +117,6 @@ the following features can be implemented or bugs should be fixed:
   + support 1571 disk copy with sd2iec
   + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
-  + if REU is detected and large enough, copy disk to REU, then copy
-    from REU to target drive.
 - device id: does it work with 1541? does it work with sd2iec?
 - dc510
   + run PRG
@@ -191,9 +189,13 @@ A number of RAM expansion cards are supported with the cc65 compiler
 and DraCopy. If the RAM expansion is detected a single file can be
 loaded into the REU with the 'z' key. The file can then be written to
 disk multiple times with the 'x' key.
-
 This feature is useful to either write a file multiple times, or to
 copy a file between directories on the same device.
+
+If the RAM expansion is larger than a disk image size, the diskcopy
+feature will write the image into the RAM expansion upon the first
+disk copy. A subsequent disk copy will then use the RAM expansion disk
+image and doesn't need to read the source drive any more.
 
 The Download section contains a link to a pre-built version of DraCopy
 for the [Commodore REU](https://www.c64-wiki.com/wiki/Commodore_REU)

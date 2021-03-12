@@ -154,6 +154,7 @@ updateMenu()
   cputsxy(MENUXT,++menuy," \xfc DEV ID");
   cputsxy(MENUXT,++menuy," @ DOS CMD");
   cputsxy(MENUXT,++menuy," I MAKE IMG");
+  cputsxy(MENUXT,++menuy," D DSKCPY-O");
 #if defined(CHAR80)
   cputsxy(MENUXT,++menuy," . HELP");
 #else
@@ -1085,6 +1086,26 @@ printSecStatus(BYTE dt, BYTE t, BYTE s, BYTE st)
   cputcxy(t, 3+s, st);
 }
 
+#if defined(REU)
+/// @return disk image size in bytes of a device type @p dt.
+/// @return 0 if @p dt is not a disk image type.
+unsigned long
+diskImageSize(const BYTE dt)
+{
+  if (IS_1541(dt))
+    return 174848UL;
+  if (dt == D1571)
+    return 349696UL;
+  if (dt == D1581)
+    return 819200UL;
+  if (dt == D1001)
+    return 1066496UL;
+  return 0;
+}
+#endif
+
+static char * optimized_str = "optimized";
+
 /**
  * disk sector copy from device @p deviceFrom to @p deviceTo.
  * based on version 1.0e, then heavily modified.
@@ -1103,8 +1124,18 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   const char *type_to = drivetype[ret];
   BYTE track = maxTrack(ret);
   BYTE sectorContent;
+#if defined(REU)
+  struct em_copy emc;
+  unsigned page = 0;
+  const BYTE use_reu = cachedFileSize == diskImageSize(dt);
+  if (use_reu)
+    {
+      sprintf(linebuffer, "%s diskcopy from REU to %i? (Y/N)", optimized ? optimized_str : "", deviceTo);
+    }
+  else
+#endif
 
-  sprintf(linebuffer, "%s diskcopy from %i to %i? (Y/N)", optimized ? " optimized" : "", deviceFrom, deviceTo);
+  sprintf(linebuffer, "%s diskcopy from %i to %i? (Y/N)", optimized ? optimized_str : "", deviceFrom, deviceTo);
   newscreen(linebuffer);
 
   if (max_track != track)
@@ -1137,6 +1168,13 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
     }
 
   sprintf(linebuffer2, "%s -> %s", type_from, type_to);
+
+#if defined(REU)
+  if (! use_reu)
+    {
+      cachedFileSize = 0;
+    }
+#endif
 
 #if !defined(CHAR80)
   if (dt != D1001)
@@ -1303,42 +1341,71 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 
           // read sector
           printSecStatus(dt, track, sector, 'R');
-          ret = cbm_write(6, linebuffer, sprintf(linebuffer, "u1:5 0 %i %i", track + 1, sector));
-          if (ret < 0)
-            {
-#if !defined(__PET__)
-              sprintf(sectorBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
-#define SECTOR_ERROR(ch)                                  \
-              textcolor(DC_COLOR_ERROR);                  \
-              cputsxy(0,BOTTOM,sectorBuf);                \
-              printSecStatus(dt, track, sector, ch);
-              SECTOR_ERROR('e');
-#endif
-              continue;
-            }
 
-          ret = cbm_read(9, sectorBuf, 256);
-          if (ret != 256)
+#define SECTOR_ERROR(ch)                                  \
+                  textcolor(DC_COLOR_ERROR);              \
+                  cputsxy(0,BOTTOM,sectorBuf);            \
+                  printSecStatus(dt, track, sector, ch);
+
+#if defined(REU)
+          if (use_reu &&
+              page < em_pagecount())
             {
-              // check for expected failures at the end of a disk
-              if (IS_1541(dt)
-                  && track >= 35
-                  && sector == 0)
-                {
-                  ret = OK;
-                  goto success;
-                }
-              if (dt == D1571 && track == 35 && sector == 0)
-                {
-                  ret = OK;
-                  goto success;
-                }
-#if !defined(__PET__)
-              sprintf(sectorBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
-              SECTOR_ERROR('e');
-#endif
-              continue;
+              emc.buf = sectorBuf;
+              emc.offs = 0;
+              emc.page = page++;
+              emc.count = 256;
+              em_copyfrom(&emc);
             }
+          else
+#endif
+            {
+              ret = cbm_write(6, linebuffer, sprintf(linebuffer, "u1:5 0 %i %i", track + 1, sector));
+              if (ret < 0)
+                {
+#if !defined(__PET__)
+                  sprintf(sectorBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
+                  SECTOR_ERROR('e');
+#endif
+                  continue;
+                }
+
+              ret = cbm_read(9, sectorBuf, 256);
+              if (ret != 256)
+                {
+                  // check for expected failures at the end of a disk
+                  if (IS_1541(dt)
+                      && track >= 35
+                      && sector == 0)
+                    {
+                      ret = OK;
+                      goto success;
+                    }
+                  if (dt == D1571 && track == 35 && sector == 0)
+                    {
+                      ret = OK;
+                      goto success;
+                    }
+#if !defined(__PET__)
+                  sprintf(sectorBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
+                  SECTOR_ERROR('e');
+#endif
+                  continue;
+                }
+            } // if REU
+
+#if defined(REU)
+          if (! use_reu &&
+              page < em_pagecount())
+            {
+              emc.buf = sectorBuf;
+              emc.offs = 0;
+              emc.page = page++;
+              emc.count = 256;
+              em_copyto(&emc);
+              cachedFileSize += 256;
+            }
+#endif
 
 #if !defined(__PET__)
           // check what the sector contains
@@ -1418,7 +1485,8 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
     }
 
  success:
-  ret = OK;
+  // send Initialize command to destination drive, so it will read the new BAM
+  ret = cbm_write(8, "i", 1);
   goto done;
 
  error:

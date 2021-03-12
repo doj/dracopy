@@ -44,7 +44,7 @@ TARGETS=$(TARGETS_C64) dcp4 dbp4 dc510 db510 dc610 db610 dcpet80 dbpet80 dcpet40
 all:	$(TARGETS) $(D64)
 
 $(D64):	$(TARGETS) $(REU)
-	sh d64.sh 'dracopy 1.0doj,dj' $(D64) dc64 db64 dc6480 dc128 db128 dc1280 db1280 dcp4 dbp4 $(REU)
+	sh d64.sh 'dracopy 1.0doj,dj' $(D64) $(REU) dc64 db64 dc6480 dc128 db128 dc1280 db1280 dcp4 dbp4
 
 COMMON_SRC=src/screen.c src/cat.c src/dir.c src/base.c src/ops.c
 DC_SRC=src/dc.c $(COMMON_SRC)
