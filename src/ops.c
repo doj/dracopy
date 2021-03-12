@@ -610,6 +610,12 @@ changeDir(const BYTE context, const BYTE device, const char *dirname, const BYTE
             {
               mount = 1;
             }
+          else if ((dirname[l-3] == 'd' || dirname[l-3] == 'D') &&
+                   (dirname[l-2] == 'n' || dirname[l-2] == 'N') &&
+                   (dirname[l-1] == 'p' || dirname[l-1] == 'P'))
+            {
+              mount = 1;
+            }
         }
       if (mount ||
           (l == 1 && dirname[0]==CH_LARROW) ||
