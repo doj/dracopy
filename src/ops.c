@@ -66,7 +66,7 @@ initDirWindowHeight(void)
 char DOSstatus[40];
 
 /// string descriptions of enum drive_e
-const char* drivetype[LAST_DRIVE_E] = {"", "1540", "1541", "1551", "1570", "1571", "1581", "1001", "2031", "8040", "sd2iec", "cmd", "vice", "u64"};
+const char* drivetype[LAST_DRIVE_E] = {"", "Pi1541", "1540", "1541", "1551", "1570", "1571", "1581", "1001", "2031", "8040", "sd2iec", "cmd", "vice", "u64"};
 /// enum drive_e value for each device 0-11.
 BYTE devicetype[12];
 
