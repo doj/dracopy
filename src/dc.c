@@ -410,7 +410,7 @@ mainLoop(void)
 
         case 'f':
           strcpy(linebuffer, "n:");
-          doDOScommand(context, sorted, 1);
+          doDOScommand(context, sorted, 1, "format disk");
           updateScreen(context, 2);
           break;
 
@@ -420,7 +420,7 @@ mainLoop(void)
 
         case 'm':
           strcpy(linebuffer, "md:");
-          doDOScommand(context, sorted, 1);
+          doDOScommand(context, sorted, 1, "make directory");
           updateScreen(context, 2);
           break;
 
@@ -434,7 +434,7 @@ mainLoop(void)
           break;
 
         case '@':
-          doDOScommand(context, sorted, 0);
+          doDOScommand(context, sorted, 0, "DOS command");
           updateScreen(context, 2);
           break;
 

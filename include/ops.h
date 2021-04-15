@@ -48,7 +48,7 @@ void drawDirFrame(BYTE context, const BYTE mycontext);
 const char* getDeviceType(const BYTE device);
 void initDirWindowHeight(void);
 int textInput(const BYTE xpos, const BYTE ypos, char *str, const BYTE size);
-void doDOScommand(const BYTE context, const BYTE sorted, const BYTE use_linebuffer);
+void doDOScommand(const BYTE context, const BYTE sorted, const BYTE use_linebuffer, const char *title);
 
 /// if you change this enum, also change the "drivetype" array in ops.c
 enum drive_e {NONE=0, PI1541, D1540, D1541, D1551, D1570, D1571, D1581, D1001, D2031, D8040, SD2IEC, CMD, VICE, U64, LAST_DRIVE_E};

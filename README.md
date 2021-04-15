@@ -128,6 +128,7 @@ the following features can be implemented or bugs should be fixed:
 - add write protection to disk
 - use SDOS https://csdb.dk/release/?id=184797
 - for C128 use https://sites.google.com/site/h2obsession/CBM/C128/JiffySoft128
+- fix directory read in Pi1541 browse mode
 
 Platform Notes
 ---------------

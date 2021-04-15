@@ -200,7 +200,7 @@ mainLoop(void)
           break;
 
         case '@':
-          doDOScommand(context, sorted, 0);
+          doDOScommand(context, sorted, 0, "DOS command");
           updateScreen(context, num_windows);
           break;
 
