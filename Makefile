@@ -29,6 +29,8 @@
 ##############################################################################
 # building
 
+VER?=1.1
+
 CFLAGS+=-I include -O -Or -Os -r
 
 ifneq ($(REU),)
@@ -44,7 +46,7 @@ TARGETS=$(TARGETS_C64) dcp4 dbp4 dc510 db510 dc610 db610 dcpet80 dbpet80 dcpet40
 all:	$(TARGETS) $(D64)
 
 $(D64):	$(TARGETS) $(REU)
-	sh d64.sh 'dracopy 1.0doj,dj' $(D64) $(REU) dc64 db64 dc6480 dc128 db128 dc1280 db1280 dcp4 dbp4
+	sh d64.sh 'dracopy $(VER)doj,dj' $(D64) $(REU) dc64 db64 dc6480 dc128 db128 dc1280 db1280 dcp4 dbp4
 
 COMMON_SRC=src/screen.c src/cat.c src/dir.c src/base.c src/ops.c
 DC_SRC=src/dc.c $(COMMON_SRC)
@@ -143,9 +145,9 @@ clean:
 	$(RM) -rf d src/*.o src/*.s *.prg *.map *.seq *.d64 *.d71 *.d8[012] $(TARGETS) *.zip *.emd
 	find . -name '*~' -delete
 
-zip:	dracopy-1.0doj.zip
+zip:	dracopy-$(VER)doj.zip
 
-dracopy-1.0doj.zip:	$(TARGETS) $(REU)
+dracopy-$(VER)doj.zip:	$(TARGETS) $(REU)
 	zip -9 $@ $^ README.md
 
 dc64.zip:	$(TARGETS_C64) $(REU)

@@ -3,6 +3,7 @@
 # build versions with REU support.
 # cp all builds into DESTDIR
 
+export VER=1.1
 DESTDIR=../doj/c64
 
 set -e
@@ -15,7 +16,7 @@ for i in BLUE SX 128 ; do
     echo "##### $i #####"
     echo
     CFLAGS=-DCOLOR_SCHEME_$i make zip
-    mv dracopy-1.0doj.zip $DESTDIR/dracopy-1.0doj-$i.zip
+    mv dracopy-${VER}doj.zip $DESTDIR/dracopy-${VER}doj-$i.zip
 done
 
 # REU versions
@@ -24,14 +25,14 @@ echo
 echo '##### Kerberos #####'
 echo
 CFLAGS=-DKERBEROS make dc64.zip
-mv dc64.zip $DESTDIR/dracopy-1.0doj-kerberos.zip
+mv dc64.zip $DESTDIR/dracopy-${VER}doj-kerberos.zip
 
 make clean
 echo
 echo '##### REU #####'
 echo
 REU=c64-reu.emd make dc64.zip
-mv dc64.zip $DESTDIR/dracopy-1.0doj-reu.zip
+mv dc64.zip $DESTDIR/dracopy-${VER}doj-reu.zip
 
 # build the default version
 make clean
@@ -39,6 +40,6 @@ echo
 echo '##### default #####'
 echo
 make zip
-mv dracopy-1.0doj.zip $DESTDIR/
+mv dracopy-${VER}doj.zip $DESTDIR/
 
 make clean
