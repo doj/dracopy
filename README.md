@@ -105,6 +105,8 @@ the following features can be implemented or bugs should be fixed:
 - sd2iec [documentation](https://www.sd2iec.de/gitweb/?p=sd2iec.git;a=blob;f=README;hb=HEAD)
   + rmdir https://wpguru.co.uk/2014/08/how-to-use-sd2iec-a-quick-command-reference/
     however regular scratch works on directories as well.
+  + in diskcopy get size of currently mounted image and check if it
+    matches the size of the target device.
 - reduce memory use
   + check which variables should be "register" https://cc65.github.io/doc/cc65.html#s8
   + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize
@@ -114,8 +116,6 @@ the following features can be implemented or bugs should be fixed:
 - format 1571 double sided: https://groups.google.com/forum/#!topic/comp.sys.cbm/fALaIRfeNS0
 - diskcopy
   + enable 1571 double sided mode for disk copy: https://www.pagetable.com/?p=1038
-  + support 1571 disk copy with sd2iec
-  + support 1581 disk copy with sd2iec
   + support tracks 36-42 for 1541 disk copy
 - device id: does it work with 1541? does it work with sd2iec?
 - dc510

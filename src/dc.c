@@ -970,8 +970,7 @@ IS_1541(const BYTE dt)
     dt == D1551 ||
     dt == D1570 ||
     dt == D2031 ||
-    dt == D8040 ||
-    dt == SD2IEC;
+    dt == D8040;
 }
 
 BYTE
@@ -1124,17 +1123,25 @@ static char * optimized_str = "optimized";
 int
 doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 {
-  const BYTE dt = devicetype[deviceFrom];
-  const char *type_from = drivetype[dt];
-  const BYTE max_track = maxTrack(dt);
+  // lookup some info of the "to" device
   int ret = devicetype[deviceTo];
-  const char *type_to = drivetype[ret];
+  const char *drivetype_to = drivetype[ret];
+  // store the max track number of the "to" device in variable track. Later on track is used as a for loop variable.
   BYTE track = maxTrack(ret);
+  // lookup some info of the "from" device.
+  // However if the "from" device is SD2IEC, it doesn't have a useful maximum track value.
+  // We'll use the values of the "to" device instead.
+  // We assume the user is copying the correct image and set the maximum track value of the "from" device
+  // to the maximum track value of the "to" device.
+  const BYTE devicetype_from_real = devicetype[deviceFrom];
+  const BYTE devicetype_from = (devicetype_from_real == SD2IEC) ? ret : devicetype_from_real;
+  const char *drivetype_from = drivetype[devicetype_from_real];
+  const BYTE max_track = maxTrack(devicetype_from);
   BYTE sectorContent;
 #if defined(USE_REU_DISKCOPY)
   struct em_copy emc;
   unsigned page = 0;
-  const BYTE use_reu = cachedFileSize == diskImageSize(dt);
+  const BYTE use_reu = cachedFileSize == diskImageSize(devicetype_from);
   if (use_reu)
     {
       sprintf(linebuffer, "%s diskcopy from REU to %i? (Y/N)", optimized ? optimized_str : "", deviceTo);
@@ -1148,7 +1155,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   if (max_track != track)
     {
 #if !defined(__PET__)
-      cprintf("\n\rcan't copy from %s (%i tracks)\n\rto %s (%i tracks)", type_from, max_track, type_to, track);
+      cprintf("\n\rcan't copy from %s (%i tracks)\n\rto %s (%i tracks)", drivetype_from, max_track, drivetype_to, track);
       cgetc();
 #endif
       return ERROR;
@@ -1157,11 +1164,18 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   if (max_track == 0)
     {
 #if !defined(__PET__)
-      cprintf("\n\rcan't copy drive type %s", type_from);
+      cprintf("\n\rcan't copy drive type %s", drivetype_from);
       cgetc();
 #endif
       return ERROR;
     }
+
+#if !defined(__PET__)
+  if (devicetype_from_real == SD2IEC)
+    {
+      cprintf("\n\rdiskcopy from %s to %s.\r\nmake sure that target device is compatible\r\nwith source image size.", drivetype_from, drivetype_to);
+    }
+#endif
 
   while(1)
     {
@@ -1174,7 +1188,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
         return ABORT;
     }
 
-  sprintf(linebuffer2, "%s -> %s", type_from, type_to);
+  sprintf(linebuffer2, "%s -> %s", drivetype_from, drivetype_to);
 
 #if defined(USE_REU_DISKCOPY)
   if (! use_reu)
@@ -1184,15 +1198,15 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 #endif
 
 #if !defined(CHAR80)
-  if (dt != D1001)
+  if (devicetype_from != D1001)
 #endif
     {
       for(track = 0; track < 80; ++track)
         {
-          const BYTE max_s = maxSector(dt, track);
+          const BYTE max_s = maxSector(devicetype_from, track);
           BYTE sector;
           BYTE sector_inc = 1;
-          if (IS_1541(dt))
+          if (IS_1541(devicetype_from))
             {
               if (track == 40)
                 {
@@ -1200,7 +1214,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
                 }
             }
 #if !defined(__PET__)
-          else if (dt == D1571)
+          else if (devicetype_from == D1571)
             {
 #if defined(CHAR80)
               if (track == 70)
@@ -1210,7 +1224,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
                 break;
 #endif
             }
-          else if (dt == D1581)
+          else if (devicetype_from == D1581)
             {
 #if !defined(CHAR80)
               if (track == 40)
@@ -1220,7 +1234,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
             }
 #endif // PET
 #if defined(SFD1001)
-          else if (dt == D1001)
+          else if (devicetype_from == D1001)
             {
               if (track == 77)
                 break;
@@ -1233,7 +1247,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
           cputcxy(track,2,((track+1)%10)+'0');
           for(sector = 0; sector < max_s; sector += sector_inc)
             {
-              printSecStatus(dt, track, sector, '.');
+              printSecStatus(devicetype_from, track, sector, '.');
             }
         }
     }
@@ -1241,28 +1255,28 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   if ((ret = cbm_open(9, deviceFrom, 5, "#")) != 0)
     {
 #if !defined(__PET__)
-      sprintf(sectorBuf, "device %i: open data failed: %i", deviceFrom, ret);
+      sprintf((char*)sectorBuf, "device %i: open data failed: %i", deviceFrom, ret);
 #endif
       goto error;
     }
   if ((ret = cbm_open(6, deviceFrom, 15, "")) != 0)
     {
 #if !defined(__PET__)
-      sprintf(sectorBuf, "device %i: open cmd failed: %i", deviceFrom, ret);
+      sprintf((char*)sectorBuf, "device %i: open cmd failed: %i", deviceFrom, ret);
 #endif
       goto error;
     }
   if ((ret = cbm_open(7, deviceTo,   5, "#")) != 0)
     {
 #if !defined(__PET__)
-      sprintf(sectorBuf, "device %i: open data failed: %i", deviceTo, ret);
+      sprintf((char*)sectorBuf, "device %i: open data failed: %i", deviceTo, ret);
 #endif
       goto error;
     }
   if ((ret = cbm_open(8, deviceTo,   15, "")) != 0)
     {
 #if !defined(__PET__)
-      sprintf(sectorBuf, "device %i: open cmd failed: %i", deviceTo, ret);
+      sprintf((char*)sectorBuf, "device %i: open cmd failed: %i", deviceTo, ret);
 #endif
       goto error;
     }
@@ -1270,7 +1284,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   ret = OK;
   for(track = 0; track < max_track; ++track)
     {
-      const BYTE max_sector = maxSector(dt, track);
+      const BYTE max_sector = maxSector(devicetype_from, track);
       BYTE sector;
 
 #if !defined(__PET__)
@@ -1289,13 +1303,13 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
         {
           cputs("writing last track!!!");
         }
-      else if ((dt == D1571 && track >= 35) ||
-               (dt == D1581 && track >= 40) ||
-               (dt == D1001 && track >= 77))
+      else if ((devicetype_from == D1571 && track >= 35) ||
+               (devicetype_from == D1581 && track >= 40) ||
+               (devicetype_from == D1001 && track >= 77))
         {
           cputs("copy the back side");
         }
-      else if (IS_1541(dt))
+      else if (IS_1541(devicetype_from))
         {
           switch(track)
             {
@@ -1313,21 +1327,21 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
 
 #if !defined(CHAR80)
       // check if 1541 writes to extra tracks
-      if (IS_1541(dt)
+      if (IS_1541(devicetype_from)
           && track >= 40)
         {
           textcolor(DC_COLOR_TEXT);
           cputcxy(39,2, '1'+track-40);
         }
       // check if 1571 writes on back side
-      if (dt == D1571 && track == 35)
+      if (devicetype_from == D1571 && track == 35)
         {
           textcolor(DC_COLOR_TEXT);
           cputsxy(0,1,"33334444444444555555555566666666667     ");
           cputsxy(0,2,"67890123456789012345678901234567890     ");
         }
       // check if 1581 writes on back side
-      if (dt == D1581 && track == 40)
+      if (devicetype_from == D1581 && track == 40)
         {
           textcolor(DC_COLOR_TEXT);
           cputsxy(0,1,"4444444445555555555666666666677777777778");
@@ -1347,12 +1361,12 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
             }
 
           // read sector
-          printSecStatus(dt, track, sector, 'R');
+          printSecStatus(devicetype_from, track, sector, 'R');
 
 #define SECTOR_ERROR(ch)                                  \
                   textcolor(DC_COLOR_ERROR);              \
-                  cputsxy(0,BOTTOM,sectorBuf);            \
-                  printSecStatus(dt, track, sector, ch);
+                  cputsxy(0,BOTTOM,(char*)sectorBuf);     \
+                  printSecStatus(devicetype_from, track, sector, ch);
 
 #if defined(USE_REU_DISKCOPY)
           if (use_reu &&
@@ -1371,7 +1385,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
               if (ret < 0)
                 {
 #if !defined(__PET__)
-                  sprintf(sectorBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
+                  sprintf((char*)sectorBuf, "read sector %i/%i failed: %i", track+1, sector, _oserror);
                   SECTOR_ERROR('e');
 #endif
                   continue;
@@ -1381,20 +1395,20 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
               if (ret != 256)
                 {
                   // check for expected failures at the end of a disk
-                  if (IS_1541(dt)
+                  if (IS_1541(devicetype_from)
                       && track >= 35
                       && sector == 0)
                     {
                       ret = OK;
                       goto success;
                     }
-                  if (dt == D1571 && track == 35 && sector == 0)
+                  if (devicetype_from == D1571 && track == 35 && sector == 0)
                     {
                       ret = OK;
                       goto success;
                     }
 #if !defined(__PET__)
-                  sprintf(sectorBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
+                  sprintf((char*)sectorBuf, "read %i/%i failed: %i", track+1, sector, _oserror);
                   SECTOR_ERROR('e');
 #endif
                   continue;
@@ -1448,14 +1462,14 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
               sectorContent = '!';
             }
         sectorCheckDone:
-          printSecStatus(dt, track, sector, sectorContent);
+          printSecStatus(devicetype_from, track, sector, sectorContent);
           if (optimized && sectorContent == 'O')
             {
               // all bytes are 0, skip writing this sector
               continue;
             }
 #else
-          printSecStatus(dt, track, sector, 'W');
+          printSecStatus(devicetype_from, track, sector, 'W');
 #endif
 
           // write sector
@@ -1463,7 +1477,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
           if (ret < 0)
             {
 #if !defined(__PET__)
-              sprintf(sectorBuf, "setup buffer failed: %i", track+1, sector, _oserror);
+              sprintf((char*)sectorBuf, "setup buffer failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR('E');
 #endif
               continue;
@@ -1473,7 +1487,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
           if (ret != 256)
             {
 #if !defined(__PET__)
-              sprintf(sectorBuf, "write %i/%i failed: %i", track+1, sector, _oserror);
+              sprintf((char*)sectorBuf, "write %i/%i failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR('E');
 #endif
               continue;
@@ -1483,7 +1497,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
           if (ret < 0)
             {
 #if !defined(__PET__)
-              sprintf(sectorBuf, "write cmd %i/%i failed: %i", track+1, sector, _oserror);
+              sprintf((char*)sectorBuf, "write cmd %i/%i failed: %i", track+1, sector, _oserror);
               SECTOR_ERROR('E');
 #endif
               continue;
@@ -1499,7 +1513,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
  error:
   ret = ERROR;
   textcolor(DC_COLOR_ERROR);
-  cputsxy(0,BOTTOM,sectorBuf);
+  cputsxy(0,BOTTOM,(char*)sectorBuf);
   cgetc();
 
  done:
@@ -1743,7 +1757,7 @@ doMakeImage(const BYTE device)
 
       if (i == n-1)
         {
-          strcpy(sectorBuf+220, "image created by dracopy " DRA_VERNUM);
+          strcpy((char*)(sectorBuf+220), "image created by dracopy " DRA_VERNUM);
         }
 
       if (cbm_write(7, sectorBuf, 256) != 256)
