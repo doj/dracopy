@@ -1103,6 +1103,19 @@ diskImageSize(const BYTE dt)
 }
 #endif
 
+/// check if a drive type @p dt is a device that can have multiple
+/// sizes (emulates multiple Commodore drives).
+/// @param dt drive type, which should be from enum drive_e
+/// @return 1 if @p dt is a drive which can emulate different Commodore drives with different sizes.
+/// @return 0 otherwise.
+static BYTE
+isMultiType(const BYTE dt)
+{
+  return dt == SD2IEC ||
+    dt == CMD ||
+    dt == U64;
+}
+
 static char * optimized_str = "optimized";
 
 // the 128KB RAM of the Kerberos interface is too small for a disk image.
@@ -1129,12 +1142,12 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   // store the max track number of the "to" device in variable track. Later on track is used as a for loop variable.
   BYTE track = maxTrack(ret);
   // lookup some info of the "from" device.
-  // However if the "from" device is SD2IEC, it doesn't have a useful maximum track value.
+  // However if the "from" device is a SD2IEC like device, it doesn't have a useful maximum track value.
   // We'll use the values of the "to" device instead.
   // We assume the user is copying the correct image and set the maximum track value of the "from" device
   // to the maximum track value of the "to" device.
   const BYTE devicetype_from_real = devicetype[deviceFrom];
-  const BYTE devicetype_from = (devicetype_from_real == SD2IEC) ? ret : devicetype_from_real;
+  const BYTE devicetype_from = isMultiType(devicetype_from_real) ? ret : devicetype_from_real;
   const char *drivetype_from = drivetype[devicetype_from_real];
   const BYTE max_track = maxTrack(devicetype_from);
   BYTE sectorContent;
@@ -1171,7 +1184,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
     }
 
 #if !defined(__PET__)
-  if (devicetype_from_real == SD2IEC)
+  if (isMultiType(devicetype_from_real))
     {
       cprintf("\n\rdiskcopy from %s to %s.\r\nmake sure that target device is compatible\r\nwith source image size.", drivetype_from, drivetype_to);
     }
