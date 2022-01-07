@@ -167,7 +167,7 @@ void
 execute(char * prg, BYTE device)
 {
 #if defined(__C64__) && defined(CHAR80)
-  BYTE len = sprintf(KBCHARS, "lO\"%s\",%i", prg, device);
+  BYTE len = sprintf((char*)KBCHARS, "lO\"%s\",%i", prg, device);
   *((unsigned char *)KBCHARS + len) = 13;  ++len;
   *((unsigned char *)KBCHARS + len) = 'r'; ++len;
   *((unsigned char *)KBCHARS + len) = 'U'; ++len;
