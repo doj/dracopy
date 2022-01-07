@@ -1118,6 +1118,27 @@ isMultiType(const BYTE dt)
 
 static char * optimized_str = "optimized";
 
+static void
+diskCopyTitle(const BYTE optimized, const BYTE yesno, const BYTE use_reu, const BYTE deviceFrom, const BYTE deviceTo)
+{
+  if (use_reu)
+    {
+      sprintf(linebuffer, "%s diskcopy from REU to %i? (Y/N)",
+              optimized ? optimized_str : "",
+              deviceTo);
+    }
+  else
+    {
+      sprintf(linebuffer, "%s diskcopy from %i to %i? %s",
+              optimized ? optimized_str : "",
+              deviceFrom,
+              deviceTo,
+              yesno ? "(Y/N)" : ""
+              );
+    }
+  newscreen(linebuffer);
+}
+
 // the 128KB RAM of the Kerberos interface is too small for a disk image.
 // If the Kerberos emd driver is used, the REU feature for diskcopy would
 // still be enabled.
@@ -1147,37 +1168,58 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   // We assume the user is copying the correct image and set the maximum track value of the "from" device
   // to the maximum track value of the "to" device.
   const BYTE devicetype_from_real = devicetype[deviceFrom];
-  const BYTE devicetype_from = isMultiType(devicetype_from_real) ? ret : devicetype_from_real;
+  BYTE devicetype_from = isMultiType(devicetype_from_real) ? ret : devicetype_from_real;
   const char *drivetype_from = drivetype[devicetype_from_real];
-  const BYTE max_track = maxTrack(devicetype_from);
+  BYTE max_track = maxTrack(devicetype_from);
   BYTE sectorContent;
+  BYTE use_reu = 0;
 #if defined(USE_REU_DISKCOPY)
   struct em_copy emc;
   unsigned page = 0;
-  const BYTE use_reu = cachedFileSize == diskImageSize(devicetype_from);
-  if (use_reu)
-    {
-      sprintf(linebuffer, "%s diskcopy from REU to %i? (Y/N)", optimized ? optimized_str : "", deviceTo);
-    }
-  else
+  use_reu = cachedFileSize == diskImageSize(devicetype_from);
 #endif
 
-  sprintf(linebuffer, "%s diskcopy from %i to %i? (Y/N)", optimized ? optimized_str : "", deviceFrom, deviceTo);
-  newscreen(linebuffer);
+  if (max_track == 0)
+    {
+      diskCopyTitle(optimized, /*yesno=*/0, use_reu, deviceFrom, deviceTo);
+      cprintf("\n\rcan't determine number of tracks\r\nof drive type %s\r\nPlease select number of tracks:\r\n1: 35 tracks\r\n2: 70 tracks\r\n3: 80 tracks\r\n", drivetype_from);
+      while(1)
+        {
+          ret = cgetc();
+          if (ret == '1' || ret == '5')
+            {
+              max_track = track = 35;
+              devicetype_from = D1541;
+              break;
+            }
+          if (ret == '2' || ret == '7')
+            {
+              max_track = track = 70;
+              devicetype_from = D1571;
+              break;
+            }
+          if (ret == '3' || ret == '8')
+            {
+              max_track = track = 80;
+              devicetype_from = D1581;
+              break;
+            }
+          if (ret == 'n' ||
+              ret == CH_ESC ||
+              ret == CH_LARROW)
+            {
+              return ABORT;
+            }
+        }
+      drivetype_to = drivetype_from = drivetype[devicetype_from];
+    }
+
+  diskCopyTitle(optimized, /*yesno=*/1, use_reu, deviceFrom, deviceTo);
 
   if (max_track != track)
     {
 #if !defined(__PET__)
       cprintf("\n\rcan't copy from %s (%i tracks)\n\rto %s (%i tracks)", drivetype_from, max_track, drivetype_to, track);
-      cgetc();
-#endif
-      return ERROR;
-    }
-
-  if (max_track == 0)
-    {
-#if !defined(__PET__)
-      cprintf("\n\rcan't copy drive type %s", drivetype_from);
       cgetc();
 #endif
       return ERROR;
