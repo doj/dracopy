@@ -175,53 +175,51 @@ mainLoop(void)
   BYTE lastpage = 0;
   BYTE nextpage = 0;
   BYTE context = 0;
-  BYTE key_pressed;
+  BYTE i;
 
   initDirWindowHeight();
 
   dirs[0] = dirs[1] = NULL;
   updateScreen(context, 2);
 
-  {
-    BYTE i;
-    for(i = 0; i < 16; ++i)
-      {
-        cbm_close(i);
-        cbm_closedir(i);
-      }
+  for(i = 0; i < 16; ++i)
+    {
+      cbm_close(i);
+      cbm_closedir(i);
+    }
 
-    textcolor(DC_COLOR_HIGHLIGHT);
-    i = 7;
-    while(++i < 12)
-      {
-        devices[context] = i;
-        dirs[context] = readDir(NULL, devices[context], context, sorted);
-        if (dirs[context])
-          {
-            getDeviceType(devices[context]);
-            showDir(context, context);
-            goto found_upper_drive;
-          }
-      }
+  // find the first drive for the upper/left window
+  textcolor(DC_COLOR_HIGHLIGHT);
+  i = 7;
+  while(++i < 12)
+    {
+      devices[0] = i;
+      dirs[0] = readDir(NULL, devices[0], 0, sorted);
+      if (dirs[0])
+        {
+          getDeviceType(devices[0]);
+          showDir(0, context);
+          break;
+        }
+    }
 
-  found_upper_drive:
-    textcolor(DC_COLOR_TEXT);
-    while(++i < 12)
-      {
-        devices[1] = i;
-        dirs[1] = readDir(NULL, devices[1], 1, sorted);
-        if (dirs[1])
-          {
-            getDeviceType(devices[1]);
-            showDir(1, context);
-            goto found_lower_drive;
-          }
-      }
+  // find the next drive for the lower/right window
+  textcolor(DC_COLOR_TEXT);
+  while(++i < 12)
+    {
+      devices[1] = i;
+      dirs[1] = readDir(NULL, devices[1], 1, sorted);
+      if (dirs[1])
+        {
+          getDeviceType(devices[1]);
+          showDir(1, context);
+          goto found_lower_drive;
+        }
+    }
 
-    // if no drive was found for the lower window,
-    // enlarge the upper window.
-    nextWindowState(context);
-  }
+  // if no drive was found for the lower window,
+  // enlarge the upper window.
+  nextWindowState(context);
 
  found_lower_drive:
   while(1)
@@ -247,6 +245,8 @@ mainLoop(void)
 #endif
       }
 
+      // use define to make an alias variable
+#define key_pressed i
       key_pressed = cgetc();
       switch (key_pressed)
         {
@@ -566,6 +566,8 @@ mainLoop(void)
   freeDir(&dirs[0]);
   freeDir(&dirs[1]);
 #endif
+
+#undef key_pressed
 }
 
 void
@@ -577,6 +579,7 @@ doCopy(const BYTE context)
   const BYTE srcdev = devices[context];
   const BYTE destdev = devices[context^1];
   Directory * cwd = GETCWD;
+  int ret;
 
   sprintf(linebuffer,"Filecopy from %i to %i",srcdev,destdev);
   for(current = cwd->firstelement; current; current=current->next)
@@ -588,7 +591,6 @@ doCopy(const BYTE context)
         }
       if (current->flags==1)
         {
-          int ret;
           flag = 1;
           ret = copy(current->dirent.name, srcdev, current->dirent.name, destdev, current->dirent.type);
           if (ret == OK)
@@ -608,7 +610,7 @@ doCopy(const BYTE context)
       current = cwd->selected;
       if (current)
         {
-          int ret = copy(current->dirent.name, srcdev, current->dirent.name, destdev, current->dirent.type);
+          ret = copy(current->dirent.name, srcdev, current->dirent.name, destdev, current->dirent.type);
           if (ret == ERROR)
             {
               cputc(CH_ENTER);

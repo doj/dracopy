@@ -206,7 +206,7 @@ $(D81_2):
 	TYPE=d81 sh d64.sh 'test2,81' $@ *.seq
 	$(RM) *.seq
 
-X64?=x64sc -autostartprgmode 1 -reu -reusize 2048 -drive8truedrive -drive9truedrive -drive10truedrive -drive11truedrive
+X64?=x64sc -autostartprgmode 1 -reu -reusize 2048 # -drive8truedrive -drive9truedrive -drive10truedrive -drive11truedrive
 x64:	$(D64) $(D81) $(D81_2) $(D64_9)
 	#$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -9 $(D64_9) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81)
 	$(X64) -autostart dc64.prg -drive8type 1541 -8 $(D64) -drive9type 1541 -iecdevice9 -device9 1 -fs9 $(PWD) -drive10type 1581 -10 $(D81_2) -drive11type 1581 -11 $(D81)
