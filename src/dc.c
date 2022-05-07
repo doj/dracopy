@@ -1137,6 +1137,7 @@ static char * optimized_str = "optimized";
 static void
 diskCopyTitle(const BYTE optimized, const BYTE yesno, const BYTE use_reu, const BYTE deviceFrom, const BYTE deviceTo)
 {
+#if defined(REU)
   if (use_reu)
     {
       sprintf(linebuffer, "%s diskcopy from REU to %i? (Y/N)",
@@ -1144,6 +1145,9 @@ diskCopyTitle(const BYTE optimized, const BYTE yesno, const BYTE use_reu, const 
               deviceTo);
     }
   else
+#else
+    (void)use_reu;
+#endif
     {
       sprintf(linebuffer, "%s diskcopy from %i to %i? %s",
               optimized ? optimized_str : "",
@@ -1195,6 +1199,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
   use_reu = cachedFileSize == diskImageSize(devicetype_from);
 #endif
 
+#if !defined(__PET__)
   if (max_track == 0)
     {
       diskCopyTitle(optimized, /*yesno=*/0, use_reu, deviceFrom, deviceTo);
@@ -1229,6 +1234,7 @@ doDiskCopy(const BYTE deviceFrom, const BYTE deviceTo, const BYTE optimized)
         }
       drivetype_to = drivetype_from = drivetype[devicetype_from];
     }
+#endif
 
   diskCopyTitle(optimized, /*yesno=*/1, use_reu, deviceFrom, deviceTo);
 
