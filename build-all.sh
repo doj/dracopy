@@ -1,12 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 # build all color schemes of dracopy.
 # build versions with REU support.
 # cp all builds into DESTDIR
 
-export VER=1.2
 DESTDIR=../doj/c64
 
 set -e
+
+VER=$(make printversion)
 
 # color schemes
 for i in BLUE SX 128 ; do

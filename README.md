@@ -126,6 +126,8 @@ the following features can be implemented or bugs should be fixed:
 - device id: does it work with 1541? does it work with sd2iec?
 - dc510
   + run PRG
+- pet: reduce dcpet memory requirements. Currently the program doesn't run on a 32KB PET.
+- C128: 80 column mode seems to not work well, reduce memory use.
 - support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
 - support vice without true drive emulation?
 - dc6480 is crashing when running a PRG with filename > 6 or 7 characters.
@@ -245,6 +247,10 @@ make and the [cc65](https://cc65.github.io/) C compiler for Commodore
 pucrunch can be used to compress the compiled dracopy program.
 See http://a1bert.kapsi.fi/Dev/pucrunch/ or https://github.com/mist64/pucrunch
 for the source code.
+
+exomizer can also be used to compress the dracopy programs.
+See https://bitbucket.org/magli143/exomizer/wiki/Home for information
+and download links.
 
 Different color schemes can be compiled, see the top of the Makefile how to enable them.
 To create additional color schemes, add a new define to the Makefile and configure
