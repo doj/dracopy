@@ -85,7 +85,9 @@ void nextWindowState(const BYTE context);
 void updateMenu();
 
 /* definitions */
+#if !defined(CHAR80)
 static BYTE windowState = 0;
+#endif
 static BYTE sorted = 0;
 
 void
@@ -117,6 +119,8 @@ nextWindowState(const BYTE context)
 
   showDir(0, context);
   showDir(1, context);
+#else
+  (void)context;
 #endif
 }
 
