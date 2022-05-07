@@ -772,6 +772,18 @@ doRenameOrCopy(const BYTE context, const BYTE mode)
   updateScreen(context, 2);
 }
 
+static void
+copyERRMSG(const BYTE color, const char *msg)
+{
+  cputc(' ');
+  revers(1);
+  textcolor(color);
+  cputs(msg);
+  textcolor(DC_COLOR_TEXT);
+  revers(0);
+  cputs("\r\n");
+}
+
 int
 copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE destdevice, BYTE type)
 {
@@ -783,7 +795,9 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
   BYTE *buf = (BYTE*) malloc(BUFFERSIZE);
   if (! buf)
     {
+#if !defined(__PET__)
       cputs("Can't alloc\n\r");
+#endif
       return ERROR;
     }
 
@@ -799,7 +813,9 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
       type = 'u';
       break;
     default:
+#if !defined(__PET__)
       cputs("unsupported file type\n\r");
+#endif
       ret = ERROR;
       goto done;
     }
@@ -807,7 +823,9 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
   sprintf(linebuffer, "%s,%c", srcfile, type);
   if (cbm_open(6, srcdevice, CBM_READ, linebuffer) != 0)
     {
+#if !defined(__PET__)
       cputs("Can't open input file!\n\r");
+#endif
       ret = ERROR;
       goto done;
     }
@@ -816,7 +834,9 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
   sprintf(linebuffer, "%s,%c", destfile, type);
   if (cbm_open(7, destdevice, CBM_WRITE, linebuffer) != 0)
     {
+#if !defined(__PET__)
       cputs("Can't open output file\n\r");
+#endif
       ret = ERROR;
       goto done;
     }
@@ -840,16 +860,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
       length = cbm_read (6, buf, BUFFERSIZE);
       if (length < 0)
         {
-#define ERRMSG(color,msg) \
-          cputc(' ');     \
-          revers(1);            \
-          textcolor(color);     \
-          cputs(msg);           \
-          textcolor(DC_COLOR_TEXT);     \
-          revers(0);            \
-          cputs("\r\n");
-
-          ERRMSG(DC_COLOR_ERROR,"READ ERROR");
+          copyERRMSG(DC_COLOR_ERROR,"READ ERROR");
           ret = ERROR;
           break;
         }
@@ -860,7 +871,7 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
           if (c == CH_ESC || c == CH_LARROW)
             {
               ret = ABORT;
-              ERRMSG(DC_COLOR_WARNING,"ABORT");
+              copyERRMSG(DC_COLOR_WARNING,"ABORT");
               break;
             }
         }
@@ -870,21 +881,22 @@ copy(const char *srcfile, const BYTE srcdevice, const char *destfile, const BYTE
           cputsxy(xpos, ypos, "W");
           if (cbm_write(7, buf, length) != length)
             {
-              ERRMSG(DC_COLOR_ERROR,"WRITE ERROR");
+              copyERRMSG(DC_COLOR_ERROR,"WRITE ERROR");
               ret = ERROR;
               break;
             }
           total_length += length;
+#if !defined(__PET__)
+          cprintf(" %lu bytes", total_length);
+#endif
         }
 
       if (length < BUFFERSIZE)
         {
-          cprintf(" %lu bytes", total_length);
-          ERRMSG(DC_COLOR_TEXT,"OK");
+          copyERRMSG(DC_COLOR_TEXT,"OK");
           break;
         }
-
-    }
+    } // while(1)
 
  done:
   free(buf);

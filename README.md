@@ -116,6 +116,8 @@ the following features can be implemented or bugs should be fixed:
 - reduce memory use
   + check which variables should be "register" https://cc65.github.io/doc/cc65.html#s8
   + check --codesize https://cc65.github.io/doc/cc65.html#option-codesize
+  + pet: reduce dcpet memory requirements. Currently the program doesn't run on a 32KB PET.
+  + C128: 80 column mode seems to not work well, reduce memory use.
 - copy features from 1.0e
   + copy seq and rel
   + move file
@@ -126,8 +128,6 @@ the following features can be implemented or bugs should be fixed:
 - device id: does it work with 1541? does it work with sd2iec?
 - dc510
   + run PRG
-- pet: reduce dcpet memory requirements. Currently the program doesn't run on a 32KB PET.
-- C128: 80 column mode seems to not work well, reduce memory use.
 - support Ultimate 1541 directly: https://github.com/xlar54/ultimateii-dos-lib
 - support vice without true drive emulation?
 - dc6480 is crashing when running a PRG with filename > 6 or 7 characters.
