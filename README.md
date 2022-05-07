@@ -58,7 +58,7 @@ The following special builds of dracopy are available for download:
 | ----- | -------- |
 | Commodore REU for dc64 | [dracopy-1.2doj-reu.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj-reu.zip)
 | Kerberos MIDI for dc64 | [dracopy-1.2doj-kerberos.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj-kerberos.zip)
-| C64, C128, Plus4 on D64 | [dracopy-1.2doj-kerberos.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj-kerberos.zip)
+| C64, C128, Plus4 programs on a D64 image | [dracopy-1.2doj.d64](http://www.cubic.org/~doj/c64/dracopy-1.2doj.d64)
 
 The program can be built with support for other Commodore RAM expansion devices like GeoRam.
 All RAM expansion devices supported by the cc65 compiler's [extended memory device](https://www.cc65.org/doc/c64-5.html) (emd) drivers can be used.
