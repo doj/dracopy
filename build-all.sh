@@ -39,7 +39,8 @@ make clean
 echo
 echo '##### default #####'
 echo
-make zip
+make all zip
 mv dracopy-${VER}doj.zip $DESTDIR/
+mv dracopy-${VER}doj.d64 $DESTDIR/
 
 make clean

@@ -41,22 +41,24 @@ Version Information and Download
 | 1.0doj | May 2020 | based on the source code of version 1.0c, reimplemented disk copy | doj |
 | 1.0doj | Jun 2020 | 80 column mode for C64, create d64 image, SFD-1001 support, REU | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
 | 1.1doj | Dec 2021 | support 1571 and 1581 disk copy from a SD2IEC source drive | doj | [dracopy-1.1doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.1doj.zip)
+| 1.2doj | May 2022 | support disk copy from CMD and U64 devices | doj | [dracopy-1.2doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj.zip)
 
 DraCopy builds in alternate color schemes:
 
 | Scheme  | Download | Screenshot |
 | ------- | -------- | ---------- |
-| default | [dracopy-1.1doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.1doj.zip) | [dc64](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64.png)
-| blue    | [dracopy-1.1doj-BLUE.zip](http://www.cubic.org/~doj/c64/dracopy-1.1doj-BLUE.zip) | [dc64-blue](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-blue.png)
-| SX-64   | [dracopy-1.1doj-SX.zip](http://www.cubic.org/~doj/c64/dracopy-1.1doj-SX.zip) | [dc64-sx](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-sx.png)
-| C128    | [dracopy-1.1doj-128.zip](http://www.cubic.org/~doj/c64/dracopy-1.1doj-128.zip) | [dc64-128](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-128.png)
+| default | [dracopy-1.2doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj.zip) | [dc64](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64.png)
+| blue    | [dracopy-1.2doj-BLUE.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj-BLUE.zip) | [dc64-blue](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-blue.png)
+| SX-64   | [dracopy-1.2doj-SX.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj-SX.zip) | [dc64-sx](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-sx.png)
+| C128    | [dracopy-1.2doj-128.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj-128.zip) | [dc64-128](https://raw.githubusercontent.com/doj/dracopy/master/images/dc64-128.png)
 
 The following special builds of dracopy are available for download:
 
 | build | Download |
 | ----- | -------- |
-| Commodore REU for dc64 | [dracopy-1.1doj-reu.zip](http://www.cubic.org/~doj/c64/dracopy-1.1doj-reu.zip)
-| Kerberos MIDI for dc64 | [dracopy-1.1doj-kerberos.zip](http://www.cubic.org/~doj/c64/dracopy-1.1doj-kerberos.zip)
+| Commodore REU for dc64 | [dracopy-1.2doj-reu.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj-reu.zip)
+| Kerberos MIDI for dc64 | [dracopy-1.2doj-kerberos.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj-kerberos.zip)
+| C64, C128, Plus4 on D64 | [dracopy-1.2doj-kerberos.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj-kerberos.zip)
 
 The program can be built with support for other Commodore RAM expansion devices like GeoRam.
 All RAM expansion devices supported by the cc65 compiler's [extended memory device](https://www.cc65.org/doc/c64-5.html) (emd) drivers can be used.

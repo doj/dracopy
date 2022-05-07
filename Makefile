@@ -29,7 +29,7 @@
 ##############################################################################
 # building
 
-VER?=1.1
+VER?=1.2
 
 CFLAGS+=-I include -O -Or -Os -r
 
@@ -39,7 +39,7 @@ endif
 
 C64CFLAGS+=$(CFLAGS)
 
-D64=dracopy10doj.d64
+D64=dracopy-$(VER)doj.d64
 TARGETS_C64=dc64 db64 dc6480 db6480 dc64ieee dc64ieee80 dc128 db128 dc1280 db1280
 TARGETS=$(TARGETS_C64) dcp4 dbp4 dc510 db510 dc610 db610 dcpet80 dbpet80 dcpet40 dbpet40
 
@@ -93,11 +93,11 @@ dc610:	$(DC_SRC)
 	cl65 $(CFLAGS) -t cbm610 -DSFD1001 -DCHAR80 $^ -o $@
 
 dcpet40:	$(DC_SRC)
-	cl65 $(CFLAGS) -t pet -DSFD1001 $^ -o $@
+	cl65 $(CFLAGS) -t pet -DSFD1001 $^ -o $@.prg
 	-exomizer sfx systrim -t 4032 -o $@ $@.prg
 
 dcpet80:	$(DC_SRC)
-	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@
+	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@.prg
 	-exomizer sfx systrim -t 4032 -o $@ $@.prg
 
 DB_SRC=src/db.c $(COMMON_SRC)
@@ -134,11 +134,11 @@ db610:	$(DB_SRC)
 	cl65 $(CFLAGS) -t cbm610 -DSFD1001 -DCHAR80 $^ -o $@
 
 dbpet40:	$(DB_SRC)
-	cl65 $(CFLAGS) -t pet -DSFD1001 $^ -o $@
+	cl65 $(CFLAGS) -t pet -DSFD1001 $^ -o $@.prg
 	-exomizer sfx systrim -t 4032 -o $@ $@.prg
 
 dbpet80:	$(DB_SRC)
-	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@
+	cl65 $(CFLAGS) -t pet -DSFD1001 -DCHAR80 $^ -o $@.prg
 	-exomizer sfx systrim -t 4032 -o $@ $@.prg
 
 clean:
