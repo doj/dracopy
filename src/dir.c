@@ -305,6 +305,23 @@ myCbmReadDir(const BYTE device, struct cbm_dirent* l_dirent)
   if (X('p','r','g'))
     {
       l_dirent->type = CBM_T_PRG;
+#if defined(__PET__)
+      /* SD2PET reports mountable images as PRG, fix it */
+      if (devicetype[device] == SD2PET &&
+          b > 4) {
+        if (l_dirent->name[b-4] == '.' &&
+            (l_dirent->name[b-3] == 'd' || l_dirent->name[b-3] == 'D') &&
+            ((l_dirent->name[b-2] == '6' &&
+              l_dirent->name[b-1] == '4') ||
+             (l_dirent->name[b-2] == '7' &&
+              l_dirent->name[b-1] == '1') ||
+             (l_dirent->name[b-2] == '8' &&
+              (l_dirent->name[b-1] == '0' ||
+               l_dirent->name[b-1] == '1')))) {
+          l_dirent->type = CBM_T_DIR;
+        }
+      }
+#endif
     }
   else if (X('s','e','q'))
     {

@@ -97,10 +97,10 @@ mainLoop(void)
     while(++i < 12)
       {
         devices[context] = i;
+        getDeviceType(devices[context]);
         dirs[context] = readDir(NULL, devices[context], context, sorted);
         if (dirs[context])
           {
-            getDeviceType(devices[context]);
             showDir(context, context);
             goto found_upper_drive;
           }
@@ -112,10 +112,10 @@ mainLoop(void)
     while(++i < 12)
       {
         devices[1] = i;
+        getDeviceType(devices[1]);
         dirs[1] = readDir(NULL, devices[1], 1, sorted);
         if (dirs[1])
           {
-            getDeviceType(devices[1]);
             showDir(1, context);
             goto found_lower_drive;
           }

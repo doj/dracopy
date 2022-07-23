@@ -78,6 +78,12 @@ getDeviceType(const BYTE device)
     {
       return "!d";
     }
+  if (cbm_opendir(device, device) != 0)
+    {
+      cbm_closedir(device);
+      return "!d";
+    }
+  cbm_closedir(device);
   idx = cmd(device, "ui");
   if (idx != 73)
     {
