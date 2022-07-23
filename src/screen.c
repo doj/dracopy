@@ -26,11 +26,17 @@
 #include <stdio.h>
 #include <conio.h>
 #include <string.h>
+#if defined(__PET__)
+#include <peekpoke.h>
+#endif
 #include "defines.h"
 
 static unsigned char screen_bgc;
 static unsigned char screen_borderc;
 static unsigned char screen_textc;
+#if defined(__PET__)
+static int via_pcr = -1;
+#endif
 
 void
 clearArea(const BYTE xpos, const BYTE ypos, const BYTE xsize, const BYTE ysize)
@@ -109,6 +115,13 @@ initScreen(const BYTE border, const BYTE bg, const BYTE text)
   screen_bgc = bgcolor(bg);
   screen_textc = textcolor(text);
   clrscr();
+#if defined(__PET__)
+  if (via_pcr == -1) {
+    /* Switch to lower case */
+    via_pcr = PEEK(0xe84c);
+    POKE(0xe84c, ((via_pcr & 0xf1) | (0x7<<1)));
+  }
+#endif
 }
 
 /* restore basic screen mode */
@@ -119,4 +132,9 @@ exitScreen(void)
   bgcolor(screen_bgc);
   textcolor(screen_textc);
   clrscr();
+#if defined(__PET__)
+  /* Restore character set */
+  if (via_pcr != -1)
+    POKE(0xe84c, via_pcr);
+#endif
 }
