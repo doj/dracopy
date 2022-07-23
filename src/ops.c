@@ -180,11 +180,15 @@ execute(char * prg, BYTE device)
   *((unsigned char *)KBCHARS + len) = 13;  ++len;
   *((unsigned char *)KBNUM) = len;
 #else
+  int i;
   // prepare the screen with the basic command to load the next program
   exitScreen();
 
   gotoxy(0,2);
-  cprintf("load\"%s\",%i,1", prg, device);
+  cprintf("load\"");
+  for (i=0; i<strlen(prg); i++)
+    cbm_k_bsout(prg[i]);
+  cprintf("\",%i,1", device);
   gotoxy(0,7);
   cputs("run");
 
