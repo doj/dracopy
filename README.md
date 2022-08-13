@@ -42,6 +42,7 @@ Version Information and Download
 | 1.0doj | Jun 2020 | 80 column mode for C64, create d64 image, SFD-1001 support, REU | doj | [dracopy-1.0doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.0doj.zip)
 | 1.1doj | Dec 2021 | support 1571 and 1581 disk copy from a SD2IEC source drive | doj | [dracopy-1.1doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.1doj.zip)
 | 1.2doj | May 2022 | support disk copy from CMD and U64 devices | doj | [dracopy-1.2doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.2doj.zip)
+| 1.3doj | Aug 2022 | PET fixes by stargo | doj | [dracopy-1.3doj.zip](http://www.cubic.org/~doj/c64/dracopy-1.3doj.zip)
 
 DraCopy builds in alternate color schemes:
 
