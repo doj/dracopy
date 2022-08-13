@@ -164,7 +164,7 @@ $(REU):
 	cp -f $(CC65_HOME)/target/c64/drv/emd/$(REU) $@
 
 printversion:
-	echo $(VER)
+	@echo $(VER)
 
 ##############################################################################
 # testing
