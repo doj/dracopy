@@ -66,7 +66,7 @@ initDirWindowHeight(void)
 char DOSstatus[40];
 
 /// string descriptions of enum drive_e
-const char* drivetype[LAST_DRIVE_E] = {"", "Pi1541", "1540", "1541", "1551", "1570", "1571", "1581", "1001", "2031", "8040", "sd2iec", "cmd", "vice", "u64"};
+const char* drivetype[LAST_DRIVE_E] = {"", "Pi1541", "1540", "1541", "1551", "1570", "1571", "1581", "1001", "2031", "8040", "sd2iec", "cmd", "vice", "u64", "sd2pet"};
 /// enum drive_e value for each device 0-11.
 BYTE devicetype[12];
 
@@ -78,6 +78,12 @@ getDeviceType(const BYTE device)
     {
       return "!d";
     }
+  if (cbm_opendir(device, device) != 0)
+    {
+      cbm_closedir(device);
+      return "!d";
+    }
+  cbm_closedir(device);
   idx = cmd(device, "ui");
   if (idx != 73)
     {
@@ -174,11 +180,15 @@ execute(char * prg, BYTE device)
   *((unsigned char *)KBCHARS + len) = 13;  ++len;
   *((unsigned char *)KBNUM) = len;
 #else
+  int i;
   // prepare the screen with the basic command to load the next program
   exitScreen();
 
   gotoxy(0,2);
-  cprintf("load\"%s\",%i,1", prg, device);
+  cprintf("load\"");
+  for (i=0; i<strlen(prg); i++)
+    cbm_k_bsout(prg[i]);
+  cprintf("\",%i,1", device);
   gotoxy(0,7);
   cputs("run");
 
@@ -601,6 +611,12 @@ changeDir(const BYTE context, const BYTE device, const char *dirname, const BYTE
           if ((dirname[l-3] == 'd' || dirname[l-3] == 'D') &&
               (dirname[l-2] == '6') &&
               (dirname[l-1] == '4'))
+            {
+              mount = 1;
+            }
+          else if ((dirname[l-3] == 'd' || dirname[l-3] == 'D') &&
+                   (dirname[l-2] == '8') &&
+                   (dirname[l-1] == '0'))
             {
               mount = 1;
             }

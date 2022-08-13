@@ -46,11 +46,19 @@ updateMenu(void)
   drawFrame(" " DRA_VERNUM " ",MENUX,MENUY,MENUW,MENUH,NULL);
 
   ++menuy;
+#if !defined(__PET__)
   cputsxy(MENUXT+1,++menuy,"F1 DIR");
   cputsxy(MENUXT+1,++menuy,"F2 DEVICE");
   cputsxy(MENUXT+1,++menuy,"F3 HEX");
   cputsxy(MENUXT+1,++menuy,"F4 ASC");
   cputsxy(MENUXT+1,++menuy,"F7 RUN");
+#else
+  cputsxy(MENUXT+1,++menuy," 1 DIR");
+  cputsxy(MENUXT+1,++menuy," 2 DEVICE");
+  cputsxy(MENUXT+1,++menuy," 3 HEX");
+  cputsxy(MENUXT+1,++menuy," 4 ASC");
+  cputsxy(MENUXT+1,++menuy," 7 RUN");
+#endif
   cputsxy(MENUXT+1,++menuy,"CR RUN/CD");
   cputsxy(MENUXT+1,++menuy,"BS DIR UP");
   cputsxy(MENUXT+1,++menuy," \x5e PAR DIR");
@@ -97,10 +105,10 @@ mainLoop(void)
     while(++i < 12)
       {
         devices[context] = i;
+        getDeviceType(devices[context]);
         dirs[context] = readDir(NULL, devices[context], context, sorted);
         if (dirs[context])
           {
-            getDeviceType(devices[context]);
             showDir(context, context);
             goto found_upper_drive;
           }
@@ -112,10 +120,10 @@ mainLoop(void)
     while(++i < 12)
       {
         devices[1] = i;
+        getDeviceType(devices[1]);
         dirs[1] = readDir(NULL, devices[1], 1, sorted);
         if (dirs[1])
           {
-            getDeviceType(devices[1]);
             showDir(1, context);
             goto found_lower_drive;
           }

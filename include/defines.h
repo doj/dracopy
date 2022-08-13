@@ -164,6 +164,9 @@ extern BYTE DIR2H;
 #elif defined(__C64__)
 #define KBCHARS 631
 #define KBNUM 198
+#elif defined(__PET__)
+#define KBCHARS 623
+#define KBNUM 158
 #endif
 
 // define function keys to something on PET
