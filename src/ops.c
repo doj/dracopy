@@ -131,6 +131,7 @@ dosCommand(const BYTE lfn, const BYTE drive, const BYTE sec_addr, const char *cm
   int res;
   if (cbm_open(lfn, drive, sec_addr, cmd) != 0)
     {
+      cbm_close(lfn);
       return _oserror;
     }
 
